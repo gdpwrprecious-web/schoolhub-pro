@@ -13,9 +13,26 @@ dotenv.config();
 const app=express();
 const PORT=process.env.PORT||3000;
 const ROOT=__dirname;
-const DATA=path.join(ROOT,'data');
-const UP=path.join(ROOT,'uploads');
-for(const d of [DATA,path.join(UP,'profiles'),path.join(UP,'schools')])fs.mkdirSync(d,{recursive:true});
+
+// Railway Volume storage.
+// Set STORAGE_DIR=/app/storage in Railway.
+// Locally, it falls back to the project folder.
+const STORAGE_ROOT =
+  process.env.STORAGE_DIR ||
+  (process.env.NODE_ENV === 'production'
+    ? '/app/storage'
+    : ROOT);
+
+const DATA=path.join(STORAGE_ROOT,'data');
+const UP=path.join(STORAGE_ROOT,'uploads');
+
+for(const d of [
+  DATA,
+  path.join(UP,'profiles'),
+  path.join(UP,'schools')
+]){
+  fs.mkdirSync(d,{recursive:true});
+}
 const files={users:'users.json',schools:'schools.json',subjects:'subjects.json',announcements:'announcements.json',exams:'exams.json',questions:'questions.json',results:'results.json'};
 const read=k=>{const p=path.join(DATA,files[k]);try{return JSON.parse(fs.readFileSync(p,'utf8')||'[]')}catch{return []}};
 const write=(k,v)=>fs.writeFileSync(path.join(DATA,files[k]),JSON.stringify(v,null,2));
