@@ -1,42 +1,553 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Student Dashboard | SchoolHub Pro</title><link rel="stylesheet" href="/style.css"></head><body>
-<div class="mobile-bar"><div class="brand"><span class="brandmark">S</span>SchoolHub Pro</div><button class="icon-btn" onclick="document.querySelector('.side').classList.toggle('mobile-open')">☰</button></div>
-<div class="dash"><aside class="side"><div class="side-brand"><div class="brand"><span class="brandmark">S</span>SchoolHub Pro</div></div><div class="nav"><div class="nav-label">Student workspace</div><button class="active" data-section="home">▦ <span>Dashboard</span></button><button data-section="exams">▣ <span>CBT Arena</span></button><button data-section="results">◉ <span>My Results</span></button><button data-section="announcements">◈ <span>Announcements</span></button><button data-section="profile">◎ <span>Profile</span></button><button onclick="logout()">↪ <span>Logout</span></button></div><div class="side-footer">Your examinations, results and announcements are isolated to your school.</div></aside>
-<main class="main"><header class="top dashboard-top"><div class="school-identity"><img id="schoolLogo" class="brand-logo" style="display:none"><div><b data-school-name>School</b><div class="small muted">Student learning centre</div></div></div><div class="top-user"><span class="small muted" id="topRole">Student</span><img id="mePic" class="avatar" style="width:42px;height:42px"></div></header>
-<div class="content"><div id="toast" class="toast"></div>
-<section id="home" class="section show"><div class="page-head"><div><div class="eyebrow">STUDENT CENTRE</div><h1>Welcome back, <span id="meName"></span></h1><p>Continue your learning, take available CBTs and monitor your academic progress.</p></div><button class="btn" onclick="showSection('exams')">Enter CBT Arena →</button></div>
-<div id="stats" class="grid"></div><br>
-<div class="split"><div class="card"><div class="section-title"><div><h3>Recent results</h3><p class="muted">Your latest examination performance.</p></div><button class="btn alt small" onclick="showSection('results')">View all</button></div><div id="recentResults"></div></div><div class="card"><div class="section-title"><div><h3>Latest announcement</h3><p class="muted">Updates from your school.</p></div></div><div id="homeAnn"></div></div></div>
-</section>
-<section id="exams" class="section"><div class="page-head"><div><div class="eyebrow">CBT ARENA</div><h2>Available examinations</h2><p>Choose a published examination and enter the secure CBT arena.</p></div></div><div id="examList" class="exam-grid"></div></section>
-<section id="results" class="section"><div class="page-head"><div><div class="eyebrow">PERFORMANCE</div><h2>My results</h2><p>Review your scores, percentages and submission history.</p></div></div><div class="card tablewrap"><table class="table"><thead><tr><th>Exam</th><th>Subject</th><th>Score</th><th>Percentage</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div></section>
-<section id="announcements" class="section"><div class="page-head"><div><div class="eyebrow">SCHOOL NEWS</div><h2>Announcements</h2><p>Important messages from your school.</p></div></div><div id="annList"></div></section>
-<section id="profile" class="section"><div class="page-head"><div><div class="eyebrow">ACCOUNT</div><h2>Profile</h2><p>Manage your profile picture.</p></div></div><div class="card profile-card"><img id="profilePreview" class="avatar" style="width:100px;height:100px"><div><h3 id="profileName"></h3><p id="profileText" class="muted"></p><form id="profileForm"><input name="photo" type="file" accept="image/png,image/jpeg,image/webp"><br><br><button class="btn">Upload picture</button></form></div></div></section>
-</div></main></div>
 
-<div id="arena" class="arena hidden" aria-hidden="true"><div class="arena-shell"><header class="arena-head"><div><div class="eyebrow">LIVE CBT</div><h2 id="arenaTitle">Examination</h2><p id="arenaMeta" class="muted"></p></div><div class="arena-timer"><span>TIME LEFT</span><b id="timer">00:00</b></div></header><div id="arenaInstructions" class="arena-instructions"></div><div class="arena-body"><aside class="question-nav"><div class="qnav-head"><b>Questions</b><span id="progressText">0/0</span></div><div id="questionPalette"></div><div class="legend"><span><i class="dot current"></i>Current</span><span><i class="dot answered"></i>Answered</span><span><i class="dot"></i>Unanswered</span></div></aside><main class="question-main"><div class="question-top"><span id="questionNumber" class="question-count"></span><span id="questionPoints" class="pill"></span></div><h3 id="questionText"></h3><div id="optionsBox" class="options-box"></div><div class="arena-actions"><button class="btn alt" id="prevBtn">← Previous</button><button class="btn" id="nextBtn">Next →</button><button class="btn danger" id="submitBtn">Submit CBT</button></div></main></div></div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | SchoolHub Pro</title>
+<style>
+:root {
+  --primary:#2563eb;
+  --secondary:#16a34a;
+  --bg:#f4f7fb;
+  --surface:#fff;
+  --text:#172033;
+  --muted:#718096;
+  --border:#e5eaf2;
+  --danger:#dc2626;
+  --shadow:0 12px 35px rgba(25,45,85,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit}
+button{cursor:pointer}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:250px;background:#101827;color:#fff;padding:25px 17px;position:fixed;inset:0 auto 0 0;z-index:10;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px 28px}
+.logo{width:43px;height:43px;object-fit:contain;border-radius:12px;background:var(--primary);display:grid;place-items:center;font-weight:900;font-size:22px}
+.brand strong{font-size:17px}.brand small{display:block;color:#9ca9bd;margin-top:4px}
+.nav-label{color:#78869d;font-size:11px;font-weight:800;letter-spacing:1.5px;padding:14px 12px 8px}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;margin:4px 0;border:0;border-radius:11px;background:transparent;color:#cbd5e1;text-align:left;transition:.2s}
+.nav button:hover,.nav button.active{background:#24344d;color:#fff;transform:translateX(3px)}
+.nav button.active{box-shadow:inset 3px 0 var(--secondary)}
+.sidebar-bottom{margin-top:auto;color:#8290a5;font-size:12px;padding:15px 10px}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px 32px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:28px}
+.eyebrow{color:var(--muted);font-size:13px;margin-bottom:5px}
+h1{font-size:27px;margin:0;font-weight:800;letter-spacing:-.6px}
+.userbox{display:flex;align-items:center;gap:12px}
+.avatar{width:43px;height:43px;border-radius:50%;object-fit:cover;background:#dbeafe;display:grid;place-items:center;font-weight:800;color:var(--primary)}
+.userbox strong{display:block;font-size:13px}.userbox small{color:var(--muted)}
+.mobile-menu{display:none;border:0;background:#fff;padding:10px;border-radius:10px}
+.welcome{background:linear-gradient(120deg,#142b52,#2563eb 75%,#16a34a);color:#fff;padding:28px;border-radius:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden;position:relative;animation:rise .55s ease both}
+.welcome:after{content:"";position:absolute;width:220px;height:220px;border:35px solid #ffffff12;border-radius:50%;right:7%;top:-100px}
+.welcome h2{font-size:25px;margin:0 0 9px}.welcome p{color:#e0eaff;margin:0;max-width:500px;line-height:1.6}
+.welcome .pill{background:#ffffff20;border:1px solid #ffffff3b;border-radius:999px;padding:10px 15px;font-size:12px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:22px 0}
+.stat,.panel{background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:20px;box-shadow:var(--shadow);animation:rise .55s ease both}
+.stat small{color:var(--muted);font-weight:600}.stat strong{display:block;font-size:29px;margin:12px 0 5px}.stat span{font-size:12px;color:var(--secondary)}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,1fr);gap:20px}
+.panel{margin-bottom:20px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+.panel h3{font-size:16px;margin:0}
+.panel-head button,.text-btn{border:0;background:transparent;color:var(--primary);font-weight:700;font-size:12px}
+.exam-list,.announcement-list,.result-list{display:grid;gap:12px}
+.exam-card{border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;transition:.2s}
+.exam-card:hover{border-color:#a8c4ff;transform:translateY(-2px)}
+.subject-icon{width:44px;height:44px;border-radius:12px;background:#eaf1ff;color:var(--primary);display:grid;place-items:center;font-weight:900;flex-shrink:0}
+.exam-info{flex:1;min-width:0}.exam-info strong{display:block;margin-bottom:6px}.exam-info small{color:var(--muted);line-height:1.5}
+.primary-btn{background:var(--primary);color:white;border:0;border-radius:10px;padding:11px 15px;font-weight:700;transition:.2s}
+.primary-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.primary-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.secondary-btn{background:#edf2ff;color:#234fba;border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:13px;font-size:13px}
+.announcement{padding:14px;border:1px solid var(--border);border-radius:13px}
+.announcement strong{font-size:14px}.announcement p{font-size:13px;color:var(--muted);line-height:1.6;margin:8px 0}
+.announcement small{font-size:11px;color:#94a3b8}
+.result-row{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border:0}.result-row strong{font-size:13px}.result-row small{display:block;color:var(--muted);margin-top:5px}
+.score{font-weight:800;color:var(--secondary)}
+.page{display:none}.page.active{display:block;animation:fade .25s ease}
+.hidden{display:none!important}
+.notice{padding:12px 15px;border-radius:10px;margin-bottom:15px;font-size:13px}
+.notice.error{background:#fee2e2;color:#991b1b}.notice.success{background:#dcfce7;color:#166534}.notice.info{background:#eaf1ff;color:#1e40af}
+.exam-screen{max-width:850px;margin:auto}
+.exam-top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:20px}
+.timer{background:#fff;border:1px solid var(--border);padding:12px 16px;border-radius:12px;font-weight:900;color:var(--primary)}
+.progress{height:7px;background:#e5eaf2;border-radius:9px;overflow:hidden;margin:14px 0 24px}.progress div{height:100%;width:0;background:var(--secondary);transition:width .2s}
+.question-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:25px;box-shadow:var(--shadow)}
+.question-card h2{font-size:20px;line-height:1.5}
+.option{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;margin:10px 0;cursor:pointer}
+.option:has(input:checked){border-color:var(--primary);background:#eff6ff}
+.option input{margin-top:4px;accent-color:var(--primary)}
+.exam-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
+.flag-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:15px}
+.modal-backdrop{position:fixed;inset:0;background:#0b1220a8;display:grid;place-items:center;padding:20px;z-index:30}
+.modal{background:#fff;padding:25px;border-radius:18px;max-width:440px;width:100%;box-shadow:var(--shadow)}
+.modal h2{margin-top:0}
+.field{display:grid;gap:7px;margin:15px 0}.field label{font-size:12px;font-weight:700}.field input{border:1px solid var(--border);border-radius:10px;padding:12px}
+.toast{position:fixed;bottom:20px;right:20px;background:#101827;color:#fff;padding:14px 18px;border-radius:12px;box-shadow:var(--shadow);z-index:50;max-width:90vw}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.content-grid{grid-template-columns:1fr}}
+@media(max-width:720px){
+ .sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}
+ .main{margin:0;width:100%;padding:18px}
+ .mobile-menu{display:block}.topbar{align-items:flex-start}
+ .welcome{align-items:flex-start;flex-direction:column;padding:22px}.welcome h2{font-size:22px}
+ .stats{gap:10px}.stat{padding:15px}.stat strong{font-size:24px}
+ .exam-card{align-items:flex-start;flex-wrap:wrap}.exam-card .primary-btn{width:100%}
+ .question-card{padding:18px}.exam-top{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:390px){.stats{grid-template-columns:1fr 1fr}.main{padding:12px}.userbox small{display:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo" id="schoolLogo">S</div>
+    <div><strong id="schoolName">SchoolHub Pro</strong><small>Student Portal</small></div>
+  </div>
+  <div class="nav-label">LEARNING SPACE</div>
+  <nav class="nav">
+    <button class="active" data-page="overview">▦ <span>Overview</span></button>
+    <button data-page="exams">▣ <span>CBT Exams</span></button>
+    <button data-page="results">▤ <span>My Results</span></button>
+    <button data-page="announcements">◉ <span>Announcements</span></button>
+    <button data-page="profile">◎ <span>My Profile</span></button>
+  </nav>
+  <div class="sidebar-bottom">Secure • Smart • Scalable<br>© 2026 SchoolHub Pro</div>
+</aside>
 
-<div id="confirmModal" class="modal hidden"><div class="modal-card"><div class="modal-icon">✓</div><h3>Submit examination?</h3><p id="confirmText">Your answers will be submitted and cannot be changed.</p><div class="modal-actions"><button class="btn alt" onclick="closeConfirm()">Continue</button><button class="btn" onclick="submitExam()">Submit now</button></div></div></div>
-<script src="/app.js"></script><script>
-let arenaData=null,arenaIndex=0,arenaAnswers={},timerInterval=null,secondsLeft=0;
-function showSection(id){document.querySelector('[data-section="'+id+'"]')?.click();document.querySelector('.side')?.classList.remove('mobile-open')}
-async function load(){if(!await boot()){location='/login.html';return}nav();document.getElementById('topRole').textContent='Student';profileName.textContent=ME.fullName;profileText.textContent=ME.fullName+' · '+ME.email;if(ME.profilePicture){profilePreview.src=ME.profilePicture;mePic.src=ME.profilePicture}await Promise.all([loadDashboard(),loadExams(),loadResults(),loadAnnouncements()])}
-async function loadDashboard(){const s=await api('/api/student/summary');stats.innerHTML=`<div class="card stat"><span class="stat-label">Available CBT</span><b>${s.available}</b><small class="muted">Ready to take</small></div><div class="card stat"><span class="stat-label">Completed</span><b>${s.completed}</b><small class="muted">Submitted exams</small></div><div class="card stat"><span class="stat-label">Average score</span><b>${s.average}%</b><small class="muted">Across your results</small></div><div class="card stat"><span class="stat-label">School CBTs</span><b>${s.totalExams}</b><small class="muted">Published examinations</small></div>`}
-async function loadExams(){const [a,r]=await Promise.all([api('/api/exams'),api('/api/results')]);const done=new Set(r.map(x=>x.examId));const available=a.filter(x=>x.status==='published');examList.innerHTML=available.map(x=>`<article class="card exam-card"><div class="exam-icon">▣</div><div class="exam-content"><div class="exam-top"><span class="pill">${escapeHtml(x.subject)}</span><span class="small muted">${x.duration} min</span></div><h3>${escapeHtml(x.title)}</h3><p class="muted">${escapeHtml(x.instructions||'Read every question carefully and submit before the timer ends.')}</p><div class="exam-meta"><span>◉ ${x.questionCount} questions</span><span>⏱ ${x.duration} minutes</span></div>${done.has(x.id)?'<span class="status-done">✓ Completed</span>':'<button class="btn" onclick="startCBT(\''+x.id+'\')">Start CBT →</button>'}</div></article>`).join('')||'<div class="empty">No published CBTs are available right now.</div>'}
-async function loadResults(){const a=await api('/api/results');resultTable.innerHTML=a.map(x=>`<tr><td><b>${escapeHtml(x.exam)}</b></td><td>${escapeHtml(x.subject)}</td><td>${x.score}/${x.total}</td><td><span class="score-pill">${x.percentage}%</span></td><td>${new Date(x.submittedAt).toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="5">No results yet.</td></tr>';recentResults.innerHTML=a.slice(0,4).map(x=>`<div class="result-row"><div><b>${escapeHtml(x.exam)}</b><span class="small muted">${new Date(x.submittedAt).toLocaleDateString()}</span></div><strong>${x.percentage}%</strong></div>`).join('')||'<div class="empty">Take your first CBT to see results here.</div>'}
-async function loadAnnouncements(){const a=await api('/api/announcements');annList.innerHTML=a.map(x=>`<div class="card announcement-card"><div class="announcement-dot"></div><div><h3>${escapeHtml(x.title)}</h3><p>${escapeHtml(x.body)}</p><div class="small muted">${new Date(x.createdAt).toLocaleString()}</div></div></div>`).join('')||'<div class="empty">No announcements.</div>';homeAnn.innerHTML=a[0]?`<h3>${escapeHtml(a[0].title)}</h3><p>${escapeHtml(a[0].body)}</p><div class="small muted">${new Date(a[0].createdAt).toLocaleString()}</div>`:'<p class="muted">No announcements yet.</p>'}
-async function startCBT(id){try{const d=await api('/api/exams/'+id+'/take');arenaData=d;arenaIndex=0;arenaAnswers={};secondsLeft=Math.max(60,Number(d.exam.duration)*60);document.getElementById('arenaTitle').textContent=d.exam.title;document.getElementById('arenaMeta').textContent=(d.exam.subject||'')+' · '+d.questions.length+' questions · '+d.exam.duration+' minutes';document.getElementById('arenaInstructions').textContent=d.exam.instructions||'Answer all questions. You can move between questions before submitting.';document.getElementById('arena').classList.remove('hidden');document.getElementById('arena').setAttribute('aria-hidden','false');document.body.classList.add('arena-open');buildPalette();renderQuestion();startTimer()}catch(e){toast(e.message)}}
-function buildPalette(){questionPalette.innerHTML=arenaData.questions.map((q,i)=>`<button class="qnum" id="qnum-${i}" onclick="goQuestion(${i})">${i+1}</button>`).join('')}
-function renderQuestion(){const q=arenaData.questions[arenaIndex];questionNumber.textContent='Question '+(arenaIndex+1)+' of '+arenaData.questions.length;questionPoints.textContent=(q.points||1)+' point'+((q.points||1)>1?'s':'');questionText.textContent=q.question;progressText.textContent=Object.keys(arenaAnswers).length+'/'+arenaData.questions.length;optionsBox.innerHTML=q.options.map((o,i)=>`<label class="option ${Number(arenaAnswers[q.id])===i?'selected':''}"><input type="radio" name="answer" value="${i}" ${Number(arenaAnswers[q.id])===i?'checked':''} onchange="chooseAnswer(${i})"><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${escapeHtml(o)}</span></label>`).join('');document.querySelectorAll('.qnum').forEach((b,i)=>{b.classList.toggle('current',i===arenaIndex);const qx=arenaData.questions[i];b.classList.toggle('answered',arenaAnswers[qx.id]!==undefined)});prevBtn.disabled=arenaIndex===0;nextBtn.textContent=arenaIndex===arenaData.questions.length-1?'Review answers →':'Next →'}
-function chooseAnswer(i){arenaAnswers[arenaData.questions[arenaIndex].id]=i;renderQuestion()}
-function goQuestion(i){arenaIndex=i;renderQuestion()}
-prevBtn.onclick=()=>{if(arenaIndex>0){arenaIndex--;renderQuestion()}};nextBtn.onclick=()=>{if(arenaIndex<arenaData.questions.length-1){arenaIndex++;renderQuestion()}else openConfirm()};submitBtn.onclick=openConfirm;
-function startTimer(){clearInterval(timerInterval);updateTimer();timerInterval=setInterval(()=>{secondsLeft--;updateTimer();if(secondsLeft<=0){clearInterval(timerInterval);submitExam(true)}},1000)}
-function updateTimer(){const m=Math.floor(secondsLeft/60),s=secondsLeft%60;timer.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');timer.parentElement.classList.toggle('urgent',secondsLeft<=60)}
-function openConfirm(){const unanswered=arenaData.questions.length-Object.keys(arenaAnswers).length;confirmText.textContent=unanswered?`You have ${unanswered} unanswered question${unanswered===1?'':'s'}. You can continue reviewing or submit now.`:'All questions are answered. Your submission cannot be changed after you submit.';confirmModal.classList.remove('hidden')}
-function closeConfirm(){confirmModal.classList.add('hidden')}
-async function submitExam(auto=false){closeConfirm();clearInterval(timerInterval);try{const r=await api('/api/exams/'+arenaData.exam.id+'/submit',{method:'POST',body:JSON.stringify({answers:arenaAnswers})});closeArena();await loadDashboard();await loadExams();await loadResults();showSection('results');toast((auto?'Time expired. ':'')+'CBT submitted: '+r.result.score+'/'+r.result.total+' ('+r.result.percentage+'%)');}catch(e){toast(e.message);if(e.message.includes('already submitted'))closeArena()}}
-function closeArena(){document.getElementById('arena').classList.add('hidden');document.getElementById('arena').setAttribute('aria-hidden','true');document.body.classList.remove('arena-open');arenaData=null}
-function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-profileForm.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/profile-picture',{method:'POST',body:new FormData(profileForm),credentials:'include'});const d=await r.json();if(!r.ok)return toast(d.error);profilePreview.src=d.user.profilePicture;mePic.src=d.user.profilePicture;toast('Profile picture updated')};
-window.addEventListener('beforeunload',e=>{if(arenaData){e.preventDefault();e.returnValue='CBT in progress';}});load();
-</script></body></html>
+<main class="main">
+  <header class="topbar">
+    <div style="display:flex;gap:12px;align-items:center">
+      <button class="mobile-menu" id="menuBtn" aria-label="Open navigation">☰</button>
+      <div><div class="eyebrow" id="dateLabel">STUDENT PORTAL</div><h1 id="pageTitle">Overview</h1></div>
+    </div>
+    <div class="userbox">
+      <img class="avatar" id="topAvatar" alt="Profile" src="" onerror="this.style.display='none';document.getElementById('avatarFallback').style.display='grid'">
+      <div class="avatar" id="avatarFallback">S</div>
+      <div><strong id="topName">Student</strong><small>Student</small></div>
+    </div>
+  </header>
+
+  <div id="globalNotice"></div>
+
+  <section class="page active" id="page-overview">
+    <div class="welcome">
+      <div><div class="eyebrow" style="color:#dbeafe">YOUR LEARNING SPACE</div><h2>Welcome back, <span id="welcomeName">Student</span> 👋</h2><p>Keep learning, stay prepared, and track your progress from one place.</p></div>
+      <div class="pill" id="schoolMotto">Your school • Your future</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><small>Available CBTs</small><strong id="statAvailable">—</strong><span>Ready when you are</span></div>
+      <div class="stat"><small>Completed</small><strong id="statCompleted">—</strong><span>Exams submitted</span></div>
+      <div class="stat"><small>Average score</small><strong id="statAverage">—</strong><span>Across your results</span></div>
+      <div class="stat"><small>Total published</small><strong id="statTotal">—</strong><span>Published exams</span></div>
+    </div>
+    <div class="content-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Available CBT exams</h3><button data-goto="exams">View all →</button></div>
+        <div class="exam-list" id="overviewExams"><div class="empty">Loading exams…</div></div>
+      </div>
+      <div>
+        <div class="panel"><div class="panel-head"><h3>Latest results</h3><button data-goto="results">View all →</button></div><div id="overviewResults" class="result-list"><div class="empty">Loading results…</div></div></div>
+        <div class="panel"><div class="panel-head"><h3>School updates</h3><button data-goto="announcements">View all →</button></div><div id="overviewAnnouncements" class="announcement-list"><div class="empty">Loading updates…</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-exams">
+    <div class="panel"><div class="panel-head"><h3>CBT exam centre</h3><button id="refreshBtn">Refresh</button></div><p class="eyebrow">Published exams from your school will appear here.</p><div class="exam-list" id="allExams"><div class="empty">Loading exams…</div></div></div>
+  </section>
+
+  <section class="page" id="page-results">
+    <div class="panel"><div class="panel-head"><h3>My results</h3><button id="refreshResults">Refresh</button></div><div id="allResults" class="result-list"><div class="empty">Loading results…</div></div></div>
+  </section>
+
+  <section class="page" id="page-announcements">
+    <div class="panel"><div class="panel-head"><h3>Announcements</h3></div><div id="allAnnouncements" class="announcement-list"><div class="empty">Loading announcements…</div></div></div>
+  </section>
+
+  <section class="page" id="page-profile">
+    <div class="panel" style="max-width:650px">
+      <div class="panel-head"><h3>My profile</h3></div>
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px">
+        <img id="profileAvatar" class="avatar" alt="Profile picture" style="width:75px;height:75px" src="">
+        <div><strong id="profileName">Student</strong><div class="eyebrow" id="profileEmail"></div><div class="eyebrow" id="profileUsername"></div></div>
+      </div>
+      <form id="photoForm">
+        <div class="field"><label for="photoInput">Update profile picture</label><input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" required></div>
+        <button class="primary-btn" type="submit">Upload picture</button>
+      </form>
+      <hr style="border:0;border-top:1px solid var(--border);margin:25px 0">
+      <button class="secondary-btn" id="logoutBtn">Sign out</button>
+    </div>
+  </section>
+
+  <section class="page" id="page-taking">
+    <div class="exam-screen">
+      <div class="exam-top"><div><div class="eyebrow">CBT ARENA</div><h1 id="takingTitle">Exam</h1></div><div class="timer" id="timer">--:--</div></div>
+      <div id="examInstructions" class="notice info"></div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="eyebrow" id="questionCounter"></div>
+      <div class="question-card">
+        <h2 id="questionText">Loading question…</h2>
+        <div id="options"></div>
+        <div class="exam-actions"><button class="secondary-btn" id="prevQuestion">← Previous</button><button class="primary-btn" id="nextQuestion">Next →</button></div>
+      </div>
+      <p class="flag-note">Activity monitoring may record tab changes, fullscreen exits, or copy/paste attempts for review. These flags are not proof of cheating.</p>
+      <button class="primary-btn" id="submitExam" style="margin-top:15px;background:#15803d">Submit exam</button>
+      <button class="secondary-btn" id="leaveExam" style="margin:15px 0 30px 10px">Leave exam</button>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="modal-backdrop hidden" id="confirmModal">
+  <div class="modal"><h2>Submit this CBT?</h2><p id="confirmText">Your answers will be submitted for marking.</p><div class="exam-actions"><button class="secondary-btn" id="cancelSubmit">Continue exam</button><button class="primary-btn" id="confirmSubmit">Submit now</button></div></div>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+const $ = id => document.getElementById(id);
+const state = {
+  user:null, school:null, exams:[], results:[], announcements:[],
+  exam:null, questions:[], answers:{}, questionIndex:0,
+  startedAt:0, deadline:0, timerId:null, flags:[],
+  attemptToken:null, monitoring:false, submitting:false
+};
+
+const titles = {
+  overview:'Overview', exams:'CBT Exams', results:'My Results',
+  announcements:'Announcements', profile:'My Profile', taking:'CBT Arena'
+};
+
+async function api(url, options={}) {
+  const response = await fetch(url, {
+    credentials:'include',
+    ...options,
+    headers:{ ...(options.body instanceof FormData ? {} : {'Content-Type':'application/json'}), ...(options.headers||{}) }
+  });
+  let data={};
+  try { data=await response.json(); } catch {}
+  if (response.status===401) {
+    location.href='/login.html';
+    throw new Error('Please sign in again.');
+  }
+  if (!response.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function escapeHTML(value='') {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+function fmtDate(value) {
+  if (!value) return '';
+  const date=new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+}
+function toast(message) {
+  $('toast').textContent=message;
+  $('toast').classList.remove('hidden');
+  setTimeout(()=>$('toast').classList.add('hidden'),3000);
+}
+function notice(message,type='info') {
+  $('globalNotice').innerHTML=`<div class="notice ${type}">${escapeHTML(message)}</div>`;
+}
+function clearNotice(){ $('globalNotice').innerHTML=''; }
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  const target=$('page-'+page);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
+  $('pageTitle').textContent=titles[page]||'Dashboard';
+  $('sidebar').classList.remove('open');
+  if (page==='exams') renderExams();
+  if (page==='results') renderResults();
+  if (page==='announcements') renderAnnouncements();
+}
+document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.page)));
+document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.goto)));
+$('menuBtn').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+
+function applyBranding(school) {
+  if (!school) return;
+  if (school.name) $('schoolName').textContent=school.name;
+  if (school.motto) $('schoolMotto').textContent=school.motto;
+  if (school.primaryColor && /^#[0-9a-f]{6}$/i.test(school.primaryColor)) {
+    document.documentElement.style.setProperty('--primary',school.primaryColor);
+  }
+  if (school.secondaryColor && /^#[0-9a-f]{6}$/i.test(school.secondaryColor)) {
+    document.documentElement.style.setProperty('--secondary',school.secondaryColor);
+  }
+  if (school.logo) {
+    const img=document.createElement('img');
+    img.src=school.logo; img.alt='School logo'; img.className='logo';
+    $('schoolLogo').replaceWith(img); img.id='schoolLogo';
+  }
+  if (school.theme==='dark') {
+    document.documentElement.style.setProperty('--bg','#101827');
+    document.documentElement.style.setProperty('--surface','#172337');
+    document.documentElement.style.setProperty('--text','#f1f5f9');
+    document.documentElement.style.setProperty('--muted','#a4b1c5');
+    document.documentElement.style.setProperty('--border','#2c3a50');
+  }
+}
+function applyUser(user) {
+  state.user=user;
+  const name=user.fullName||user.username||'Student';
+  $('topName').textContent=name;
+  $('welcomeName').textContent=name.split(' ')[0];
+  $('profileName').textContent=name;
+  $('profileEmail').textContent=user.email||'';
+  $('profileUsername').textContent=user.username||'';
+  $('avatarFallback').textContent=name.charAt(0).toUpperCase();
+  const picture=user.profilePicture||'';
+  if (picture) {
+    $('topAvatar').src=picture; $('topAvatar').style.display='block';
+    $('avatarFallback').style.display='none';
+    $('profileAvatar').src=picture;
+  } else {
+    $('topAvatar').style.display='none';
+    $('avatarFallback').style.display='grid';
+    $('profileAvatar').src='';
+  }
+}
+
+function examCard(exam) {
+  const completed=state.results.some(r=>r.examId===exam.id);
+  const duration=Number(exam.duration)||30;
+  const count=Number(exam.questionCount)||0;
+  return `<article class="exam-card">
+    <div class="subject-icon">${escapeHTML((exam.subject||'C').slice(0,1).toUpperCase())}</div>
+    <div class="exam-info"><strong>${escapeHTML(exam.title||'CBT Exam')}</strong>
+      <small>${escapeHTML(exam.subject||'Subject')} · ${duration} min · ${count} questions</small>
+    </div>
+    ${completed?'<span class="score">Completed</span>':`<button class="primary-btn start-exam" data-id="${escapeHTML(exam.id)}">Start CBT</button>`}
+  </article>`;
+}
+function resultRow(result) {
+  return `<div class="result-row"><div><strong>${escapeHTML(result.examTitle||'CBT Result')}</strong><small>${fmtDate(result.submittedAt)} · ${result.score??0}/${result.total??0} marks</small></div><div class="score">${Number(result.percentage||0).toFixed(1)}%</div></div>`;
+}
+function announcementCard(item) {
+  return `<article class="announcement"><strong>${escapeHTML(item.title||'Announcement')}</strong><p>${escapeHTML(item.body||'')}</p><small>${fmtDate(item.createdAt)}</small></article>`;
+}
+function renderExams() {
+  const available=state.exams.filter(e=>e.status==='published');
+  const html=available.length?available.map(examCard).join(''):'<div class="empty">No published exams are available right now.</div>';
+  $('allExams').innerHTML=html;
+  $('overviewExams').innerHTML=available.slice(0,4).length?available.slice(0,4).map(examCard).join(''):'<div class="empty">No CBT exams available.</div>';
+  bindStartButtons();
+}
+function renderResults() {
+  const html=state.results.length?state.results.map(resultRow).join(''):'<div class="empty">You have not submitted any CBTs yet.</div>';
+  $('allResults').innerHTML=html;
+  $('overviewResults').innerHTML=state.results.slice(0,3).map(resultRow).join('')||'<div class="empty">Your results will appear here.</div>';
+}
+function renderAnnouncements() {
+  const html=state.announcements.length?state.announcements.map(announcementCard).join(''):'<div class="empty">No announcements yet.</div>';
+  $('allAnnouncements').innerHTML=html;
+  $('overviewAnnouncements').innerHTML=state.announcements.slice(0,2).map(announcementCard).join('')||'<div class="empty">No new updates.</div>';
+}
+function renderSummary(summary) {
+  $('statAvailable').textContent=summary.available??0;
+  $('statCompleted').textContent=summary.completed??0;
+  $('statAverage').textContent=`${Number(summary.average||0).toFixed(1)}%`;
+  $('statTotal').textContent=summary.totalExams??0;
+}
+async function loadData() {
+  clearNotice();
+  try {
+    const [me,summary,exams,results,announcements]=await Promise.all([
+      api('/api/me'),api('/api/student/summary'),api('/api/exams'),api('/api/results'),api('/api/announcements')
+    ]);
+    applyUser(me.user);
+    state.school=me.school;
+    applyBranding(me.school);
+    renderSummary(summary);
+    state.exams=Array.isArray(exams)?exams:[];
+    state.results=Array.isArray(results)?results:[];
+    state.announcements=Array.isArray(announcements)?announcements:[];
+    renderExams();renderResults();renderAnnouncements();
+  } catch(error) {
+    notice(error.message,'error');
+  }
+}
+
+function bindStartButtons() {
+  document.querySelectorAll('.start-exam').forEach(btn=>{
+    btn.addEventListener('click',()=>startExam(btn.dataset.id));
+  });
+}
+
+async function startExam(id) {
+  try {
+    const data=await api(`/api/exams/${encodeURIComponent(id)}/take`);
+    if (!data.exam || !Array.isArray(data.questions)) throw new Error('Invalid exam response.');
+    if (!data.questions.length) throw new Error('This exam has no questions.');
+    state.exam=data.exam;
+    state.questions=data.questions;
+    state.answers={};
+    state.questionIndex=0;
+    state.startedAt=Date.now();
+    state.deadline=Date.now()+Math.max(1,Number(data.exam.duration)||30)*60000;
+    state.flags=[];
+    state.submitting=false;
+    state.monitoring=true;
+    $('takingTitle').textContent=data.exam.title||'CBT Exam';
+    $('examInstructions').textContent=data.exam.instructions||'Read each question carefully. Your answers will be marked after submission.';
+    navigate('taking');
+    $('pageTitle').textContent='CBT Arena';
+    renderQuestion();
+    startTimer();
+    enableMonitoring();
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(()=>{});
+    }
+  } catch(error) {
+    toast(error.message);
+  }
+}
+function renderQuestion() {
+  const q=state.questions[state.questionIndex];
+  if (!q) return;
+  $('questionCounter').textContent=`QUESTION ${state.questionIndex+1} OF ${state.questions.length}`;
+  $('questionText').textContent=q.question||'';
+  $('progressBar').style.width=`${((state.questionIndex+1)/state.questions.length)*100}%`;
+  $('options').innerHTML=(q.options||[]).map((option,index)=>`
+    <label class="option"><input type="radio" name="answer" value="${index}" ${Number(state.answers[q.id])===index?'checked':''}>
+    <span>${escapeHTML(option)}</span></label>`).join('');
+  $('options').querySelectorAll('input').forEach(input=>{
+    input.addEventListener('change',()=>{
+      state.answers[q.id]=Number(input.value);
+    });
+  });
+  $('prevQuestion').disabled=state.questionIndex===0;
+  $('nextQuestion').textContent=state.questionIndex===state.questions.length-1?'Review answers →':'Next →';
+}
+$('prevQuestion').addEventListener('click',()=>{
+  if(state.questionIndex>0){state.questionIndex--;renderQuestion();}
+});
+$('nextQuestion').addEventListener('click',()=>{
+  if(state.questionIndex<state.questions.length-1){state.questionIndex++;renderQuestion();}
+  else showReview();
+});
+function showReview() {
+  const unanswered=state.questions.filter(q=>state.answers[q.id]===undefined).length;
+  $('confirmText').textContent=`You have ${unanswered} unanswered question(s). Submit your answers now?`;
+  $('confirmModal').classList.remove('hidden');
+}
+$('submitExam').addEventListener('click',showReview);
+$('cancelSubmit').addEventListener('click',()=>$('confirmModal').classList.add('hidden'));
+$('confirmSubmit').addEventListener('click',()=>submitExam(false));
+$('leaveExam').addEventListener('click',()=>{
+  if(confirm('Leave this exam screen? Your current answers may not be submitted.')) stopExam();
+});
+
+function startTimer() {
+  clearInterval(state.timerId);
+  const tick=()=>{
+    const remaining=Math.max(0,state.deadline-Date.now());
+    const minutes=Math.floor(remaining/60000);
+    const seconds=Math.floor((remaining%60000)/1000);
+    $('timer').textContent=`${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+    if(remaining<=0){clearInterval(state.timerId);submitExam(true);}
+  };
+  tick();state.timerId=setInterval(tick,1000);
+}
+function recordFlag(type) {
+  if(!state.monitoring||!state.exam) return;
+  const event={type,at:new Date().toISOString()};
+  state.flags.push(event);
+  // Best effort only. Server must verify the signed-in user and active exam.
+  if(state.exam.id) {
+    api(`/api/exams/${encodeURIComponent(state.exam.id)}/activity`,{
+      method:'POST',body:JSON.stringify({type})
+    }).catch(()=>{});
+  }
+}
+function enableMonitoring() {
+  document.addEventListener('visibilitychange',visibilityHandler);
+  document.addEventListener('fullscreenchange',fullscreenHandler);
+  document.addEventListener('copy',copyHandler);
+  document.addEventListener('paste',pasteHandler);
+  document.addEventListener('contextmenu',contextHandler);
+}
+function disableMonitoring() {
+  document.removeEventListener('visibilitychange',visibilityHandler);
+  document.removeEventListener('fullscreenchange',fullscreenHandler);
+  document.removeEventListener('copy',copyHandler);
+  document.removeEventListener('paste',pasteHandler);
+  document.removeEventListener('contextmenu',contextHandler);
+  state.monitoring=false;
+}
+function visibilityHandler(){if(document.hidden)recordFlag('tab_hidden');}
+function fullscreenHandler(){if(!document.fullscreenElement)recordFlag('fullscreen_exit');}
+function copyHandler(){recordFlag('copy_attempt');}
+function pasteHandler(){recordFlag('paste_attempt');}
+function contextHandler(){recordFlag('context_menu');}
+
+async function submitExam(auto=false) {
+  if(state.submitting||!state.exam)return;
+  state.submitting=true;
+  $('confirmModal').classList.add('hidden');
+  $('confirmSubmit').disabled=true;
+  try {
+    const payload={
+      answers:state.answers,
+      activity:state.flags,
+      clientStartedAt:new Date(state.startedAt).toISOString()
+    };
+    const data=await api(`/api/exams/${encodeURIComponent(state.exam.id)}/submit`,{
+      method:'POST',body:JSON.stringify(payload)
+    });
+    stopExam();
+    await loadData();
+    navigate('results');
+    notice(auto?'Time ended. Your exam was submitted.':'Your exam was submitted successfully.','success');
+    if(data.result) toast(`Submitted — ${Number(data.result.percentage||0).toFixed(1)}%`);
+  } catch(error) {
+    state.submitting=false;
+    $('confirmSubmit').disabled=false;
+    toast(error.message);
+  }
+}
+function stopExam() {
+  clearInterval(state.timerId);
+  disableMonitoring();
+  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  state.exam=null;
+  navigate('exams');
+}
+
+$('photoForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const file=$('photoInput').files[0];
+  if(!file)return;
+  const form=new FormData();form.append('photo',file);
+  try {
+    await api('/api/profile-picture',{method:'POST',body:form});
+    await loadData();toast('Profile picture updated.');
+  } catch(error){toast(error.message);}
+});
+$('logoutBtn').addEventListener('click',async()=>{
+  try{await api('/api/logout',{method:'POST'});}catch{}
+  location.href='/login.html';
+});
+$('refreshBtn').addEventListener('click',loadData);
+$('refreshResults').addEventListener('click',loadData);
+$('dateLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+
+loadData();
+})();
+</script>
+</body>
+</html>
