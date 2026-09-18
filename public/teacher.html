@@ -1,55 +1,3041 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Teacher Dashboard | SchoolHub Pro</title><link rel="stylesheet" href="/style.css"></head><body>
-<div class="mobile-bar"><div class="brand"><span class="brandmark">S</span>SchoolHub Pro</div><button class="icon-btn" onclick="document.querySelector('.side').classList.toggle('mobile-open')">☰</button></div>
-<div class="dash"><aside class="side"><div class="side-brand"><div class="brand"><span class="brandmark">S</span>SchoolHub Pro</div></div><div class="nav"><div class="nav-label">Teacher workspace</div><button class="active" data-section="home">▦ <span>Dashboard</span></button><button data-section="subjects">▤ <span>Subjects</span></button><button data-section="questionbank">◫ <span>Question Bank</span></button><button data-section="exams">▣ <span>CBT Manager</span></button><button data-section="announcements">◈ <span>Announcements</span></button><button data-section="results">◉ <span>Results</span></button><button data-section="profile">◎ <span>Profile</span></button><button onclick="logout()">↪ <span>Logout</span></button></div><div class="side-footer">Teacher access is limited to your school workspace. Academic data never crosses schools.</div></aside>
-<main class="main"><header class="top dashboard-top"><div class="school-identity"><img id="schoolLogo" class="brand-logo" style="display:none"><div><b data-school-name>School</b><div class="small muted">Teacher academic centre</div></div></div><div class="top-user"><span class="small muted">Teacher</span><img id="mePic" class="avatar" style="width:42px;height:42px"></div></header><div class="content"><div id="toast" class="toast"></div>
-<section id="home" class="section show"><div class="page-head"><div><div class="eyebrow">TEACHER CENTRE</div><h1>Hello, <span id="meName"></span></h1><p>Plan CBTs, manage questions and monitor student performance from one workspace.</p></div><button class="btn" onclick="showSection('exams')">Create CBT →</button></div><div id="stats" class="grid"></div><br><div class="split"><div class="card"><div class="section-title"><div><h3>Recent CBTs</h3><p class="muted">Your school's latest examinations.</p></div><button class="btn alt small" onclick="showSection('exams')">Manage</button></div><div id="recentExams"></div></div><div class="card"><div class="section-title"><div><h3>Latest announcements</h3><p class="muted">School-wide updates.</p></div></div><div id="homeAnn"></div></div></div></section>
-<section id="subjects" class="section"><div class="page-head"><div><div class="eyebrow">ACADEMICS</div><h2>Subjects</h2><p>Subjects available to your school.</p></div></div><div id="subjectsList" class="grid"></div></section>
-<section id="questionbank" class="section"><div class="page-head"><div><div class="eyebrow">QUESTION BANK</div><h2>Question Bank</h2><p>Search, filter, edit and reuse your school's CBT questions.</p></div><div class="manager-actions"><button class="btn alt" onclick="openBankQuestion()">+ Add question</button><button class="btn" onclick="openBulkImport()">Bulk upload</button></div></div>
-<div class="grid question-bank-stats"><div class="card stat"><span class="stat-label">Total questions</span><b id="bankTotal">0</b><small class="muted">Questions in your school</small></div><div class="card stat"><span class="stat-label">Easy</span><b id="bankEasy">0</b><small class="muted">Easy questions</small></div><div class="card stat"><span class="stat-label">Medium</span><b id="bankMedium">0</b><small class="muted">Medium questions</small></div><div class="card stat"><span class="stat-label">Hard</span><b id="bankHard">0</b><small class="muted">Hard questions</small></div></div><br>
-<div class="card bank-toolbar"><div class="formgrid"><div class="field"><label>Search</label><input id="bankSearch" placeholder="Search question, tag or CBT..."></div><div class="field"><label>Subject</label><select id="bankSubject"></select></div><div class="field"><label>Difficulty</label><select id="bankDifficulty"><option value="">All difficulties</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></div><div class="field"><label>Tag</label><input id="bankTag" placeholder="e.g. Grammar"></div></div><button class="btn alt small" onclick="resetBankFilters()">Reset filters</button></div><br>
-<div id="questionBankList" class="question-bank-list"></div></section>
-<section id="exams" class="section"><div class="page-head"><div><div class="eyebrow">CBT MANAGER</div><h2>Build and manage CBTs</h2><p>Create tests, add questions, edit questions and publish when ready.</p></div></div>
-<div class="card"><form id="examForm"><div class="formgrid"><div class="field"><label>Exam title</label><input name="title" placeholder="e.g. First Term English CBT" required></div><div class="field"><label>Subject</label><select name="subjectId" id="subSelect" required></select></div><div class="field"><label>Duration (minutes)</label><input name="duration" type="number" min="1" value="30" required></div><div class="field"><label>Status</label><select name="status"><option value="draft">Draft</option><option value="published">Published</option></select></div><div class="field full"><label>Instructions</label><textarea name="instructions" placeholder="Instructions students should see before starting the CBT"></textarea></div></div><button class="btn">Create CBT</button></form></div><br><div id="examList"></div></section>
-<section id="announcements" class="section"><div class="page-head"><div><div class="eyebrow">SCHOOL NEWS</div><h2>Announcements</h2><p>Read the latest messages.</p></div></div><div id="annList"></div></section>
-<section id="results" class="section"><div class="page-head"><div><div class="eyebrow">ASSESSMENT</div><h2>Student results</h2><p>Monitor submissions from students in your school.</p></div></div><div class="card tablewrap"><table class="table"><thead><tr><th>Student</th><th>Exam</th><th>Subject</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div></section>
-<section id="profile" class="section"><div class="page-head"><div><div class="eyebrow">ACCOUNT</div><h2>Profile</h2><p>Update your profile picture.</p></div></div><div class="card profile-card"><img id="profilePreview" class="avatar" style="width:100px;height:100px"><div><h3 id="profileName"></h3><p id="profileText" class="muted"></p><form id="profileForm"><input name="photo" type="file" accept="image/png,image/jpeg,image/webp"><br><br><button class="btn">Upload picture</button></form></div></div></section>
-</div></main></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard | SchoolHub Pro</title>
 
-<div id="questionModal" class="modal hidden"><div class="modal-card wide"><div class="modal-head"><div><div class="eyebrow">QUESTION BANK</div><h3 id="questionModalTitle">Add question</h3></div><button class="icon-btn" onclick="closeQuestionModal()">×</button></div><form id="questionForm"><input type="hidden" name="id"><input type="hidden" name="examId"><div class="field"><label>Question</label><textarea name="question" required placeholder="Type the question here..."></textarea></div><div class="option-grid"><div class="field"><label>Option A</label><input name="o0" required></div><div class="field"><label>Option B</label><input name="o1" required></div><div class="field"><label>Option C</label><input name="o2" required></div><div class="field"><label>Option D</label><input name="o3" required></div></div><div class="formgrid"><div class="field"><label>Correct answer</label><select name="answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div><div class="field"><label>Points</label><input name="points" type="number" min="1" value="1"></div><div class="field"><label>Difficulty</label><select name="difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div><div class="field"><label>Tags</label><input name="tags" placeholder="Grammar, WAEC, Tenses"></div><div class="field full"><label>Explanation</label><textarea name="explanation" placeholder="Optional explanation shown to teachers/admins."></textarea></div></div><button class="btn">Save question</button></form></div></div>
-<div id="bulkModal" class="modal hidden"><div class="modal-card wide"><div class="modal-head"><div><div class="eyebrow">BULK IMPORT</div><h3>Upload question bank</h3><p class="muted">Paste a JSON array. Questions will be added to the selected CBT.</p></div><button class="icon-btn" onclick="closeBulkImport()">×</button></div><div class="field"><label>CBT</label><select id="bulkExam"></select></div><div class="field"><label>JSON questions</label><textarea id="bulkJson" rows="12" placeholder='[{"question":"2 + 2 = ?","options":["3","4","5","6"],"answer":1,"points":1,"difficulty":"easy","tags":"Math"}]'></textarea></div><div class="modal-actions"><button class="btn alt" onclick="closeBulkImport()">Cancel</button><button class="btn" onclick="submitBulkImport()">Import questions</button></div></div></div>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #16a34a;
+      --dark: #0f172a;
+      --dark-2: #111827;
+      --sidebar: #0b1220;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+      --shadow: 0 12px 35px rgba(15, 23, 42, .08);
+      --radius: 18px;
+    }
 
-<script src="/app.js"></script><script>
-let selectedExam=null;
-function showSection(id){document.querySelector('[data-section="'+id+'"]')?.click();document.querySelector('.side')?.classList.remove('mobile-open')}
-async function load(){if(!await boot()){location='/login.html';return}nav();profileName.textContent=ME.fullName;profileText.textContent=ME.fullName+' · '+ME.email;if(ME.profilePicture){profilePreview.src=ME.profilePicture;mePic.src=ME.profilePicture}await Promise.all([loadSummary(),loadSubjects(),loadExams(),loadAnnouncements(),loadResults()]);await loadQuestionBank()}
-async function loadSummary(){const s=await api('/api/teacher/summary');stats.innerHTML=`<div class="card stat"><span class="stat-label">Subjects</span><b>${s.subjects}</b><small class="muted">Academic subjects</small></div><div class="card stat"><span class="stat-label">CBTs</span><b>${s.exams}</b><small class="muted">Created examinations</small></div><div class="card stat"><span class="stat-label">Questions</span><b>${s.questions}</b><small class="muted">Across your CBTs</small></div><div class="card stat"><span class="stat-label">Average result</span><b>${s.average}%</b><small class="muted">${s.submissions} submissions</small></div>`}
-async function loadSubjects(){const a=await api('/api/subjects');bankSubject.innerHTML='<option value="">All subjects</option>'+a.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');subjectsList.innerHTML=a.map(x=>`<div class="card subject-card"><div class="subject-code">${escapeHtml(x.code||'SUB')}</div><h3>${escapeHtml(x.name)}</h3><p class="muted">${escapeHtml(x.description||'No description provided.')}</p></div>`).join('')||'<div class="empty" style="grid-column:1/-1">No subjects available.</div>';subSelect.innerHTML='<option value="">Select subject</option>'+a.map(x=>`<option value="${x.id}">${escapeHtml(x.name)} (${escapeHtml(x.code||'SUB')})</option>`).join('')}
-async function loadExams(){const a=await api('/api/exams');recentExams.innerHTML=a.slice(0,5).map(x=>`<div class="result-row"><div><b>${escapeHtml(x.title)}</b><span class="small muted">${escapeHtml(x.subject)} · ${x.questionCount} questions</span></div><span class="pill">${escapeHtml(x.status)}</span></div>`).join('')||'<div class="empty">No CBTs yet.</div>';examList.innerHTML=a.map(x=>`<article class="card manager-card"><div class="manager-main"><div class="exam-icon">▣</div><div><div class="exam-top"><span class="pill">${escapeHtml(x.subject)}</span><span class="small muted">${x.duration} min</span></div><h3>${escapeHtml(x.title)}</h3><p class="muted">${escapeHtml(x.instructions||'No instructions')} </p><div class="exam-meta"><span>◉ ${x.questionCount} questions</span><span>▰ ${x.submissionCount} submissions</span></div></div></div><div class="manager-actions"><span class="status-${x.status}">${x.status}</span><button class="btn alt small" onclick="openQuestions('${x.id}','${escapeHtml(x.title).replace(/'/g,'\\\'')}')">Questions</button><button class="btn small" onclick="toggleExam('${x.id}','${x.status}')">${x.status==='published'?'Unpublish':'Publish'}</button><button class="btn danger small" onclick="deleteExam('${x.id}')">Delete</button></div></article>`).join('')||'<div class="empty">No CBT created yet.</div>'}
-examForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/exams',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(examForm)))});examForm.reset();toast('CBT created successfully');await loadExams();await loadSummary()}catch(x){toast(x.message)}};
-async function toggleExam(id,status){try{await api('/api/exams/'+id,{method:'PUT',body:JSON.stringify({status:status==='published'?'draft':'published'})});await loadExams();toast(status==='published'?'CBT unpublished':'CBT published')}catch(e){toast(e.message)}}
-async function deleteExam(id){if(!confirm('Delete this CBT and its questions/results?'))return;try{await api('/api/exams/'+id,{method:'DELETE'});await loadExams();await loadSummary();toast('CBT deleted')}catch(e){toast(e.message)}}
-async function openQuestions(id,title){selectedExam=id;document.getElementById('questionModalTitle').textContent=title+' — Questions';document.getElementById('questionModal').classList.remove('hidden');document.querySelector('#questionForm [name="id"]').value='';document.querySelector('#questionForm [name="examId"]').value=id;document.querySelector('#questionForm').reset();document.querySelector('#questionForm [name="examId"]').value=id;await renderQuestionManager(id)}
-async function renderQuestionManager(id){const old=document.getElementById('questionManager');if(old)old.remove();const box=document.createElement('div');box.id='questionManager';box.className='question-manager';box.innerHTML='<div class="loading card">Loading questions...</div>';document.querySelector('#questionModal .modal-card').appendChild(box);try{const qs=await api('/api/exams/'+id+'/questions');box.innerHTML=qs.map((q,i)=>`<div class="question-bank-row"><div><b>Q${i+1}. ${escapeHtml(q.question)}</b><div class="small muted">A. ${escapeHtml(q.options[0]||'')} · B. ${escapeHtml(q.options[1]||'')} · C. ${escapeHtml(q.options[2]||'')} · D. ${escapeHtml(q.options[3]||'')}</div><span class="small">Correct: ${String.fromCharCode(65+Number(q.answer))} · ${q.points} point(s)</span></div><div class="question-actions"><button class="btn alt small" onclick='editQuestion(${JSON.stringify(q).replace(/</g,"\\u003c")})'>Edit</button><button class="btn danger small" onclick="removeQuestion('${q.id}')">Delete</button></div></div>`).join('')||'<div class="empty">No questions yet. Add the first question above.</div>'}catch(e){box.innerHTML='<div class="error">'+escapeHtml(e.message)+'</div>'}}
-function editQuestion(q){const f=document.getElementById('questionForm');f.id.value=q.id;f.examId.value=q.examId;f.question.value=q.question;q.options.forEach((o,i)=>f['o'+i].value=o||'');f.answer.value=q.answer;f.points.value=q.points||1;f.difficulty.value=q.difficulty||'medium';f.tags.value=q.tags||'';f.explanation.value=q.explanation||'';document.getElementById('questionModalTitle').textContent='Edit question'}
-function closeQuestionModal(){document.getElementById('questionModal').classList.add('hidden');const m=document.getElementById('questionManager');if(m)m.remove()}
-questionForm.onsubmit=async e=>{e.preventDefault();const f=new FormData(questionForm);const payload={question:f.get('question'),options:[f.get('o0'),f.get('o1'),f.get('o2'),f.get('o3')],answer:Number(f.get('answer')),points:Number(f.get('points'))||1,difficulty:f.get('difficulty'),tags:f.get('tags'),explanation:f.get('explanation')};try{const id=f.get('id');if(id)await api('/api/questions/'+id,{method:'PUT',body:JSON.stringify(payload)});else await api('/api/exams/'+f.get('examId')+'/questions',{method:'POST',body:JSON.stringify(payload)});questionForm.reset();questionForm.examId.value=selectedExam;await renderQuestionManager(selectedExam);await loadExams();await loadSummary();toast(id?'Question updated':'Question added')}catch(e){toast(e.message)}};
-async function removeQuestion(id){if(!confirm('Delete this question?'))return;try{await api('/api/questions/'+id,{method:'DELETE'});await renderQuestionManager(selectedExam);await loadExams();await loadSummary();toast('Question deleted')}catch(e){toast(e.message)}}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-let bankTimer;
-async function loadQuestionBank(){try{const qs=await api('/api/question-bank');bankTotal.textContent=qs.length;bankEasy.textContent=qs.filter(q=>(q.difficulty||'medium')==='easy').length;bankMedium.textContent=qs.filter(q=>(q.difficulty||'medium')==='medium').length;bankHard.textContent=qs.filter(q=>(q.difficulty||'medium')==='hard').length;renderBank(qs)}catch(e){questionBankList.innerHTML='<div class="error">'+escapeHtml(e.message)+'</div>'}}
-async function filterQuestionBank(){clearTimeout(bankTimer);bankTimer=setTimeout(async()=>{try{const p=new URLSearchParams({search:bankSearch.value,subjectId:bankSubject.value,difficulty:bankDifficulty.value,tag:bankTag.value});const qs=await api('/api/question-bank?'+p.toString());renderBank(qs)}catch(e){toast(e.message)}},180)}
-function renderBank(qs){questionBankList.innerHTML=qs.map((q,i)=>`<article class="card bank-question-card"><div class="bank-question-main"><div class="question-index">${i+1}</div><div><div class="bank-question-meta"><span class="pill">${escapeHtml(q.subject)}</span><span class="pill">${escapeHtml(q.examTitle)}</span><span class="difficulty-${escapeHtml(q.difficulty||'medium')}">${escapeHtml(q.difficulty||'medium')}</span></div><h3>${escapeHtml(q.question)}</h3><div class="bank-options">${q.options.map((o,j)=>`<span class="${Number(q.answer)===j?'correct-option':''}"><b>${String.fromCharCode(65+j)}</b> ${escapeHtml(o)}</span>`).join('')}</div><div class="small muted">${q.tags?`Tags: ${escapeHtml(q.tags)} · `:''}${q.points||1} point(s)${q.explanation?` · Explanation: ${escapeHtml(q.explanation)}`:''}</div></div></div><div class="question-actions"><button class="btn alt small" onclick='editBankQuestion(${JSON.stringify(q).replace(/</g,"\u003c")})'>Edit</button><button class="btn danger small" onclick="removeBankQuestion('${q.id}')">Delete</button></div></article>`).join('')||'<div class="empty card">No questions match your filters.</div>'}
-function resetBankFilters(){bankSearch.value='';bankSubject.value='';bankDifficulty.value='';bankTag.value='';loadQuestionBank()}
-function openBankQuestion(){if(!subSelect.options.length||subSelect.options.length===1)return toast('Create a subject first');selectedExam=subSelect.value||subSelect.options[1]?.value;if(!selectedExam)return toast('Create a CBT first');openQuestions(selectedExam,'Add question to CBT')}
-function editBankQuestion(q){selectedExam=q.examId;document.getElementById('questionModal').classList.remove('hidden');const f=document.getElementById('questionForm');f.reset();f.id.value=q.id;f.examId.value=q.examId;f.question.value=q.question;(q.options||[]).forEach((o,i)=>f['o'+i].value=o||'');f.answer.value=q.answer;f.points.value=q.points||1;f.difficulty.value=q.difficulty||'medium';f.tags.value=q.tags||'';f.explanation.value=q.explanation||'';document.getElementById('questionModalTitle').textContent='Edit question'}
-async function removeBankQuestion(id){if(!confirm('Delete this question from the question bank?'))return;try{await api('/api/questions/'+id,{method:'DELETE'});await loadQuestionBank();await loadExams();await loadSummary();toast('Question deleted')}catch(e){toast(e.message)}}
-function openBulkImport(){api('/api/exams').then(a=>{bulkExam.innerHTML='<option value="">Select CBT</option>'+a.map(x=>`<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('');document.getElementById('bulkModal').classList.remove('hidden')}).catch(e=>toast(e.message))}
-function closeBulkImport(){document.getElementById('bulkModal').classList.add('hidden')}
-async function submitBulkImport(){try{const examId=bulkExam.value;if(!examId)return toast('Select a CBT');const questions=JSON.parse(bulkJson.value);if(!Array.isArray(questions))throw new Error('JSON must be an array');const r=await api('/api/question-bank/bulk',{method:'POST',body:JSON.stringify({examId,questions})});bulkJson.value='';closeBulkImport();toast(`${r.created} question(s) imported`);await loadQuestionBank();await loadExams();await loadSummary()}catch(e){toast(e.message)}}
-[bankSearch,bankSubject,bankDifficulty,bankTag].forEach(el=>el?.addEventListener('input',filterQuestionBank));
+    body {
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-async function loadAnnouncements(){const a=await api('/api/announcements');annList.innerHTML=a.map(x=>`<div class="card announcement-card"><div class="announcement-dot"></div><div><h3>${escapeHtml(x.title)}</h3><p>${escapeHtml(x.body)}</p><div class="small muted">${new Date(x.createdAt).toLocaleString()}</div></div></div>`).join('')||'<div class="empty">No announcements.</div>';homeAnn.innerHTML=a[0]?`<h3>${escapeHtml(a[0].title)}</h3><p>${escapeHtml(a[0].body)}</p><div class="small muted">${new Date(a[0].createdAt).toLocaleString()}</div>`:'<p class="muted">No announcements yet.</p>'}
-async function loadResults(){const a=await api('/api/results');resultTable.innerHTML=a.map(x=>`<tr><td><b>${escapeHtml(x.student)}</b></td><td>${escapeHtml(x.exam)}</td><td>${escapeHtml(x.subject)}</td><td>${x.score}/${x.total}</td><td><span class="score-pill">${x.percentage}%</span></td><td>${new Date(x.submittedAt).toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="6">No student results yet.</td></tr>'}
-function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-profileForm.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/profile-picture',{method:'POST',body:new FormData(profileForm),credentials:'include'});const d=await r.json();if(!r.ok)return toast(d.error);profilePreview.src=d.user.profilePicture;mePic.src=d.user.profilePicture;toast('Profile picture updated')};load();
-</script></body></html>
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+
+    .sidebar {
+      width: 270px;
+      background: linear-gradient(180deg, #08111f 0%, #101827 100%);
+      color: white;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1000;
+      padding: 22px 15px;
+      overflow-y: auto;
+      transition: .3s ease;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px 28px;
+    }
+
+    .brand-logo {
+      width: 45px;
+      height: 45px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      font-size: 21px;
+      font-weight: 900;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -.3px;
+    }
+
+    .brand-text span {
+      display: block;
+      color: #94a3b8;
+      font-size: 10px;
+      margin-top: 3px;
+      letter-spacing: 1.2px;
+    }
+
+    .nav-title {
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.3px;
+      margin: 10px 12px 8px;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: #cbd5e1;
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      transition: .2s ease;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: rgba(255,255,255,.09);
+      color: white;
+    }
+
+    .nav button.active {
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .sidebar-footer {
+      margin-top: 30px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding-top: 18px;
+    }
+
+    .teacher-mini {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .teacher-mini-info {
+      min-width: 0;
+    }
+
+    .teacher-mini-info strong {
+      display: block;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .teacher-mini-info span {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+
+    /* MAIN */
+
+    .main {
+      margin-left: 270px;
+      width: calc(100% - 270px);
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 75px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .mobile-menu {
+      display: none;
+      border: 0;
+      background: #eef2ff;
+      color: var(--primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      font-size: 19px;
+    }
+
+    .page-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .page-title p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .icon-btn:hover {
+      color: var(--primary);
+      border-color: #bfdbfe;
+    }
+
+    .content {
+      padding: 30px;
+      max-width: 1600px;
+      margin: auto;
+    }
+
+    .section {
+      display: none;
+      animation: fadeUp .35s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* WELCOME */
+
+    .welcome {
+      border-radius: 24px;
+      padding: 28px;
+      color: white;
+      background:
+        radial-gradient(circle at 90% 20%, rgba(255,255,255,.15), transparent 28%),
+        linear-gradient(120deg, var(--primary), #1d4ed8 55%, var(--secondary));
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .welcome h2 {
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      color: rgba(255,255,255,.85);
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    .welcome-badge {
+      align-self: center;
+      min-width: 145px;
+      text-align: center;
+      padding: 17px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.13);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .welcome-badge strong {
+      display: block;
+      font-size: 28px;
+    }
+
+    .welcome-badge span {
+      font-size: 11px;
+      color: rgba(255,255,255,.8);
+    }
+
+    /* STAT CARDS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 21px;
+      box-shadow: var(--shadow);
+      transition: .25s ease;
+    }
+
+    .stat:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-icon {
+      width: 43px;
+      height: 43px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: #eff6ff;
+      color: var(--primary);
+      font-size: 19px;
+    }
+
+    .stat-value {
+      font-size: 27px;
+      font-weight: 850;
+      margin-top: 17px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* GRID */
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.35fr .85fr;
+      gap: 20px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .card-header h3 {
+      font-size: 16px;
+    }
+
+    .card-header p {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      padding: 11px;
+      background: #f8fafc;
+    }
+
+    td {
+      padding: 13px 11px;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    /* BUTTONS */
+
+    .btn {
+      border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 12px;
+      transition: .2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-light {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .btn-small {
+      padding: 7px 10px;
+      font-size: 11px;
+    }
+
+    /* BADGES */
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 30px;
+      padding: 5px 9px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-orange {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    /* LIST */
+
+    .activity {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .activity:last-child {
+      border-bottom: 0;
+    }
+
+    .activity-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: #eff6ff;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .activity strong {
+      font-size: 12px;
+      display: block;
+    }
+
+    .activity span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* PAGE HEADER */
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+      font-size: 22px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 750;
+      color: #475569;
+      margin-bottom: 7px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 12px;
+      outline: none;
+      background: white;
+      color: var(--text);
+    }
+
+    .field textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    /* EXAM CARDS */
+
+    .exam-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .exam-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 19px;
+      box-shadow: var(--shadow);
+      transition: .25s;
+    }
+
+    .exam-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .exam-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .exam-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .exam-card h3 {
+      font-size: 15px;
+      margin-top: 17px;
+    }
+
+    .exam-card p {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .exam-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .exam-actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    /* ANNOUNCEMENT */
+
+    .announcement {
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+
+    .announcement h4 {
+      font-size: 14px;
+    }
+
+    .announcement p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 7px;
+      line-height: 1.6;
+    }
+
+    .announcement small {
+      display: block;
+      color: #94a3b8;
+      margin-top: 9px;
+    }
+
+    /* PROFILE */
+
+    .profile-cover {
+      height: 140px;
+      border-radius: 20px 20px 0 0;
+      background: linear-gradient(120deg, var(--primary), var(--secondary));
+    }
+
+    .profile-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .profile-body {
+      padding: 0 25px 25px;
+    }
+
+    .profile-avatar {
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      border: 5px solid white;
+      margin-top: -47px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-name {
+      margin-top: 12px;
+    }
+
+    .profile-name h2 {
+      font-size: 21px;
+    }
+
+    .profile-name p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .profile-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 13px;
+      margin-top: 22px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border-radius: 13px;
+      padding: 14px;
+    }
+
+    .info-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      margin-bottom: 5px;
+    }
+
+    .info-box strong {
+      font-size: 13px;
+    }
+
+    /* EMPTY */
+
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 35px;
+      margin-bottom: 10px;
+    }
+
+    /* TOAST */
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 5000;
+      min-width: 260px;
+      max-width: 400px;
+      background: #0f172a;
+      color: white;
+      padding: 14px 17px;
+      border-radius: 13px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: .3s;
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--danger);
+    }
+
+    /* LOADING */
+
+    .loading {
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .spinner {
+      width: 27px;
+      height: 27px;
+      border: 3px solid #dbeafe;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 1100px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .exam-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .topbar {
+        padding: 0 17px;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .welcome {
+        padding: 21px;
+      }
+
+      .welcome h2 {
+        font-size: 21px;
+      }
+
+      .welcome-badge {
+        display: none;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .profile-info {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .exam-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions .icon-btn:nth-child(1) {
+        display: none;
+      }
+
+      .page-title h1 {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo">S</div>
+
+      <div class="brand-text">
+        <strong id="brandName">SchoolHub Pro</strong>
+        <span>TEACHER PORTAL</span>
+      </div>
+    </div>
+
+    <div class="nav-title">Workspace</div>
+
+    <nav class="nav">
+
+      <button class="active" data-section="overview">
+        <span class="nav-icon">⌂</span>
+        Overview
+      </button>
+
+      <button data-section="exams">
+        <span class="nav-icon">📝</span>
+        CBT & Exams
+      </button>
+
+      <button data-section="questions">
+        <span class="nav-icon">❓</span>
+        Question Bank
+      </button>
+
+      <button data-section="subjects">
+        <span class="nav-icon">📚</span>
+        Subjects
+      </button>
+
+      <button data-section="results">
+        <span class="nav-icon">📊</span>
+        Results
+      </button>
+
+      <button data-section="students">
+        <span class="nav-icon">👥</span>
+        Students
+      </button>
+
+      <button data-section="announcements">
+        <span class="nav-icon">📢</span>
+        Announcements
+      </button>
+
+    </nav>
+
+    <div class="nav-title">Account</div>
+
+    <nav class="nav">
+      <button data-section="profile">
+        <span class="nav-icon">👤</span>
+        My Profile
+      </button>
+
+      <button id="logoutBtn">
+        <span class="nav-icon">↪</span>
+        Sign Out
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+
+      <div class="teacher-mini">
+
+        <div class="avatar" id="sideAvatar">
+          T
+        </div>
+
+        <div class="teacher-mini-info">
+          <strong id="sideTeacherName">Teacher</strong>
+          <span>Teacher Account</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+  <!-- MAIN -->
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-left">
+
+        <button class="mobile-menu" id="mobileMenu">
+          ☰
+        </button>
+
+        <div class="page-title">
+          <h1 id="topTitle">Teacher Dashboard</h1>
+          <p id="topSubtitle">Manage your classes, CBTs and students</p>
+        </div>
+
+      </div>
+
+      <div class="top-actions">
+
+        <button class="icon-btn" id="refreshBtn" title="Refresh">
+          ↻
+        </button>
+
+        <button class="icon-btn" id="themeBtn" title="Theme">
+          ◐
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+
+      <section class="section active" id="section-overview">
+
+        <div class="welcome">
+
+          <div>
+            <h2 id="welcomeName">Welcome back 👋</h2>
+
+            <p>
+              Manage your subjects, CBT examinations, question bank,
+              students and academic results from one professional workspace.
+            </p>
+          </div>
+
+          <div class="welcome-badge">
+            <strong id="welcomeExamCount">0</strong>
+            <span>Active Exams</span>
+          </div>
+
+        </div>
+
+
+        <div class="stats">
+
+          <div class="stat">
+            <div class="stat-top">
+              <div>
+                <div class="stat-value" id="statStudents">0</div>
+                <div class="stat-label">Students</div>
+              </div>
+              <div class="stat-icon">👥</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div>
+                <div class="stat-value" id="statSubjects">0</div>
+                <div class="stat-label">Subjects</div>
+              </div>
+              <div class="stat-icon">📚</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div>
+                <div class="stat-value" id="statExams">0</div>
+                <div class="stat-label">CBT Exams</div>
+              </div>
+              <div class="stat-icon">📝</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div>
+                <div class="stat-value" id="statResults">0</div>
+                <div class="stat-label">Results</div>
+              </div>
+              <div class="stat-icon">📊</div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="grid-2">
+
+          <div class="card">
+
+            <div class="card-header">
+              <div>
+                <h3>Recent CBT Exams</h3>
+                <p>Your latest examinations</p>
+              </div>
+
+              <button class="btn btn-light btn-small"
+                      onclick="showSection('exams')">
+                View All
+              </button>
+            </div>
+
+            <div id="recentExams">
+              <div class="loading">
+                <div class="spinner"></div>
+                Loading exams...
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="card-header">
+              <div>
+                <h3>Quick Actions</h3>
+                <p>Common teacher tasks</p>
+              </div>
+            </div>
+
+            <div style="display:grid;gap:10px">
+
+              <button class="btn btn-primary"
+                      onclick="showSection('exams')">
+                ＋ Create CBT Exam
+              </button>
+
+              <button class="btn btn-success"
+                      onclick="showSection('questions')">
+                ＋ Add Questions
+              </button>
+
+              <button class="btn btn-light"
+                      onclick="showSection('announcements')">
+                📢 Create Announcement
+              </button>
+
+              <button class="btn btn-light"
+                      onclick="showSection('results')">
+                📊 View Results
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- EXAMS -->
+
+      <section class="section" id="section-exams">
+
+        <div class="page-header">
+
+          <div>
+            <h2>CBT & Exams</h2>
+            <p>Create and manage computer-based examinations.</p>
+          </div>
+
+          <button class="btn btn-primary" onclick="openExamForm()">
+            ＋ Create Exam
+          </button>
+
+        </div>
+
+
+        <div class="card" id="examFormCard" style="display:none;margin-bottom:20px">
+
+          <div class="card-header">
+            <div>
+              <h3>Create CBT Exam</h3>
+              <p>Create an examination for students in your school.</p>
+            </div>
+          </div>
+
+          <form id="examForm">
+
+            <div class="form-grid">
+
+              <div class="field">
+                <label>Exam Title</label>
+                <input id="examTitle" required
+                       placeholder="e.g. SS1 Physics Mid-Term CBT">
+              </div>
+
+              <div class="field">
+                <label>Subject</label>
+                <select id="examSubject" required>
+                  <option value="">Select subject</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Duration (minutes)</label>
+                <input id="examDuration"
+                       type="number"
+                       min="1"
+                       value="30"
+                       required>
+              </div>
+
+              <div class="field">
+                <label>Status</label>
+                <select id="examStatus">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+
+              <div class="field full">
+                <label>Instructions</label>
+                <textarea id="examInstructions"
+                          placeholder="Enter instructions for students..."></textarea>
+              </div>
+
+            </div>
+
+            <div style="display:flex;gap:8px">
+
+              <button class="btn btn-primary" type="submit">
+                Create Exam
+              </button>
+
+              <button class="btn btn-light"
+                      type="button"
+                      onclick="closeExamForm()">
+                Cancel
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+
+        <div id="examGrid" class="exam-grid">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading exams...
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- QUESTIONS -->
+
+      <section class="section" id="section-questions">
+
+        <div class="page-header">
+
+          <div>
+            <h2>Question Bank</h2>
+            <p>Manage questions used in your CBT examinations.</p>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div>
+              <h3>Question Management</h3>
+              <p>Add questions to an existing examination.</p>
+            </div>
+
+            <button class="btn btn-primary"
+                    onclick="openQuestionForm()">
+              ＋ Add Question
+            </button>
+
+          </div>
+
+
+          <div id="questionForm" style="display:none">
+
+            <form id="questionCreateForm">
+
+              <div class="form-grid">
+
+                <div class="field full">
+                  <label>Exam</label>
+                  <select id="questionExam" required>
+                    <option value="">Select exam</option>
+                  </select>
+                </div>
+
+                <div class="field full">
+                  <label>Question</label>
+                  <textarea id="questionText"
+                            required
+                            placeholder="Enter your question"></textarea>
+                </div>
+
+                <div class="field">
+                  <label>Option A</label>
+                  <input id="option0" required>
+                </div>
+
+                <div class="field">
+                  <label>Option B</label>
+                  <input id="option1" required>
+                </div>
+
+                <div class="field">
+                  <label>Option C</label>
+                  <input id="option2" required>
+                </div>
+
+                <div class="field">
+                  <label>Option D</label>
+                  <input id="option3" required>
+                </div>
+
+                <div class="field">
+                  <label>Correct Answer</label>
+                  <select id="questionAnswer">
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label>Difficulty</label>
+                  <select id="questionDifficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+
+                <div class="field full">
+                  <label>Tags</label>
+                  <input id="questionTags"
+                         placeholder="e.g. Motion, Mechanics, SS1">
+                </div>
+
+              </div>
+
+              <div style="display:flex;gap:8px">
+
+                <button class="btn btn-primary">
+                  Save Question
+                </button>
+
+                <button type="button"
+                        class="btn btn-light"
+                        onclick="closeQuestionForm()">
+                  Cancel
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- SUBJECTS -->
+
+      <section class="section" id="section-subjects">
+
+        <div class="page-header">
+
+          <div>
+            <h2>Subjects</h2>
+            <p>View and manage your school's subjects.</p>
+          </div>
+
+          <button class="btn btn-primary"
+                  onclick="openSubjectForm()">
+            ＋ Add Subject
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <div id="subjectForm"
+               style="display:none;margin-bottom:20px">
+
+            <form id="subjectCreateForm">
+
+              <div class="form-grid">
+
+                <div class="field">
+                  <label>Subject Name</label>
+                  <input id="subjectName"
+                         required
+                         placeholder="e.g. Mathematics">
+                </div>
+
+                <div class="field">
+                  <label>Subject Code</label>
+                  <input id="subjectCode"
+                         placeholder="e.g. MTH">
+                </div>
+
+              </div>
+
+              <button class="btn btn-primary">
+                Save Subject
+              </button>
+
+              <button type="button"
+                      class="btn btn-light"
+                      onclick="closeSubjectForm()">
+                Cancel
+              </button>
+
+            </form>
+
+          </div>
+
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Code</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="subjectsTable">
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- RESULTS -->
+
+      <section class="section" id="section-results">
+
+        <div class="page-header">
+
+          <div>
+            <h2>Student Results</h2>
+            <p>Review CBT submissions and performance.</p>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Exam</th>
+                  <th>Score</th>
+                  <th>Percentage</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+
+              <tbody id="resultsTable">
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- STUDENTS -->
+
+      <section class="section" id="section-students">
+
+        <div class="page-header">
+
+          <div>
+            <h2>Students</h2>
+            <p>Students belonging to your school.</p>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody id="studentsTable">
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ANNOUNCEMENTS -->
+
+      <section class="section" id="section-announcements">
+
+        <div class="page-header">
+
+          <div>
+            <h2>Announcements</h2>
+            <p>Communicate important information to your school.</p>
+          </div>
+
+          <button class="btn btn-primary"
+                  onclick="openAnnouncementForm()">
+            ＋ New Announcement
+          </button>
+
+        </div>
+
+
+        <div class="card"
+             id="announcementForm"
+             style="display:none;margin-bottom:20px">
+
+          <form id="announcementCreateForm">
+
+            <div class="field">
+              <label>Title</label>
+              <input id="announcementTitle"
+                     required
+                     placeholder="Announcement title">
+            </div>
+
+            <div class="field">
+              <label>Message</label>
+              <textarea id="announcementBody"
+                        required
+                        placeholder="Write your announcement..."></textarea>
+            </div>
+
+            <button class="btn btn-primary">
+              Publish Announcement
+            </button>
+
+            <button type="button"
+                    class="btn btn-light"
+                    onclick="closeAnnouncementForm()">
+              Cancel
+            </button>
+
+          </form>
+
+        </div>
+
+
+        <div id="announcementList"></div>
+
+      </section>
+
+
+      <!-- PROFILE -->
+
+      <section class="section" id="section-profile">
+
+        <div class="page-header">
+
+          <div>
+            <h2>My Profile</h2>
+            <p>Your SchoolHub Pro teacher account.</p>
+          </div>
+
+        </div>
+
+
+        <div class="profile-box">
+
+          <div class="profile-cover"></div>
+
+          <div class="profile-body">
+
+            <div class="profile-avatar" id="profileAvatar">
+              T
+            </div>
+
+            <div class="profile-name">
+
+              <h2 id="profileName">
+                Teacher
+              </h2>
+
+              <p id="profileEmail">
+                —
+              </p>
+
+            </div>
+
+
+            <div class="profile-info">
+
+              <div class="info-box">
+                <span>Username</span>
+                <strong id="profileUsername">—</strong>
+              </div>
+
+              <div class="info-box">
+                <span>Role</span>
+                <strong id="profileRole">Teacher</strong>
+              </div>
+
+              <div class="info-box">
+                <span>School</span>
+                <strong id="profileSchool">—</strong>
+              </div>
+
+            </div>
+
+
+            <div style="margin-top:25px">
+
+              <h3 style="font-size:15px;margin-bottom:12px">
+                Profile Picture
+              </h3>
+
+              <form id="profilePictureForm">
+
+                <input type="file"
+                       id="profilePicture"
+                       accept="image/png,image/jpeg,image/webp"
+                       required>
+
+                <button class="btn btn-primary"
+                        style="margin-top:10px">
+                  Upload Picture
+                </button>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+  const state = {
+    me: null,
+    school: null,
+    subjects: [],
+    exams: [],
+    results: [],
+    students: [],
+    announcements: []
+  };
+
+
+  async function api(url, options = {}) {
+
+    const config = {
+      credentials: "include",
+      ...options,
+      headers: {
+        ...(options.body instanceof FormData
+          ? {}
+          : {"Content-Type": "application/json"}),
+        ...(options.headers || {})
+      }
+    };
+
+    const response = await fetch(url, config);
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        data.message ||
+        `Request failed (${response.status})`
+      );
+    }
+
+    return data;
+  }
+
+
+  function toast(message, type = "success") {
+
+    const el = document.getElementById("toast");
+
+    el.textContent = message;
+    el.className = `toast show ${type}`;
+
+    clearTimeout(window.toastTimer);
+
+    window.toastTimer = setTimeout(() => {
+      el.className = "toast";
+    }, 3500);
+  }
+
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  function initials(name) {
+
+    if (!name) return "T";
+
+    return name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(x => x[0])
+      .join("")
+      .toUpperCase();
+  }
+
+
+  function showSection(name) {
+
+    document.querySelectorAll(".section")
+      .forEach(section => section.classList.remove("active"));
+
+    document.querySelectorAll(".nav button[data-section]")
+      .forEach(button => button.classList.remove("active"));
+
+    const section = document.getElementById(`section-${name}`);
+
+    if (section) {
+      section.classList.add("active");
+    }
+
+    const nav = document.querySelector(
+      `.nav button[data-section="${name}"]`
+    );
+
+    if (nav) {
+      nav.classList.add("active");
+    }
+
+    const titles = {
+      overview: ["Teacher Dashboard", "Manage your school workspace"],
+      exams: ["CBT & Exams", "Create and manage examinations"],
+      questions: ["Question Bank", "Build and manage CBT questions"],
+      subjects: ["Subjects", "Manage school subjects"],
+      results: ["Student Results", "Review academic performance"],
+      students: ["Students", "Manage students in your school"],
+      announcements: ["Announcements", "Communicate with students"],
+      profile: ["My Profile", "Manage your teacher profile"]
+    };
+
+    if (titles[name]) {
+      document.getElementById("topTitle").textContent = titles[name][0];
+      document.getElementById("topSubtitle").textContent = titles[name][1];
+    }
+
+    document.getElementById("sidebar").classList.remove("open");
+
+    if (name === "exams") loadExams();
+    if (name === "questions") prepareQuestionExamList();
+    if (name === "subjects") loadSubjects();
+    if (name === "results") loadResults();
+    if (name === "students") loadStudents();
+    if (name === "announcements") loadAnnouncements();
+  }
+
+
+  document.querySelectorAll(".nav button[data-section]")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+        showSection(button.dataset.section);
+      });
+
+    });
+
+
+  document.getElementById("mobileMenu")
+    .addEventListener("click", () => {
+
+      document.getElementById("sidebar")
+        .classList.toggle("open");
+
+    });
+
+
+  document.getElementById("refreshBtn")
+    .addEventListener("click", async () => {
+
+      await loadEverything();
+
+      toast("Dashboard refreshed");
+
+    });
+
+
+  document.getElementById("themeBtn")
+    .addEventListener("click", () => {
+
+      document.body.classList.toggle("dark-preview");
+
+      toast("Theme control ready for platform theme settings");
+
+    });
+
+
+  async function loadMe() {
+
+    const data = await api("/api/me");
+
+    state.me = data.user || data;
+
+    const user = state.me;
+
+    if (
+      user.role !== "teacher" &&
+      user.role !== "school_admin" &&
+      user.role !== "superadmin"
+    ) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    document.getElementById("welcomeName").textContent =
+      `Welcome back, ${user.fullName || "Teacher"} 👋`;
+
+    document.getElementById("sideTeacherName").textContent =
+      user.fullName || "Teacher";
+
+    document.getElementById("profileName").textContent =
+      user.fullName || "Teacher";
+
+    document.getElementById("profileEmail").textContent =
+      user.email || "No email";
+
+    document.getElementById("profileUsername").textContent =
+      user.username || "—";
+
+    document.getElementById("profileRole").textContent =
+      user.role || "teacher";
+
+    updateAvatar(user.profilePicture, user.fullName);
+
+  }
+
+
+  function updateAvatar(url, name) {
+
+    const elements = [
+      document.getElementById("sideAvatar"),
+      document.getElementById("profileAvatar")
+    ];
+
+    elements.forEach(el => {
+
+      if (!el) return;
+
+      if (url) {
+
+        el.innerHTML =
+          `<img src="${escapeHTML(url)}" alt="Profile">`;
+
+      } else {
+
+        el.textContent = initials(name);
+
+      }
+
+    });
+
+  }
+
+
+  async function loadSchool() {
+
+    try {
+
+      const data = await api("/api/school");
+
+      state.school = data.school || data;
+
+      const school = state.school;
+
+      if (!school) return;
+
+      if (school.name) {
+        document.getElementById("brandName").textContent = school.name;
+        document.getElementById("profileSchool").textContent = school.name;
+      }
+
+      if (school.primaryColor) {
+        document.documentElement
+          .style.setProperty("--primary", school.primaryColor);
+      }
+
+      if (school.secondaryColor) {
+        document.documentElement
+          .style.setProperty("--secondary", school.secondaryColor);
+      }
+
+      if (school.logo) {
+
+        document.getElementById("brandLogo").innerHTML =
+          `<img src="${escapeHTML(school.logo)}" alt="School logo">`;
+
+      }
+
+    } catch (error) {
+
+      console.warn("School branding:", error.message);
+
+    }
+
+  }
+
+
+  async function loadSummary() {
+
+    try {
+
+      const data = await api("/api/teacher/summary");
+
+      const summary = data.summary || data;
+
+      document.getElementById("statStudents").textContent =
+        summary.students ?? 0;
+
+      document.getElementById("statSubjects").textContent =
+        summary.subjects ?? 0;
+
+      document.getElementById("statExams").textContent =
+        summary.exams ?? 0;
+
+      document.getElementById("statResults").textContent =
+        summary.results ?? 0;
+
+      document.getElementById("welcomeExamCount").textContent =
+        summary.exams ?? 0;
+
+    } catch (error) {
+
+      console.warn("Summary:", error.message);
+
+    }
+
+  }
+
+
+  async function loadExams() {
+
+    try {
+
+      const data = await api("/api/exams");
+
+      state.exams = Array.isArray(data)
+        ? data
+        : data.exams || [];
+
+      renderExams();
+      renderRecentExams();
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+      document.getElementById("examGrid").innerHTML =
+        `<div class="empty">Unable to load exams.</div>`;
+
+    }
+
+  }
+
+
+  function renderExams() {
+
+    const grid = document.getElementById("examGrid");
+
+    if (!state.exams.length) {
+
+      grid.innerHTML = `
+        <div class="card empty" style="grid-column:1/-1">
+          <div class="empty-icon">📝</div>
+          <strong>No CBT exams yet</strong>
+          <p style="margin-top:7px">
+            Create your first examination.
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+
+    grid.innerHTML = state.exams.map(exam => {
+
+      const status =
+        String(exam.status || "draft").toLowerCase();
+
+      const badge =
+        status === "published"
+          ? `<span class="badge badge-green">Published</span>`
+          : `<span class="badge badge-orange">${escapeHTML(status)}</span>`;
+
+      return `
+        <div class="exam-card">
+
+          <div class="exam-top">
+
+            <div class="exam-icon">
+              📝
+            </div>
+
+            ${badge}
+
+          </div>
+
+          <h3>${escapeHTML(exam.title || "Untitled Exam")}</h3>
+
+          <p>
+            ${escapeHTML(exam.subjectName || "General Subject")}
+          </p>
+
+          <div class="exam-meta">
+
+            <span class="badge badge-blue">
+              ⏱ ${escapeHTML(exam.duration || 0)} mins
+            </span>
+
+            <span class="badge badge-blue">
+              ❓ ${escapeHTML(exam.questionCount || 0)} questions
+            </span>
+
+            <span class="badge badge-blue">
+              👥 ${escapeHTML(exam.submissionCount || 0)} submissions
+            </span>
+
+          </div>
+
+          <div class="exam-actions">
+
+            <button
+              class="btn btn-light btn-small"
+              onclick="loadExamQuestions('${escapeHTML(exam.id)}')">
+              Questions
+            </button>
+
+            <button
+              class="btn btn-danger btn-small"
+              onclick="deleteExam('${escapeHTML(exam.id)}')">
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+
+  }
+
+
+  function renderRecentExams() {
+
+    const box = document.getElementById("recentExams");
+
+    const exams = state.exams.slice(0, 5);
+
+    if (!exams.length) {
+
+      box.innerHTML =
+        `<div class="empty">No examinations created yet.</div>`;
+
+      return;
+
+    }
+
+    box.innerHTML = exams.map(exam => `
+      <div class="activity">
+
+        <div class="activity-icon">📝</div>
+
+        <div style="flex:1">
+
+          <strong>${escapeHTML(exam.title)}</strong>
+
+          <span>
+            ${escapeHTML(exam.subjectName || "Subject")}
+            · ${escapeHTML(exam.questionCount || 0)} questions
+          </span>
+
+        </div>
+
+        <span class="badge ${
+          exam.status === "published"
+            ? "badge-green"
+            : "badge-orange"
+        }">
+          ${escapeHTML(exam.status || "draft")}
+        </span>
+
+      </div>
+    `).join("");
+
+  }
+
+
+  function openExamForm() {
+
+    document.getElementById("examFormCard").style.display = "block";
+
+    loadSubjects();
+
+  }
+
+
+  function closeExamForm() {
+
+    document.getElementById("examFormCard").style.display = "none";
+
+  }
+
+
+  document.getElementById("examForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      try {
+
+        const body = {
+
+          title: document.getElementById("examTitle").value.trim(),
+
+          subjectId:
+            document.getElementById("examSubject").value,
+
+          duration:
+            Number(document.getElementById("examDuration").value),
+
+          instructions:
+            document.getElementById("examInstructions").value.trim(),
+
+          status:
+            document.getElementById("examStatus").value
+
+        };
+
+        await api("/api/exams", {
+          method: "POST",
+          body: JSON.stringify(body)
+        });
+
+        toast("CBT exam created successfully");
+
+        event.target.reset();
+
+        closeExamForm();
+
+        await loadExams();
+        await loadSummary();
+
+      } catch (error) {
+
+        toast(error.message, "error");
+
+      }
+
+    });
+
+
+  async function deleteExam(id) {
+
+    if (!confirm(
+      "Delete this examination and its questions/results?"
+    )) return;
+
+    try {
+
+      await api(`/api/exams/${id}`, {
+        method: "DELETE"
+      });
+
+      toast("Exam deleted");
+
+      await loadExams();
+      await loadSummary();
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  async function loadSubjects() {
+
+    try {
+
+      const data = await api("/api/subjects");
+
+      state.subjects = Array.isArray(data)
+        ? data
+        : data.subjects || [];
+
+      const select =
+        document.getElementById("examSubject");
+
+      select.innerHTML =
+        `<option value="">Select subject</option>` +
+        state.subjects.map(subject => `
+          <option value="${escapeHTML(subject.id)}">
+            ${escapeHTML(subject.name)}
+            ${subject.code
+              ? ` (${escapeHTML(subject.code)})`
+              : ""}
+          </option>
+        `).join("");
+
+      renderSubjects();
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  function renderSubjects() {
+
+    const tbody = document.getElementById("subjectsTable");
+
+    if (!tbody) return;
+
+    if (!state.subjects.length) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" class="empty">
+            No subjects found.
+          </td>
+        </tr>
+      `;
+
+      return;
+
+    }
+
+    tbody.innerHTML = state.subjects.map(subject => `
+
+      <tr>
+
+        <td>
+          <strong>${escapeHTML(subject.name)}</strong>
+        </td>
+
+        <td>
+          ${escapeHTML(subject.code || "—")}
+        </td>
+
+        <td>
+
+          <button
+            class="btn btn-danger btn-small"
+            onclick="deleteSubject('${escapeHTML(subject.id)}')">
+            Delete
+          </button>
+
+        </td>
+
+      </tr>
+
+    `).join("");
+
+  }
+
+
+  function openSubjectForm() {
+
+    document.getElementById("subjectForm").style.display = "block";
+
+  }
+
+
+  function closeSubjectForm() {
+
+    document.getElementById("subjectForm").style.display = "none";
+
+  }
+
+
+  document.getElementById("subjectCreateForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      try {
+
+        await api("/api/subjects", {
+          method: "POST",
+          body: JSON.stringify({
+
+            name:
+              document.getElementById("subjectName").value.trim(),
+
+            code:
+              document.getElementById("subjectCode").value.trim()
+
+          })
+        });
+
+        toast("Subject created");
+
+        event.target.reset();
+
+        closeSubjectForm();
+
+        await loadSubjects();
+
+        await loadSummary();
+
+      } catch (error) {
+
+        toast(error.message, "error");
+
+      }
+
+    });
+
+
+  async function deleteSubject(id) {
+
+    if (!confirm("Delete this subject?")) return;
+
+    try {
+
+      await api(`/api/subjects/${id}`, {
+        method: "DELETE"
+      });
+
+      toast("Subject deleted");
+
+      await loadSubjects();
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  function openQuestionForm() {
+
+    document.getElementById("questionForm").style.display =
+      "block";
+
+    prepareQuestionExamList();
+
+  }
+
+
+  function closeQuestionForm() {
+
+    document.getElementById("questionForm").style.display =
+      "none";
+
+  }
+
+
+  function prepareQuestionExamList() {
+
+    const select = document.getElementById("questionExam");
+
+    select.innerHTML =
+      `<option value="">Select exam</option>` +
+      state.exams.map(exam => `
+        <option value="${escapeHTML(exam.id)}">
+          ${escapeHTML(exam.title)}
+        </option>
+      `).join("");
+
+  }
+
+
+  document.getElementById("questionCreateForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      const examId =
+        document.getElementById("questionExam").value;
+
+      if (!examId) {
+
+        toast("Select an exam", "error");
+        return;
+
+      }
+
+      try {
+
+        await api(`/api/exams/${examId}/questions`, {
+          method: "POST",
+
+          body: JSON.stringify({
+
+            question:
+              document.getElementById("questionText").value.trim(),
+
+            options: [
+
+              document.getElementById("option0").value.trim(),
+
+              document.getElementById("option1").value.trim(),
+
+              document.getElementById("option2").value.trim(),
+
+              document.getElementById("option3").value.trim()
+
+            ],
+
+            answer:
+              Number(
+                document.getElementById("questionAnswer").value
+              ),
+
+            points: 1,
+
+            difficulty:
+              document.getElementById("questionDifficulty").value,
+
+            tags:
+              document.getElementById("questionTags").value.trim()
+
+          })
+
+        });
+
+        toast("Question added successfully");
+
+        event.target.reset();
+
+        closeQuestionForm();
+
+        await loadExams();
+
+      } catch (error) {
+
+        toast(error.message, "error");
+
+      }
+
+    });
+
+
+  async function loadExamQuestions(id) {
+
+    try {
+
+      const data =
+        await api(`/api/exams/${id}/questions`);
+
+      const questions =
+        Array.isArray(data)
+          ? data
+          : data.questions || [];
+
+      showSection("questions");
+
+      toast(
+        `${questions.length} question(s) found for this exam`
+      );
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  async function loadResults() {
+
+    try {
+
+      const data = await api("/api/results");
+
+      state.results = Array.isArray(data)
+        ? data
+        : data.results || [];
+
+      const tbody =
+        document.getElementById("resultsTable");
+
+      if (!state.results.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty">
+              No student results yet.
+            </td>
+          </tr>
+        `;
+
+        return;
+
+      }
+
+
+      tbody.innerHTML = state.results.map(result => {
+
+        const percentage =
+          result.percentage ??
+          (
+            result.total
+              ? Math.round(
+                  (Number(result.score || 0) /
+                    Number(result.total)) * 100
+                )
+              : 0
+          );
+
+        return `
+          <tr>
+
+            <td>
+              <strong>
+                ${escapeHTML(
+                  result.studentName ||
+                  result.student?.fullName ||
+                  "Student"
+                )}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHTML(
+                result.examTitle ||
+                result.exam?.title ||
+                "Exam"
+              )}
+            </td>
+
+            <td>
+              ${escapeHTML(result.score ?? 0)}
+              /
+              ${escapeHTML(result.total ?? 0)}
+            </td>
+
+            <td>
+              <span class="badge badge-blue">
+                ${percentage}%
+              </span>
+            </td>
+
+            <td>
+              ${result.createdAt
+                ? new Date(result.createdAt).toLocaleString()
+                : "—"}
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  async function loadStudents() {
+
+    try {
+
+      const data = await api("/api/users");
+
+      const users = Array.isArray(data)
+        ? data
+        : data.users || [];
+
+      state.students =
+        users.filter(user => user.role === "student");
+
+      const tbody =
+        document.getElementById("studentsTable");
+
+      if (!state.students.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty">
+              No students found.
+            </td>
+          </tr>
+        `;
+
+        return;
+
+      }
+
+      tbody.innerHTML = state.students.map(student => `
+
+        <tr>
+
+          <td>
+            <strong>
+              ${escapeHTML(student.fullName || "Student")}
+            </strong>
+          </td>
+
+          <td>
+            ${escapeHTML(student.username || "—")}
+          </td>
+
+          <td>
+            ${escapeHTML(student.email || "—")}
+          </td>
+
+          <td>
+
+            <span class="badge ${
+              student.active !== false
+                ? "badge-green"
+                : "badge-orange"
+            }">
+
+              ${
+                student.active !== false
+                  ? "Active"
+                  : "Inactive"
+              }
+
+            </span>
+
+          </td>
+
+        </tr>
+
+      `).join("");
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  async function loadAnnouncements() {
+
+    try {
+
+      const data =
+        await api("/api/announcements");
+
+      state.announcements =
+        Array.isArray(data)
+          ? data
+          : data.announcements || [];
+
+      const box =
+        document.getElementById("announcementList");
+
+      if (!state.announcements.length) {
+
+        box.innerHTML = `
+          <div class="card empty">
+            <div class="empty-icon">📢</div>
+            <strong>No announcements yet</strong>
+          </div>
+        `;
+
+        return;
+
+      }
+
+      box.innerHTML =
+        state.announcements.map(item => `
+
+          <div class="announcement">
+
+            <div style="
+              display:flex;
+              justify-content:space-between;
+              gap:15px;
+            ">
+
+              <h4>
+                ${escapeHTML(item.title)}
+              </h4>
+
+              <button
+                class="btn btn-danger btn-small"
+                onclick="deleteAnnouncement('${escapeHTML(item.id)}')">
+                Delete
+              </button>
+
+            </div>
+
+            <p>
+              ${escapeHTML(item.body || item.message || "")}
+            </p>
+
+            <small>
+              ${
+                item.createdAt
+                  ? new Date(item.createdAt).toLocaleString()
+                  : ""
+              }
+            </small>
+
+          </div>
+
+        `).join("");
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  function openAnnouncementForm() {
+
+    document.getElementById("announcementForm")
+      .style.display = "block";
+
+  }
+
+
+  function closeAnnouncementForm() {
+
+    document.getElementById("announcementForm")
+      .style.display = "none";
+
+  }
+
+
+  document.getElementById("announcementCreateForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      try {
+
+        await api("/api/announcements", {
+          method: "POST",
+
+          body: JSON.stringify({
+
+            title:
+              document.getElementById("announcementTitle")
+                .value.trim(),
+
+            body:
+              document.getElementById("announcementBody")
+                .value.trim()
+
+          })
+
+        });
+
+        toast("Announcement published");
+
+        event.target.reset();
+
+        closeAnnouncementForm();
+
+        await loadAnnouncements();
+
+      } catch (error) {
+
+        toast(error.message, "error");
+
+      }
+
+    });
+
+
+  async function deleteAnnouncement(id) {
+
+    if (!confirm("Delete this announcement?")) return;
+
+    try {
+
+      await api(`/api/announcements/${id}`, {
+        method: "DELETE"
+      });
+
+      toast("Announcement deleted");
+
+      await loadAnnouncements();
+
+    } catch (error) {
+
+      toast(error.message, "error");
+
+    }
+
+  }
+
+
+  document.getElementById("profilePictureForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      const file =
+        document.getElementById("profilePicture").files[0];
+
+      if (!file) {
+
+        toast("Choose a picture first", "error");
+        return;
+
+      }
+
+      try {
+
+        const formData = new FormData();
+
+        formData.append("profilePicture", file);
+
+        await api("/api/profile-picture", {
+          method: "POST",
+          body: formData
+        });
+
+        toast("Profile picture updated");
+
+        await loadMe();
+
+      } catch (error) {
+
+        toast(error.message, "error");
+
+      }
+
+    });
+
+
+  document.getElementById("logoutBtn")
+    .addEventListener("click", async () => {
+
+      try {
+
+        await api("/api/logout", {
+          method: "POST"
+        });
+
+      } finally {
+
+        window.location.href = "/login.html";
+
+      }
+
+    });
+
+
+  async function loadEverything() {
+
+    try {
+
+      await Promise.all([
+        loadMe(),
+        loadSchool(),
+        loadSummary(),
+        loadExams(),
+        loadSubjects()
+      ]);
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (
+        String(error.message)
+          .toLowerCase()
+          .includes("unauthorized")
+      ) {
+
+        window.location.href = "/login.html";
+
+      }
+
+    }
+
+  }
+
+
+  loadEverything();
+
+</script>
+
+</body>
+</html>
