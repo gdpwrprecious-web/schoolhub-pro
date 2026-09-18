@@ -1,40 +1,1057 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Dashboard | SchoolHub Pro</title><link rel="stylesheet" href="/style.css"></head><body>
-<div class="mobile-bar"><div class="school-identity"><img data-logo style="display:none"><div class="brand"><span class="brandmark">S</span><span>SchoolHub Pro</span></div></div><button class="icon-btn" onclick="document.querySelector('.side').classList.toggle('mobile-open')">☰</button></div>
-<div class="dash"><aside class="side"><div class="side-brand"><div class="school-identity"><img data-logo style="display:none"><div class="brand"><span class="brandmark">S</span><span>SchoolHub Pro</span></div></div></div><div class="nav"><div class="nav-label">Workspace</div><button class="active" data-section="overview">▦ <span>Overview</span></button><button data-section="users">♙ <span>Users</span></button><button data-section="subjects">▤ <span>Subjects</span></button><button data-section="questionbank">◫ <span>Question Bank</span></button><button data-section="exams">▣ <span>CBT / Exams</span></button><button data-section="announcements">◈ <span>Announcements</span></button><button data-section="results">◉ <span>Results</span></button><div class="nav-label">School</div><button data-section="branding">◈ <span>School Branding</span></button><button data-section="profile">◎ <span>My Profile</span></button><button onclick="logout()">↪ <span>Logout</span></button></div><div class="side-footer">School data is scoped to your school account.</div></aside>
-<main class="main"><header class="top dashboard-top"><div><div class="school-identity"><img data-logo style="display:none"><div><b data-school-name>School</b><div class="small muted" id="meRole"></div></div></div></div><img id="mePic" class="avatar" style="width:42px;height:42px"></header><div class="content"><div id="toast" class="toast"></div>
-<section id="overview" class="section show"><div class="page-head"><div><h1>School dashboard</h1><p>Welcome back, <b id="meName"></b>. Here's your school overview.</p></div><div><button class="btn" onclick="show('users')">+ Add user</button></div></div><div id="stats" class="grid"></div><br><div class="split"><div class="card"><h3>School profile</h3><h2 data-school-name>School</h2><p data-school-motto class="muted"></p><p class="small muted">Use School Branding to change the identity shown across this school's workspace.</p></div><div class="card"><h3>Quick actions</h3><div style="display:grid;gap:10px"><button class="btn" onclick="show('exams')">Create CBT</button><button class="btn alt" onclick="show('announcements')">Post announcement</button></div></div></div></section>
-<section id="users" class="section"><div class="page-head"><div><h2>Users</h2><p>Create and manage users belonging to this school.</p></div></div><div class="card"><form id="userForm"><div class="formgrid"><div class="field"><label>Full name</label><input name="fullName" required></div><div class="field"><label>Username</label><input name="username" required></div><div class="field"><label>Email</label><input name="email" type="email" required></div><div class="field"><label>Password</label><input name="password" required minlength="6"></div><div class="field"><label>Role</label><select name="role"><option value="teacher">Teacher</option><option value="student">Student</option><option value="school_admin">School Admin</option></select></div></div><button class="btn">Create user</button></form></div><br><div class="card tablewrap"><table class="table"><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody id="usersTable"></tbody></table></div></section>
-<section id="subjects" class="section"><div class="page-head"><div><h2>Subjects</h2><p>Organize the academic subjects used by your CBTs.</p></div></div><div class="card"><form id="subjectForm"><div class="formgrid"><div class="field"><label>Subject name</label><input name="name" required></div><div class="field"><label>Subject code</label><input name="code" placeholder="MTH"></div><div class="field full"><label>Description</label><textarea name="description" placeholder="Short description"></textarea></div></div><button class="btn">Add subject</button></form></div><br><div id="subjectList" class="grid"></div></section>
-<section id="questionbank" class="section"><div class="page-head"><div><div class="eyebrow">QUESTION BANK</div><h2>Question Bank</h2><p>Manage, filter and reuse questions across this school's CBTs.</p></div><div class="manager-actions"><button class="btn alt" onclick="openAdminQuestion()">+ Add question</button><button class="btn" onclick="openAdminBulk()">Bulk upload</button></div></div><div class="grid question-bank-stats"><div class="card stat"><span class="stat-label">Total questions</span><b id="bankTotal">0</b></div><div class="card stat"><span class="stat-label">Easy</span><b id="bankEasy">0</b></div><div class="card stat"><span class="stat-label">Medium</span><b id="bankMedium">0</b></div><div class="card stat"><span class="stat-label">Hard</span><b id="bankHard">0</b></div></div><br><div class="card bank-toolbar"><div class="formgrid"><div class="field"><label>Search</label><input id="bankSearch" placeholder="Search question, tag or CBT..."></div><div class="field"><label>Subject</label><select id="bankSubject"></select></div><div class="field"><label>Difficulty</label><select id="bankDifficulty"><option value="">All difficulties</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></div><div class="field"><label>Tag</label><input id="bankTag" placeholder="e.g. Grammar"></div></div><button class="btn alt small" onclick="resetAdminBank()">Reset filters</button></div><br><div id="questionBankList" class="question-bank-list"></div></section>
-<section id="exams" class="section"><div class="page-head"><div><h2>CBT & Question Bank</h2><p>Create examinations, publish them and add multiple-choice questions.</p></div></div><div class="card"><form id="examForm"><div class="formgrid"><div class="field"><label>Exam title</label><input name="title" required placeholder="First Term Mathematics CBT"></div><div class="field"><label>Subject</label><select name="subjectId" id="examSubject"></select></div><div class="field"><label>Duration (minutes)</label><input name="duration" type="number" min="1" value="30"></div><div class="field"><label>Status</label><select name="status"><option value="draft">Draft</option><option value="published">Published</option></select></div><div class="field full"><label>Instructions</label><textarea name="instructions" placeholder="Read each question carefully..."></textarea></div></div><button class="btn">Create exam</button></form></div><br><div id="examList"></div></section>
-<section id="announcements" class="section"><div class="page-head"><div><h2>Announcements</h2><p>Share important school information with your users.</p></div></div><div class="card"><form id="annForm"><div class="field"><label>Title</label><input name="title" required></div><div class="field"><label>Message</label><textarea name="body" required></textarea></div><button class="btn">Publish announcement</button></form></div><br><div id="annList"></div></section>
-<section id="results" class="section"><div class="page-head"><div><h2>Results</h2><p>Review submitted CBT results from students in this school.</p></div></div><div class="card tablewrap"><table class="table"><thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Percentage</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div></section>
-<section id="branding" class="section"><div class="page-head"><div><h2>School Branding</h2><p>These settings apply to this school only.</p></div></div><div class="card"><form id="brandForm"><div class="formgrid"><div class="field"><label>School name</label><input id="bname"></div><div class="field"><label>Motto</label><input id="bmotto"></div><div class="field"><label>Primary color</label><input id="bprimary" type="color"></div><div class="field"><label>Secondary color</label><input id="bsecondary" type="color"></div><div class="field"><label>Theme</label><select id="btheme"><option>light</option><option>dark</option></select></div></div><button class="btn">Save branding</button></form><hr><form id="logoForm"><div class="field"><label>School logo</label><input name="logo" type="file" accept="image/png,image/jpeg,image/webp"></div><button class="btn alt">Upload logo</button></form></div></section>
-<section id="profile" class="section"><div class="page-head"><div><h2>My Profile</h2><p>Manage your administrator profile picture.</p></div></div><div class="card profile-card"><img id="profilePreview" class="avatar"><div><h3 id="profileName"></h3><p id="profileText" class="muted"></p><form id="profileForm"><input name="photo" type="file" accept="image/png,image/jpeg,image/webp"><br><br><button class="btn">Upload profile picture</button></form></div></div></section>
-</div></main></div><div id="adminQuestionModal" class="modal hidden"><div class="modal-card wide"><div class="modal-head"><div><div class="eyebrow">QUESTION BANK</div><h3 id="adminQuestionTitle">Add question</h3></div><button class="icon-btn" onclick="closeAdminQuestion()">×</button></div><form id="adminQuestionForm"><input type="hidden" name="id"><div class="field"><label>CBT</label><select name="examId" id="adminQuestionExam" required></select></div><div class="field"><label>Question</label><textarea name="question" required></textarea></div><div class="option-grid"><div class="field"><label>Option A</label><input name="o0" required></div><div class="field"><label>Option B</label><input name="o1" required></div><div class="field"><label>Option C</label><input name="o2" required></div><div class="field"><label>Option D</label><input name="o3" required></div></div><div class="formgrid"><div class="field"><label>Correct answer</label><select name="answer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div><div class="field"><label>Points</label><input name="points" type="number" min="1" value="1"></div><div class="field"><label>Difficulty</label><select name="difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div><div class="field"><label>Tags</label><input name="tags" placeholder="Grammar, WAEC"></div><div class="field full"><label>Explanation</label><textarea name="explanation"></textarea></div></div><button class="btn">Save question</button></form></div></div><div id="adminBulkModal" class="modal hidden"><div class="modal-card wide"><div class="modal-head"><div><div class="eyebrow">BULK IMPORT</div><h3>Upload question bank</h3></div><button class="icon-btn" onclick="closeAdminBulk()">×</button></div><div class="field"><label>CBT</label><select id="adminBulkExam"></select></div><div class="field"><label>JSON questions</label><textarea id="adminBulkJson" rows="12" placeholder='[{"question":"2 + 2 = ?","options":["3","4","5","6"],"answer":1,"points":1,"difficulty":"easy","tags":"Math"}]'></textarea></div><div class="modal-actions"><button class="btn alt" onclick="closeAdminBulk()">Cancel</button><button class="btn" onclick="submitAdminBulk()">Import questions</button></div></div></div>
 
-<script src="/app.js"></script><script>
-function show(id){document.querySelector('[data-section="'+id+'"]')?.click();document.querySelector('.side')?.classList.remove('mobile-open')}
-async function load(){if(!await boot()){location='/login.html';return}nav();profileName.textContent=ME.fullName;profileText.textContent=ME.fullName+' · '+ME.email;if(ME.profilePicture)profilePreview.src=ME.profilePicture;loadStats();loadUsers();loadSubjects();loadExams();loadAnnouncements();loadResults();fillBrand();loadQuestionBank()}
-async function loadStats(){const d=await api('/api/admin/summary');stats.innerHTML=Object.entries(d).map(([k,v])=>`<div class="card stat"><span class="stat-label">${k}</span><b>${v}</b></div>`).join('')}
-async function loadUsers(){const d=await api('/api/users');usersTable.innerHTML=d.map(u=>`<tr><td>${u.fullName}</td><td>${u.username}</td><td><span class="pill">${u.role}</span></td><td>${u.active?'Active':'Disabled'}</td><td><button class="btn danger small" onclick="delUser('${u.id}')">Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No users yet.</td></tr>'}
-async function delUser(id){if(confirm('Delete this user?')){await api('/api/users/'+id,{method:'DELETE'});loadUsers();loadStats()}}userForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/users',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(userForm)))});userForm.reset();toast('User created');loadUsers();loadStats()}catch(x){toast(x.message)}};
-async function loadSubjects(){const a=await api('/api/subjects');bankSubject.innerHTML='<option value="">All subjects</option>'+a.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');subjectList.innerHTML=a.map(x=>`<div class="card"><h3>${x.name}</h3><span class="pill">${x.code||'SUBJECT'}</span><p class="muted">${x.description||'No description provided.'}</p><button class="btn danger small" onclick="delSubject('${x.id}')">Delete</button></div>`).join('')||'<div class="empty" style="grid-column:1/-1">No subjects yet.</div>';examSubject.innerHTML=a.map(x=>`<option value="${x.id}">${x.name}</option>`).join('')}
-subjectForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/subjects',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(subjectForm)))});subjectForm.reset();toast('Subject added');loadSubjects();loadStats()}catch(x){toast(x.message)}};async function delSubject(id){if(confirm('Delete subject?')){await api('/api/subjects/'+id,{method:'DELETE'});loadSubjects()}}
-async function loadExams(){const a=await api('/api/exams');examList.innerHTML=a.map(x=>`<div class="card" style="margin-bottom:12px"><div class="page-head"><div><h3>${x.title}</h3><p>${x.questionCount} questions · ${x.duration} minutes</p></div><span class="pill">${x.status}</span></div><p class="muted">${x.instructions||'No instructions provided.'}</p><button class="btn alt small" onclick="addQuestion('${x.id}')">+ Add question</button> <button class="btn small" onclick="toggleExam('${x.id}','${x.status}')">${x.status==='published'?'Unpublish':'Publish'}</button></div>`).join('')||'<div class="empty">No exams created yet.</div>'}
-examForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/exams',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(examForm)))});examForm.reset();toast('Exam created');loadExams();loadStats()}catch(x){toast(x.message)}};async function toggleExam(id,status){await api('/api/exams/'+id,{method:'PUT',body:JSON.stringify({status:status==='published'?'draft':'published'})});loadExams()}async function addQuestion(id){const q=prompt('Question text');if(!q)return;const opts=prompt('Enter 4 options separated by |','Option A|Option B|Option C|Option D').split('|');const ans=Number(prompt('Correct option number (0-3)','0'));await api('/api/exams/'+id+'/questions',{method:'POST',body:JSON.stringify({question:q,options:opts,answer:ans,points:1})});loadExams();toast('Question added')}
-async function loadQuestionBank(){try{const qs=await api('/api/question-bank');bankTotal.textContent=qs.length;bankEasy.textContent=qs.filter(q=>(q.difficulty||'medium')==='easy').length;bankMedium.textContent=qs.filter(q=>(q.difficulty||'medium')==='medium').length;bankHard.textContent=qs.filter(q=>(q.difficulty||'medium')==='hard').length;renderAdminBank(qs)}catch(e){questionBankList.innerHTML='<div class="error">'+escapeHtml(e.message)+'</div>'}}
-let bankTimer;async function filterAdminBank(){clearTimeout(bankTimer);bankTimer=setTimeout(async()=>{try{const p=new URLSearchParams({search:bankSearch.value,subjectId:bankSubject.value,difficulty:bankDifficulty.value,tag:bankTag.value});renderAdminBank(await api('/api/question-bank?'+p.toString()))}catch(e){toast(e.message)}},180)}
-function renderAdminBank(qs){questionBankList.innerHTML=qs.map((q,i)=>`<article class="card bank-question-card"><div class="bank-question-main"><div class="question-index">${i+1}</div><div><div class="bank-question-meta"><span class="pill">${escapeHtml(q.subject)}</span><span class="pill">${escapeHtml(q.examTitle)}</span><span class="difficulty-${escapeHtml(q.difficulty||'medium')}">${escapeHtml(q.difficulty||'medium')}</span></div><h3>${escapeHtml(q.question)}</h3><div class="bank-options">${q.options.map((o,j)=>`<span class="${Number(q.answer)===j?'correct-option':''}"><b>${String.fromCharCode(65+j)}</b> ${escapeHtml(o)}</span>`).join('')}</div><div class="small muted">${q.tags?`Tags: ${escapeHtml(q.tags)} · `:''}${q.points||1} point(s)${q.explanation?` · Explanation: ${escapeHtml(q.explanation)}`:''}</div></div></div><div class="question-actions"><button class="btn alt small" onclick='editAdminQuestion(${JSON.stringify(q).replace(/</g,"\u003c")})'>Edit</button><button class="btn danger small" onclick="deleteAdminQuestion('${q.id}')">Delete</button></div></article>`).join('')||'<div class="empty card">No questions match your filters.</div>'}
-function resetAdminBank(){bankSearch.value='';bankSubject.value='';bankDifficulty.value='';bankTag.value='';loadQuestionBank()}
-async function openAdminQuestion(q=null){const exams=await api('/api/exams');if(!exams.length)return toast('Create a CBT first');adminQuestionExam.innerHTML=exams.map(x=>`<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('');adminQuestionForm.reset();document.querySelector('#adminQuestionForm [name="id"]').value='';document.getElementById('adminQuestionTitle').textContent='Add question';if(q)editAdminQuestion(q);document.getElementById('adminQuestionModal').classList.remove('hidden')}
-function editAdminQuestion(q){adminQuestionExam.value=q.examId;const f=adminQuestionForm;f.id.value=q.id;f.examId.value=q.examId;f.question.value=q.question;(q.options||[]).forEach((o,i)=>f['o'+i].value=o||'');f.answer.value=q.answer;f.points.value=q.points||1;f.difficulty.value=q.difficulty||'medium';f.tags.value=q.tags||'';f.explanation.value=q.explanation||'';document.getElementById('adminQuestionTitle').textContent='Edit question';document.getElementById('adminQuestionModal').classList.remove('hidden')}
-function closeAdminQuestion(){document.getElementById('adminQuestionModal').classList.add('hidden')}
-adminQuestionForm.onsubmit=async e=>{e.preventDefault();const f=new FormData(adminQuestionForm);const payload={question:f.get('question'),options:[f.get('o0'),f.get('o1'),f.get('o2'),f.get('o3')],answer:Number(f.get('answer')),points:Number(f.get('points'))||1,difficulty:f.get('difficulty'),tags:f.get('tags'),explanation:f.get('explanation')};try{const id=f.get('id');if(id)await api('/api/questions/'+id,{method:'PUT',body:JSON.stringify(payload)});else await api('/api/exams/'+f.get('examId')+'/questions',{method:'POST',body:JSON.stringify(payload)});closeAdminQuestion();await loadQuestionBank();await loadExams();await loadStats();toast(id?'Question updated':'Question added')}catch(e){toast(e.message)}};
-async function deleteAdminQuestion(id){if(!confirm('Delete this question?'))return;try{await api('/api/questions/'+id,{method:'DELETE'});await loadQuestionBank();await loadExams();await loadStats();toast('Question deleted')}catch(e){toast(e.message)}}
-async function openAdminBulk(){const exams=await api('/api/exams');if(!exams.length)return toast('Create a CBT first');adminBulkExam.innerHTML='<option value="">Select CBT</option>'+exams.map(x=>`<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('');adminBulkJson.value='';adminBulkModal.classList.remove('hidden')}function closeAdminBulk(){adminBulkModal.classList.add('hidden')}async function submitAdminBulk(){try{if(!adminBulkExam.value)return toast('Select a CBT');const questions=JSON.parse(adminBulkJson.value);if(!Array.isArray(questions))throw new Error('JSON must be an array');const r=await api('/api/question-bank/bulk',{method:'POST',body:JSON.stringify({examId:adminBulkExam.value,questions})});closeAdminBulk();toast(`${r.created} question(s) imported`);await loadQuestionBank();await loadExams();await loadStats()}catch(e){toast(e.message)}}
-[bankSearch,bankSubject,bankDifficulty,bankTag].forEach(el=>el?.addEventListener('input',filterAdminBank));
-function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | SchoolHub Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#2563eb;--secondary:#16a34a;--bg:#07111f;--panel:#0d1a2d;
+  --panel2:#111f34;--text:#f8fafc;--muted:#94a3b8;--border:rgba(255,255,255,.09);
+  --danger:#ef4444;--radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;position:fixed;inset:0 auto 0 0;background:#081321;border-right:1px solid var(--border);padding:22px 15px;display:flex;flex-direction:column;z-index:20;transition:.3s}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 27px;font-weight:800;font-size:18px}
+.brand-icon{height:40px;width:40px;border-radius:13px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:grid;place-items:center;font-weight:900;font-size:21px;box-shadow:0 8px 25px #2563eb44}
+.school-mini{padding:13px;border:1px solid var(--border);border-radius:13px;background:#ffffff06;margin-bottom:22px;display:flex;gap:10px;align-items:center}
+.school-logo{width:36px;height:36px;border-radius:10px;object-fit:cover;background:#1e293b;display:grid;place-items:center;overflow:hidden;flex-shrink:0}
+.school-logo img{width:100%;height:100%;object-fit:cover}
+.school-mini strong{font-size:12px;display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.school-mini small{font-size:10px;color:var(--muted)}
+.nav-label{font-size:10px;color:#64748b;letter-spacing:1.5px;font-weight:800;padding:10px 12px}
+.nav{display:grid;gap:5px}
+.nav button{display:flex;align-items:center;gap:13px;width:100%;border:0;background:transparent;color:#94a3b8;padding:13px 14px;border-radius:11px;text-align:left;font-size:13px;font-weight:600;transition:.2s}
+.nav button:hover,.nav button.active{background:linear-gradient(90deg,#2563eb2b,#2563eb08);color:#fff}
+.nav button.active{box-shadow:inset 3px 0 var(--primary)}
+.nav-icon{width:21px;text-align:center;font-size:17px}
+.sidebar-bottom{margin-top:auto}
+.sidebar-bottom button{width:100%}
+.main{margin-left:260px;width:calc(100% - 260px);min-width:0}
+.topbar{height:76px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;background:#07111fe8;backdrop-filter:blur(16px);z-index:10}
+.top-left{display:flex;align-items:center;gap:13px}
+.topbar h2{font-size:17px}
+.topbar p{font-size:11px;color:var(--muted);margin-top:4px}
+.top-actions{display:flex;align-items:center;gap:12px}
+.profile-button{display:flex;align-items:center;gap:10px;background:transparent;border:0;color:white;text-align:left}
+.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#1e293b;border:1px solid var(--border);display:grid;place-items:center;font-weight:800}
+.profile-button strong{display:block;font-size:12px}
+.profile-button small{color:var(--muted);font-size:10px}
+.menu-toggle{display:none;background:transparent;border:0;color:white;font-size:23px}
+.content{padding:30px;max-width:1600px;margin:auto}
+.page{display:none;animation:fadein .3s ease}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.page-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:25px;flex-wrap:wrap}
+.page-heading h1{font-size:27px;letter-spacing:-1px;margin-bottom:7px}
+.page-heading p{font-size:13px;color:var(--muted);line-height:1.6}
+.btn{border:1px solid transparent;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#3b82f6);color:white;box-shadow:0 8px 22px #2563eb28}
+.btn-green{background:linear-gradient(135deg,var(--secondary),#22c55e);color:white}
+.btn-ghost{background:#ffffff08;border-color:var(--border);color:#e2e8f0}
+.btn-danger{background:#ef44441a;border-color:#ef444433;color:#fca5a5}
+.btn-sm{padding:7px 10px;font-size:11px}
+.grid{display:grid;gap:17px}
+.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:23px}
+.card{background:linear-gradient(145deg,#102039bd,#0b1728e8);border:1px solid var(--border);border-radius:var(--radius);padding:22px;min-width:0;box-shadow:0 12px 35px #00000012}
+.stat-card{position:relative;overflow:hidden}
+.stat-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:#2563eb13;right:-35px;top:-35px}
+.stat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}
+.stat-icon{height:39px;width:39px;border-radius:12px;background:#2563eb20;display:grid;place-items:center;font-size:18px}
+.stat-label{font-size:12px;color:var(--muted)}
+.stat-number{font-size:29px;font-weight:800;letter-spacing:-1px}
+.stat-foot{font-size:10px;color:#64748b;margin-top:7px}
+.section-grid{grid-template-columns:1.3fr 1fr}
+.card-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.card-title h3{font-size:15px}
+.card-title p{font-size:11px;color:var(--muted);margin-top:5px}
+.chart{height:180px;display:flex;align-items:flex-end;gap:12px;padding:12px 3px 0;border-bottom:1px solid var(--border)}
+.chart-col{height:100%;flex:1;display:flex;align-items:center;justify-content:flex-end;flex-direction:column;gap:9px}
+.chart-bar{width:min(100%,34px);border-radius:7px 7px 2px 2px;background:linear-gradient(to top,var(--primary),#60a5fa);min-height:4px;animation:grow .8s ease}
+.chart-col span{font-size:10px;color:#64748b}
+@keyframes grow{from{height:0}to{height:var(--h)}}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick-action{padding:16px;border-radius:13px;border:1px solid var(--border);background:#ffffff05;color:white;text-align:left;transition:.2s}
+.quick-action:hover{border-color:#3b82f677;background:#2563eb12;transform:translateY(-3px)}
+.quick-action b{display:block;font-size:12px;margin:10px 0 5px}
+.quick-action span{font-size:11px;color:var(--muted);line-height:1.5}
+.quick-icon{font-size:21px}
+.table-card{padding:0;overflow:hidden}
+.table-head{padding:21px 22px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th,td{text-align:left;padding:14px 20px;border-top:1px solid var(--border);font-size:12px}
+th{color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.7px;background:#ffffff03}
+td{color:#cbd5e1}
+tbody tr:hover{background:#ffffff04}
+.user-cell{display:flex;align-items:center;gap:10px}
+.user-cell .avatar{width:32px;height:32px;font-size:11px}
+.user-cell strong{display:block;color:#f8fafc;font-size:12px}
+.user-cell small{display:block;color:#64748b;font-size:10px;margin-top:4px}
+.badge{display:inline-flex;padding:5px 8px;border-radius:99px;font-size:10px;font-weight:700;background:#2563eb1c;color:#93c5fd}
+.badge.green{background:#16a34a1c;color:#86efac}
+.badge.red{background:#ef44441c;color:#fca5a5}
+.badge.gray{background:#64748b24;color:#cbd5e1}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.input,.select,.textarea{width:100%;border:1px solid var(--border);background:#081525;color:#f8fafc;border-radius:10px;padding:12px 13px;font-size:12px;outline:none;transition:.2s}
+.input:focus,.select:focus,.textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #2563eb1a}
+.input::placeholder,.textarea::placeholder{color:#64748b}
+.select option{background:#0d1a2d}
+.textarea{resize:vertical;min-height:100px;line-height:1.6}
+.field{display:grid;gap:8px;margin-bottom:15px}
+.field label{font-size:11px;color:#cbd5e1;font-weight:700}
+.field small{font-size:10px;color:#64748b;line-height:1.5}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .field{margin:0}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.empty{text-align:center;color:#64748b;padding:35px;font-size:12px}
+.notice{padding:13px 15px;border-radius:11px;background:#2563eb14;border:1px solid #2563eb30;color:#bfdbfe;font-size:12px;line-height:1.6;margin-bottom:18px}
+.notice.warning{background:#f59e0b12;border-color:#f59e0b30;color:#fcd34d}
+.branding-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.brand-preview{min-height:280px;border-radius:18px;padding:24px;background:linear-gradient(135deg,var(--primary),#0b1729 75%);border:1px solid #ffffff18;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
+.brand-preview:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:#ffffff0c;right:-80px;top:-80px}
+.preview-logo{height:65px;width:65px;border-radius:17px;background:#ffffff20;display:grid;place-items:center;overflow:hidden;font-size:25px;font-weight:900;border:1px solid #ffffff30}
+.preview-logo img{height:100%;width:100%;object-fit:cover}
+.brand-preview h2{font-size:26px;position:relative;z-index:1}
+.brand-preview p{font-size:12px;color:#e2e8f0;margin-top:8px;position:relative;z-index:1}
+.preview-chip{font-size:10px;background:#ffffff18;padding:8px 11px;border-radius:9px;align-self:flex-start}
+.upload-box{border:1px dashed #475569;border-radius:13px;padding:17px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.upload-box input{max-width:100%;font-size:11px;color:var(--muted)}
+.color-row{display:flex;gap:10px;align-items:center}
+.color-row input[type=color]{width:43px;height:40px;border:0;padding:0;background:transparent}
+.modal-backdrop{position:fixed;inset:0;background:#0009;backdrop-filter:blur(5px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(650px,100%);max-height:90vh;overflow:auto;background:#0c192b;border:1px solid var(--border);border-radius:20px;padding:25px;box-shadow:0 30px 100px #0008;animation:fadein .2s}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-head h2{font-size:19px}
+.close{background:#ffffff0a;border:1px solid var(--border);color:white;border-radius:9px;width:34px;height:34px;font-size:20px}
+.toast{position:fixed;right:22px;bottom:22px;z-index:200;padding:14px 18px;border:1px solid var(--border);border-radius:12px;background:#102039;color:white;box-shadow:0 15px 40px #0006;font-size:12px;max-width:min(400px,90vw);display:none}
+.toast.show{display:block;animation:fadein .2s}
+.toast.error{border-color:#ef444466}
+.loading{opacity:.6;pointer-events:none}
+.question-item{padding:17px;border:1px solid var(--border);border-radius:13px;background:#ffffff03;margin-bottom:10px}
+.question-item h4{font-size:13px;line-height:1.6;margin-bottom:10px}
+.question-options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.question-options span{font-size:11px;color:#94a3b8;background:#ffffff05;padding:8px;border-radius:7px}
+.question-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.tab{border:1px solid var(--border);background:#ffffff05;color:#94a3b8;border-radius:9px;padding:9px 12px;font-size:11px;font-weight:700}
+.tab.active{background:#2563eb24;color:#bfdbfe;border-color:#2563eb55}
+.mobile-overlay{display:none}
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.section-grid{grid-template-columns:1fr}.branding-layout{grid-template-columns:1fr}}
+@media(max-width:760px){
+ .sidebar{transform:translateX(-100%);width:270px}.sidebar.open{transform:translateX(0)}
+ .mobile-overlay.show{display:block;position:fixed;inset:0;background:#0008;z-index:15}
+ .main{margin-left:0;width:100%}.menu-toggle{display:block}
+ .topbar{padding:0 17px;height:68px}.content{padding:22px 15px}
+ .topbar h2{font-size:15px}.topbar p{display:none}
+ .profile-button strong,.profile-button small{display:none}
+ .page-heading h1{font-size:24px}.stats-grid{gap:10px}.card{padding:17px}
+ .stat-number{font-size:25px}.form-grid{grid-template-columns:1fr}
+ .table-head{padding:17px}.quick-grid{gap:8px}
+}
+@media(max-width:430px){.stats-grid{grid-template-columns:1fr 1fr}.stat-card{padding:14px}.stat-icon{width:32px;height:32px}.stat-number{font-size:22px}.stat-label{font-size:10px}.page-heading .btn{width:100%}.question-options{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="/"><span class="brand-icon">S</span><span id="brandName">SchoolHub Pro</span></a>
+    <div class="school-mini">
+      <div class="school-logo" id="sideLogo">🏫</div>
+      <div><strong id="sideSchoolName">Your School</strong><small id="sideRole">School Administrator</small></div>
+    </div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav">
+      <button class="active" data-page="overview"><span class="nav-icon">▦</span>Overview</button>
+      <button data-page="users"><span class="nav-icon">♙</span>User Management</button>
+      <button data-page="subjects"><span class="nav-icon">▤</span>Subjects</button>
+      <button data-page="exams"><span class="nav-icon">✎</span>CBT Examinations</button>
+      <button data-page="questions"><span class="nav-icon">☷</span>Question Bank</button>
+      <button data-page="announcements"><span class="nav-icon">◉</span>Announcements</button>
+      <button data-page="results"><span class="nav-icon">▥</span>Results</button>
+    </nav>
+    <div class="nav-label">SCHOOL SETTINGS</div>
+    <nav class="nav">
+      <button data-page="branding"><span class="nav-icon">🎨</span>School Branding</button>
+      <button data-page="profile"><span class="nav-icon">⚙</span>My Profile</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="nav" id="logoutBtn" style="display:block">
+        <span style="display:flex;gap:13px;align-items:center;padding:13px;color:#fca5a5;font-size:13px;font-weight:700">↪ Sign out</span>
+      </button>
+    </div>
+  </aside>
+  <div class="mobile-overlay" id="overlay"></div>
 
-async function loadAnnouncements(){const a=await api('/api/announcements');annList.innerHTML=a.map(x=>`<div class="card" style="margin-bottom:12px"><h3>${x.title}</h3><p>${x.body}</p><div class="small muted">${new Date(x.createdAt).toLocaleString()}</div></div>`).join('')||'<div class="empty">No announcements yet.</div>'}annForm.onsubmit=async e=>{e.preventDefault();await api('/api/announcements',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(annForm)))});annForm.reset();loadAnnouncements();toast('Announcement published')};async function loadResults(){const a=await api('/api/results');resultTable.innerHTML=a.map(x=>`<tr><td>${x.student}</td><td>${x.exam}</td><td>${x.score}/${x.total}</td><td>${x.percentage}%</td><td>${new Date(x.submittedAt).toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="5">No results yet.</td></tr>'}
-function fillBrand(){const s=SCHOOL;if(!s)return;bname.value=s.name;bmotto.value=s.motto||'';bprimary.value=s.primaryColor||'#2563eb';bsecondary.value=s.secondaryColor||'#16a34a';btheme.value=s.theme||'light'}brandForm.onsubmit=async e=>{e.preventDefault();const d=await api('/api/school/branding',{method:'PUT',body:JSON.stringify({name:bname.value,motto:bmotto.value,primaryColor:bprimary.value,secondaryColor:bsecondary.value,theme:btheme.value})});SCHOOL=d.school;applyBrand(d.school);toast('Branding updated')};logoForm.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/school/logo',{method:'POST',body:new FormData(logoForm),credentials:'include'});const d=await r.json();if(!r.ok)return toast(d.error);SCHOOL=d.school;applyBrand(d.school);toast('Logo uploaded')};profileForm.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/profile-picture',{method:'POST',body:new FormData(profileForm),credentials:'include'});const d=await r.json();if(!r.ok)return toast(d.error);profilePreview.src=d.user.profilePicture;mePic.src=d.user.profilePicture;toast('Profile picture updated')};load();</script></body></html>
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button>
+        <div><h2 id="topTitle">Overview</h2><p id="todayText">Your school at a glance</p></div>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh</button>
+        <button class="profile-button" data-goto="profile">
+          <img class="avatar" id="topAvatar" alt="Profile" style="display:none">
+          <span class="avatar" id="topAvatarFallback">A</span>
+          <span><strong id="topName">Administrator</strong><small id="topEmail">School Admin</small></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- OVERVIEW -->
+      <section class="page active" id="page-overview">
+        <div class="page-heading">
+          <div><h1>Welcome back, <span id="welcomeName">Admin</span> 👋</h1><p>Here's what's happening across your school today.</p></div>
+          <button class="btn btn-primary" data-goto="users">＋ Manage Users</button>
+        </div>
+        <div class="grid stats-grid">
+          <div class="card stat-card"><div class="stat-top"><span class="stat-label">Total Students</span><span class="stat-icon">🎓</span></div><div class="stat-number" id="statStudents">—</div><div class="stat-foot">Registered student accounts</div></div>
+          <div class="card stat-card"><div class="stat-top"><span class="stat-label">Teachers</span><span class="stat-icon">👨‍🏫</span></div><div class="stat-number" id="statTeachers">—</div><div class="stat-foot">Teaching staff accounts</div></div>
+          <div class="card stat-card"><div class="stat-top"><span class="stat-label">CBT Examinations</span><span class="stat-icon">📝</span></div><div class="stat-number" id="statExams">—</div><div class="stat-foot">Examinations in your school</div></div>
+          <div class="card stat-card"><div class="stat-top"><span class="stat-label">Results Submitted</span><span class="stat-icon">📊</span></div><div class="stat-number" id="statResults">—</div><div class="stat-foot">Saved examination submissions</div></div>
+        </div>
+        <div class="grid section-grid">
+          <div class="card">
+            <div class="card-title"><div><h3>School Activity</h3><p>Examination submissions by recent records</p></div><span class="badge">Overview</span></div>
+            <div class="chart" id="overviewChart">
+              <div class="chart-col"><div class="chart-bar" style="--h:35%;height:35%"></div><span>Mon</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:58%;height:58%"></div><span>Tue</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:44%;height:44%"></div><span>Wed</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:76%;height:76%"></div><span>Thu</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:60%;height:60%"></div><span>Fri</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:90%;height:90%"></div><span>Sat</span></div>
+              <div class="chart-col"><div class="chart-bar" style="--h:68%;height:68%"></div><span>Sun</span></div>
+            </div>
+            <p style="font-size:10px;color:#64748b;margin-top:14px">Illustrative visual only. Your server summary provides the live counts above.</p>
+          </div>
+          <div class="card">
+            <div class="card-title"><div><h3>Quick Actions</h3><p>Get common tasks done faster</p></div></div>
+            <div class="quick-grid">
+              <button class="quick-action" data-goto="users"><span class="quick-icon">👥</span><b>Create User</b><span>Add a teacher or student</span></button>
+              <button class="quick-action" data-goto="exams"><span class="quick-icon">📝</span><b>Create CBT</b><span>Set up an examination</span></button>
+              <button class="quick-action" data-goto="questions"><span class="quick-icon">☷</span><b>Question Bank</b><span>Add or import questions</span></button>
+              <button class="quick-action" data-goto="branding"><span class="quick-icon">🎨</span><b>Customize School</b><span>Logo, colors and theme</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <div class="card-title"><div><h3>Recent Examinations</h3><p>Latest CBT exams in your school</p></div><button class="btn btn-ghost btn-sm" data-goto="exams">View all →</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Examination</th><th>Subject</th><th>Questions</th><th>Status</th></tr></thead><tbody id="recentExams"><tr><td colspan="4" class="empty">Loading examinations…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="page" id="page-users">
+        <div class="page-heading"><div><h1>User Management</h1><p>Create, search and manage accounts belonging to your school.</p></div><button class="btn btn-primary" id="addUserBtn">＋ Create User</button></div>
+        <div class="notice">School administrators can manage school users. Superadmin access depends on your server's role permissions.</div>
+        <div class="card table-card">
+          <div class="table-head"><div><h3 style="font-size:15px">School Users</h3><p style="font-size:11px;color:var(--muted);margin-top:5px" id="userCount">Loading users…</p></div><div class="toolbar"><input class="input" id="userSearch" placeholder="Search name, email…" style="width:220px"><select class="select" id="userRoleFilter" style="width:145px"><option value="">All roles</option><option value="student">Student</option><option value="teacher">Teacher</option><option value="school_admin">School Admin</option></select></div></div>
+          <div class="table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Provider</th><th>Actions</th></tr></thead><tbody id="usersTable"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- SUBJECTS -->
+      <section class="page" id="page-subjects">
+        <div class="page-heading"><div><h1>Subjects</h1><p>Organize the subjects used by your teachers and CBT examinations.</p></div><button class="btn btn-primary" id="addSubjectBtn">＋ Add Subject</button></div>
+        <div class="card table-card"><div class="table-head"><div><h3 style="font-size:15px">Subject Directory</h3><p style="font-size:11px;color:var(--muted);margin-top:5px">Manage subject names and codes</p></div><input class="input" id="subjectSearch" placeholder="Search subjects…" style="width:220px"></div>
+          <div class="table-wrap"><table><thead><tr><th>Subject</th><th>Code</th><th>Description</th><th>Actions</th></tr></thead><tbody id="subjectsTable"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- EXAMS -->
+      <section class="page" id="page-exams">
+        <div class="page-heading"><div><h1>CBT Examinations</h1><p>Create and manage examinations and their question sets.</p></div><button class="btn btn-primary" id="addExamBtn">＋ Create Exam</button></div>
+        <div class="card table-card"><div class="table-head"><div><h3 style="font-size:15px">Examinations</h3><p style="font-size:11px;color:var(--muted);margin-top:5px">Manage exam settings and question counts</p></div><input class="input" id="examSearch" placeholder="Search examinations…" style="width:220px"></div>
+          <div class="table-wrap"><table><thead><tr><th>Examination</th><th>Subject</th><th>Duration</th><th>Questions</th><th>Status</th><th>Actions</th></tr></thead><tbody id="examsTable"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- QUESTIONS -->
+      <section class="page" id="page-questions">
+        <div class="page-heading"><div><h1>Question Bank</h1><p>Build, search, filter and import multiple-choice questions.</p></div><button class="btn btn-primary" id="addQuestionBtn">＋ Add Question</button></div>
+        <div class="tabs"><button class="tab active" data-qtab="browse">Browse Questions</button><button class="tab" data-qtab="bulk">Bulk JSON Import</button></div>
+        <div id="questionBrowse">
+          <div class="card" style="margin-bottom:18px"><div class="toolbar">
+            <input class="input" id="questionSearch" placeholder="Search question text or tags…" style="flex:2;min-width:180px">
+            <select class="select" id="questionSubject" style="flex:1;min-width:140px"><option value="">All subjects</option></select>
+            <select class="select" id="questionDifficulty" style="flex:1;min-width:130px"><option value="">All difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+            <button class="btn btn-ghost" id="filterQuestions">Filter</button>
+          </div></div>
+          <div id="questionsList"><div class="empty">Loading question bank…</div></div>
+        </div>
+        <div id="questionBulk" style="display:none">
+          <div class="card">
+            <div class="card-title"><div><h3>Import questions from JSON</h3><p>Paste a JSON array matching the format your server accepts.</p></div></div>
+            <div class="field"><label>Target examination (optional, depending on server validation)</label><select class="select" id="bulkExam"><option value="">Select examination</option></select></div>
+            <div class="field"><label>Questions JSON</label><textarea class="textarea" id="bulkJson" rows="13" placeholder='[
+  {
+    "question": "What is physics?",
+    "options": ["Study of matter and energy", "Study of plants", "Study of language", "Study of history"],
+    "answer": 0,
+    "points": 1,
+    "difficulty": "easy",
+    "tags": "Introduction"
+  }
+]'></textarea></div>
+            <div class="notice">The answer field is a zero-based option index (0 = first option). Use valid JSON with double quotes.</div>
+            <div class="form-actions"><button class="btn btn-ghost" id="validateJsonBtn">Validate JSON</button><button class="btn btn-primary" id="importJsonBtn">Import Questions</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANNOUNCEMENTS -->
+      <section class="page" id="page-announcements">
+        <div class="page-heading"><div><h1>Announcements</h1><p>Publish and manage school-wide notices.</p></div><button class="btn btn-primary" id="addAnnouncementBtn">＋ New Announcement</button></div>
+        <div class="card table-card"><div class="table-head"><div><h3 style="font-size:15px">Published Notices</h3><p style="font-size:11px;color:var(--muted);margin-top:5px">Announcements for your school</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Title</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead><tbody id="announcementsTable"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section class="page" id="page-results">
+        <div class="page-heading"><div><h1>Examination Results</h1><p>Review saved student submissions and scores.</p></div><button class="btn btn-ghost" id="resultsRefresh">↻ Refresh</button></div>
+        <div class="card table-card"><div class="table-head"><div><h3 style="font-size:15px">Results Directory</h3><p style="font-size:11px;color:var(--muted);margin-top:5px">Results available to your account</p></div><input class="input" id="resultSearch" placeholder="Search student or exam…" style="width:230px"></div>
+          <div class="table-wrap"><table><thead><tr><th>Student</th><th>Examination</th><th>Score</th><th>Submitted</th><th>Details</th></tr></thead><tbody id="resultsTable"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- BRANDING -->
+      <section class="page" id="page-branding">
+        <div class="page-heading"><div><h1>School Branding</h1><p>Personalize your school's identity, colors and dashboard appearance.</p></div><button class="btn btn-primary" id="saveBrandingBtn">Save Branding</button></div>
+        <div class="notice">Branding is intended to apply to your school only. Your server must enforce school-level isolation when saving and returning branding data.</div>
+        <div class="branding-layout">
+          <div class="card">
+            <div class="card-title"><div><h3>Brand Identity</h3><p>School name, motto, logo and appearance</p></div></div>
+            <div class="field"><label>School Name</label><input class="input" id="brandSchoolName" placeholder="Your school name"></div>
+            <div class="field"><label>School Motto</label><input class="input" id="brandMotto" placeholder="Your school's motto"></div>
+            <div class="form-grid">
+              <div class="field"><label>Primary Color</label><div class="color-row"><input type="color" id="brandPrimary" value="#2563eb"><input class="input" id="brandPrimaryText" value="#2563eb"></div></div>
+              <div class="field"><label>Secondary Color</label><div class="color-row"><input type="color" id="brandSecondary" value="#16a34a"><input class="input" id="brandSecondaryText" value="#16a34a"></div></div>
+            </div>
+            <div class="field" style="margin-top:15px"><label>Dashboard Theme</label><select class="select" id="brandTheme"><option value="dark">Dark</option><option value="light">Light</option></select><small>Theme selection is saved with the school's branding settings.</small></div>
+            <div class="field"><label>School Logo</label><div class="upload-box"><div class="school-logo" id="brandLogoPreview" style="width:54px;height:54px">🏫</div><div><input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp"><small style="display:block;margin-top:7px">PNG, JPG or WebP. Your server limits uploads to 5 MB.</small></div></div><button class="btn btn-ghost btn-sm" id="uploadLogoBtn" style="margin-top:10px">Upload Logo</button></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><div><h3>Live Preview</h3><p>Preview of your school's brand colors</p></div><span class="badge green">Preview</span></div>
+            <div class="brand-preview" id="brandPreview">
+              <div class="preview-logo" id="previewLogo">S</div>
+              <div><h2 id="previewSchoolName">Your School</h2><p id="previewMotto">Your school motto appears here</p></div>
+              <div class="preview-chip">SchoolHub Pro · School Portal</div>
+            </div>
+            <div style="margin-top:17px;padding:15px;border:1px solid var(--border);border-radius:13px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Sample interface colors</div>
+              <div style="display:flex;gap:9px;align-items:center"><span id="samplePrimary" style="width:35px;height:30px;border-radius:8px;background:#2563eb"></span><span style="font-size:12px">Primary accent</span><span id="sampleSecondary" style="width:35px;height:30px;border-radius:8px;background:#16a34a;margin-left:auto"></span><span style="font-size:12px">Secondary</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="page" id="page-profile">
+        <div class="page-heading"><div><h1>My Profile</h1><p>Manage your account details and profile picture.</p></div><button class="btn btn-primary" id="saveProfileBtn">Save Profile</button></div>
+        <div class="grid section-grid">
+          <div class="card">
+            <div class="card-title"><div><h3>Personal Information</h3><p>Your account information</p></div></div>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:25px">
+              <img class="avatar" id="profileAvatar" alt="Profile picture" style="width:76px;height:76px;display:none">
+              <span class="avatar" id="profileAvatarFallback" style="width:76px;height:76px;font-size:24px">A</span>
+              <div><strong id="profileDisplayName">Administrator</strong><p id="profileDisplayRole" style="font-size:11px;color:var(--muted);margin-top:5px">School Administrator</p></div>
+            </div>
+            <div class="field"><label>Full Name</label><input class="input" id="profileFullName"></div>
+            <div class="field"><label>Username</label><input class="input" id="profileUsername"></div>
+            <div class="field"><label>Email</label><input class="input" id="profileEmail" type="email"></div>
+            <div class="field"><label>Profile Picture</label><input class="input" id="profileFile" type="file" accept="image/png,image/jpeg,image/webp"><small>Choose an image to upload. The server accepts PNG, JPEG or WebP images up to 5 MB.</small></div>
+            <button class="btn btn-ghost" id="uploadProfileBtn">Upload Profile Picture</button>
+          </div>
+          <div class="card">
+            <div class="card-title"><div><h3>Account Information</h3><p>Details associated with your login</p></div></div>
+            <div class="field"><label>Account Role</label><input class="input" id="profileRole" disabled></div>
+            <div class="field"><label>School ID</label><input class="input" id="profileSchoolId" disabled></div>
+            <div class="field"><label>Sign-in Provider</label><input class="input" id="profileProvider" disabled></div>
+            <div class="notice">For security, this dashboard does not provide a password-change endpoint unless one is implemented on your server.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Create</h2><button class="close" id="modalClose">×</button></div>
+    <form id="modalForm"><div id="modalFields"></div><div class="form-actions"><button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button><button type="submit" class="btn btn-primary" id="modalSubmit">Save</button></div></form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* API endpoints below match the route names from the supplied server.js.
+   The server remains responsible for authentication and school isolation. */
+
+const API = {
+  me:"/api/me",
+  summary:"/api/admin/summary",
+  school:"/api/school",
+  branding:"/api/school/branding",
+  logo:"/api/school/logo",
+  profilePicture:"/api/profile-picture",
+  users:"/api/users",
+  subjects:"/api/subjects",
+  exams:"/api/exams",
+  announcements:"/api/announcements",
+  results:"/api/results",
+  questionBank:"/api/question-bank",
+  bulkQuestions:"/api/question-bank/bulk",
+  logout:"/api/logout"
+};
+
+const state = {
+  me:null, school:null, summary:{}, users:[], subjects:[], exams:[],
+  announcements:[], results:[], questions:[], editing:null,
+  questionTab:"browse"
+};
+
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+const val = value => String(value ?? "");
+const roleName = role => ({
+  school_admin:"School Administrator",superadmin:"Super Administrator",
+  teacher:"Teacher",student:"Student"
+}[role] || role || "User");
+const initials = name => (String(name||"A").trim().split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase() || "A");
+const dateText = date => {
+  if(!date) return "—";
+  const d = new Date(date);
+  return Number.isNaN(d.getTime()) ? esc(date) : d.toLocaleDateString();
+};
+const statusBadge = status => {
+  const s=String(status||"").toLowerCase();
+  const cls=["active","published","completed"].includes(s)?"green":
+    ["inactive","draft","closed"].includes(s)?"gray":"";
+  return `<span class="badge ${cls}">${esc(status || "—")}</span>`;
+};
+
+function toast(message,error=false){
+  const t=$("toast");t.textContent=message;t.className="toast show"+(error?" error":"");
+  clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.className="toast",4000);
+}
+
+async function api(url, options={}){
+  const headers={...(options.headers||{})};
+  if(options.body && !(options.body instanceof FormData) && typeof options.body!=="string"){
+    headers["Content-Type"]="application/json";
+    options.body=JSON.stringify(options.body);
+  }
+  const response=await fetch(url,{credentials:"include",...options,headers});
+  const contentType=response.headers.get("content-type")||"";
+  let data=null;
+  if(contentType.includes("application/json")){
+    data=await response.json().catch(()=>null);
+  }else{
+    data=await response.text().catch(()=>null);
+  }
+  if(!response.ok){
+    const message=(data && (data.error||data.message)) || (typeof data==="string"&&data) || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return data;
+}
+
+function arrayFrom(data, keys=[]){
+  if(Array.isArray(data))return data;
+  for(const key of keys)if(Array.isArray(data?.[key]))return data[key];
+  return [];
+}
+
+function showPage(page){
+  const target=$("page-"+page);
+  if(!target)return;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  target.classList.add("active");
+  document.querySelectorAll(".nav button[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  const active=document.querySelector(`.nav button[data-page="${page}"]`);
+  $("topTitle").textContent=active?active.textContent.trim():page;
+  $("topTitle").textContent=$("topTitle").textContent.replace(/^[^\w]+/,"");
+  $("topTitle").textContent=({
+    overview:"Overview",users:"User Management",subjects:"Subjects",
+    exams:"CBT Examinations",questions:"Question Bank",
+    announcements:"Announcements",results:"Results",
+    branding:"School Branding",profile:"My Profile"
+  })[page]||"Dashboard";
+  $("sidebar").classList.remove("open");$("overlay").classList.remove("show");
+  if(page==="users")loadUsers();
+  if(page==="subjects")loadSubjects();
+  if(page==="exams")loadExams();
+  if(page==="questions")loadQuestions();
+  if(page==="announcements")loadAnnouncements();
+  if(page==="results")loadResults();
+  if(page==="branding")loadBranding();
+  if(page==="profile")renderProfile();
+}
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.goto)));
+$("menuToggle").addEventListener("click",()=>{$("sidebar").classList.toggle("open");$("overlay").classList.toggle("show")});
+$("overlay").addEventListener("click",()=>{$("sidebar").classList.remove("open");$("overlay").classList.remove("show")});
+
+async function loadMe(){
+  const data=await api(API.me);
+  state.me=data?.user||data?.me||data;
+  if(!state.me || !(state.me.id||state.me.email)){
+    throw new Error("Your session was not found. Please sign in again.");
+  }
+  const u=state.me;
+  const name=u.fullName||u.name||u.username||"Administrator";
+  $("topName").textContent=name;$("topEmail").textContent=roleName(u.role);
+  $("welcomeName").textContent=(name.split(" ")[0]||"Admin");
+  $("topAvatarFallback").textContent=initials(name);
+  $("profileAvatarFallback").textContent=initials(name);
+  $("profileDisplayName").textContent=name;
+  $("profileDisplayRole").textContent=roleName(u.role);
+  $("profileFullName").value=u.fullName||u.name||"";
+  $("profileUsername").value=u.username||"";
+  $("profileEmail").value=u.email||"";
+  $("profileRole").value=roleName(u.role);
+  $("profileSchoolId").value=u.schoolId||"";
+  $("profileProvider").value=u.provider||"Local";
+  setImage($("topAvatar"),$("topAvatarFallback"),u.profilePicture);
+  setImage($("profileAvatar"),$("profileAvatarFallback"),u.profilePicture);
+  $("sideRole").textContent=roleName(u.role);
+}
+
+function setImage(img,fallback,url){
+  if(url){
+    img.src=url;img.style.display="block";fallback.style.display="none";
+    img.onerror=()=>{img.style.display="none";fallback.style.display="grid"};
+  }else{
+    img.style.display="none";fallback.style.display="grid";
+  }
+}
+
+async function loadSchool(){
+  try{
+    const data=await api(API.school);
+    state.school=data?.school||data||{};
+    renderSchoolIdentity();
+  }catch(e){console.warn("School details:",e.message)}
+}
+function renderSchoolIdentity(){
+  const s=state.school||{};
+  const name=s.name||s.schoolName||"Your School";
+  $("sideSchoolName").textContent=name;
+  const logo=s.logo||s.logoUrl||"";
+  $("sideLogo").innerHTML=logo?`<img src="${esc(logo)}" alt="School logo">`:"🏫";
+  $("brandSchoolName").value=name;
+  $("brandMotto").value=s.motto||"";
+  setColor("brandPrimary",s.primaryColor||"#2563eb");
+  setColor("brandSecondary",s.secondaryColor||"#16a34a");
+  $("brandTheme").value=s.theme||"dark";
+  updateBrandPreview();
+}
+function setColor(id,color){
+  if(!/^#[0-9a-f]{6}$/i.test(color))color="#2563eb";
+  $(id).value=color;
+  $(id+"Text").value=color;
+}
+
+async function loadSummary(){
+  try{
+    const data=await api(API.summary);
+    state.summary=data?.summary||data||{};
+    const s=state.summary;
+    $("statStudents").textContent=s.students??s.totalStudents??0;
+    $("statTeachers").textContent=s.teachers??s.totalTeachers??0;
+    $("statExams").textContent=s.exams??s.totalExams??0;
+    $("statResults").textContent=s.results??s.totalResults??0;
+  }catch(e){console.error(e);toast("Could not load admin summary: "+e.message,true)}
+}
+
+async function loadUsers(){
+  $("usersTable").innerHTML='<tr><td colspan="5" class="empty">Loading users…</td></tr>';
+  try{
+    const data=await api(API.users);
+    state.users=arrayFrom(data,["users","data"]);
+    renderUsers();
+  }catch(e){$("usersTable").innerHTML=`<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`}
+}
+function renderUsers(){
+  const q=$("userSearch").value.toLowerCase();
+  const role=$("userRoleFilter").value;
+  const list=state.users.filter(u=>{
+    const text=[u.fullName,u.username,u.email].join(" ").toLowerCase();
+    return (!q||text.includes(q))&&(!role||u.role===role);
+  });
+  $("userCount").textContent=`${list.length} user${list.length===1?"":"s"}`;
+  $("usersTable").innerHTML=list.length?list.map(u=>`
+    <tr>
+      <td><div class="user-cell">${u.profilePicture?`<img class="avatar" src="${esc(u.profilePicture)}" alt="">`:`<span class="avatar">${esc(initials(u.fullName||u.username))}</span>`}
+        <span><strong>${esc(u.fullName||u.username||"Unnamed")}</strong><small>${esc(u.email||u.username||"")}</small></span></div></td>
+      <td>${esc(roleName(u.role))}</td>
+      <td>${statusBadge(u.active===false?"inactive":"active")}</td>
+      <td>${esc(u.provider||"local")}</td>
+      <td><div class="toolbar"><button class="btn btn-ghost btn-sm" data-edit-user="${esc(u.id)}">Edit</button><button class="btn btn-danger btn-sm" data-delete-user="${esc(u.id)}">Delete</button></div></td>
+    </tr>`).join(""):`<tr><td colspan="5" class="empty">No users found.</td></tr>`;
+  document.querySelectorAll("[data-edit-user]").forEach(b=>b.onclick=()=>editUser(b.dataset.editUser));
+  document.querySelectorAll("[data-delete-user]").forEach(b=>b.onclick=()=>deleteUser(b.dataset.deleteUser));
+}
+$("userSearch").addEventListener("input",renderUsers);
+$("userRoleFilter").addEventListener("change",renderUsers);
+$("addUserBtn").onclick=()=>openUserModal();
+
+function openUserModal(user=null){
+  state.editing=user;
+  $("modalTitle").textContent=user?"Edit User":"Create User";
+  $("modalSubmit").textContent=user?"Save Changes":"Create Account";
+  $("modalFields").innerHTML=`
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input class="input" name="fullName" required value="${esc(user?.fullName||"")}"></div>
+      <div class="field"><label>Username</label><input class="input" name="username" required value="${esc(user?.username||"")}"></div>
+      <div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(user?.email||"")}"></div>
+      <div class="field"><label>Role</label><select class="select" name="role" required>
+        ${["student","teacher","school_admin"].map(r=>`<option value="${r}" ${user?.role===r?"selected":""}>${roleName(r)}</option>`).join("")}
+      </select></div>
+      ${user?"":`<div class="field"><label>Temporary Password</label><input class="input" name="password" type="password" required minlength="6"></div>`}
+      <div class="field"><label>Account Status</label><select class="select" name="active"><option value="true" ${user?.active!==false?"selected":""}>Active</option><option value="false" ${user?.active===false?"selected":""}>Inactive</option></select></div>
+    </div>
+    <p style="font-size:10px;color:#64748b;margin-top:15px">Superadmin accounts cannot be created from this school-user form.</p>`;
+  openModal();
+}
+function editUser(id){
+  const u=state.users.find(x=>String(x.id)===String(id));
+  if(!u)return toast("User not found.",true);
+  openUserModal(u);
+}
+async function deleteUser(id){
+  if(!confirm("Delete this user? This action cannot be undone."))return;
+  try{await api(`${API.users}/${encodeURIComponent(id)}`,{method:"DELETE"});toast("User deleted.");await loadUsers();await loadSummary()}
+  catch(e){toast(e.message,true)}
+}
+
+async function loadSubjects(){
+  $("subjectsTable").innerHTML='<tr><td colspan="4" class="empty">Loading…</td></tr>';
+  try{const data=await api(API.subjects);state.subjects=arrayFrom(data,["subjects","data"]);renderSubjects();fillSubjectSelects()}
+  catch(e){$("subjectsTable").innerHTML=`<tr><td colspan="4" class="empty">${esc(e.message)}</td></tr>`}
+}
+function renderSubjects(){
+  const q=$("subjectSearch").value.toLowerCase();
+  const list=state.subjects.filter(s=>[s.name,s.code,s.description].join(" ").toLowerCase().includes(q));
+  $("subjectsTable").innerHTML=list.length?list.map(s=>`<tr><td><strong>${esc(s.name||"—")}</strong></td><td>${esc(s.code||"—")}</td><td>${esc(s.description||"—")}</td><td><div class="toolbar"><button class="btn btn-ghost btn-sm" data-edit-subject="${esc(s.id)}">Edit</button><button class="btn btn-danger btn-sm" data-delete-subject="${esc(s.id)}">Delete</button></div></td></tr>`).join(""):`<tr><td colspan="4" class="empty">No subjects found.</td></tr>`;
+  document.querySelectorAll("[data-edit-subject]").forEach(b=>b.onclick=()=>openSubjectModal(state.subjects.find(s=>String(s.id)===b.dataset.editSubject)));
+  document.querySelectorAll("[data-delete-subject]").forEach(b=>b.onclick=()=>deleteSubject(b.dataset.deleteSubject));
+}
+$("subjectSearch").addEventListener("input",renderSubjects);
+$("addSubjectBtn").onclick=()=>openSubjectModal();
+function openSubjectModal(subject=null){
+  state.editing=subject;
+  $("modalTitle").textContent=subject?"Edit Subject":"Add Subject";
+  $("modalSubmit").textContent="Save Subject";
+  $("modalFields").innerHTML=`
+    <div class="field"><label>Subject Name</label><input class="input" name="name" required value="${esc(subject?.name||"")}"></div>
+    <div class="field"><label>Subject Code</label><input class="input" name="code" value="${esc(subject?.code||"")}"></div>
+    <div class="field"><label>Description</label><textarea class="textarea" name="description">${esc(subject?.description||"")}</textarea></div>`;
+  openModal();
+}
+async function deleteSubject(id){
+  if(!confirm("Delete this subject?"))return;
+  try{await api(`${API.subjects}/${encodeURIComponent(id)}`,{method:"DELETE"});toast("Subject deleted.");await loadSubjects()}
+  catch(e){toast(e.message,true)}
+}
+function fillSubjectSelects(){
+  const opts=state.subjects.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+  $("questionSubject").innerHTML='<option value="">All subjects</option>'+opts;
+}
+
+async function loadExams(){
+  $("examsTable").innerHTML='<tr><td colspan="6" class="empty">Loading…</td></tr>';
+  try{
+    const data=await api(API.exams);
+    state.exams=arrayFrom(data,["exams","data"]);
+    renderExams();renderRecentExams();fillExamSelect();
+  }catch(e){$("examsTable").innerHTML=`<tr><td colspan="6" class="empty">${esc(e.message)}</td></tr>`}
+}
+function renderExams(){
+  const q=$("examSearch").value.toLowerCase();
+  const list=state.exams.filter(e=>[e.title,e.subjectName,e.status].join(" ").toLowerCase().includes(q));
+  $("examsTable").innerHTML=list.length?list.map(e=>`<tr>
+    <td><strong>${esc(e.title||"Untitled exam")}</strong><small style="display:block;color:#64748b;margin-top:4px">${esc(e.instructions||"")}</small></td>
+    <td>${esc(e.subjectName||state.subjects.find(s=>String(s.id)===String(e.subjectId))?.name||"—")}</td>
+    <td>${esc(e.duration??"—")} min</td><td>${esc(e.questionCount??"—")}</td><td>${statusBadge(e.status)}</td>
+    <td><div class="toolbar"><button class="btn btn-ghost btn-sm" data-edit-exam="${esc(e.id)}">Edit</button><button class="btn btn-ghost btn-sm" data-exam-questions="${esc(e.id)}">Questions</button><button class="btn btn-danger btn-sm" data-delete-exam="${esc(e.id)}">Delete</button></div></td>
+  </tr>`).join(""):`<tr><td colspan="6" class="empty">No examinations found.</td></tr>`;
+  document.querySelectorAll("[data-edit-exam]").forEach(b=>b.onclick=()=>openExamModal(state.exams.find(e=>String(e.id)===b.dataset.editExam)));
+  document.querySelectorAll("[data-exam-questions]").forEach(b=>b.onclick=()=>{showPage("questions");$("bulkExam").value=b.dataset.examQuestions});
+  document.querySelectorAll("[data-delete-exam]").forEach(b=>b.onclick=()=>deleteExam(b.dataset.deleteExam));
+}
+$("examSearch").addEventListener("input",renderExams);
+function renderRecentExams(){
+  const list=state.exams.slice(0,5);
+  $("recentExams").innerHTML=list.length?list.map(e=>`<tr><td><strong>${esc(e.title||"Untitled")}</strong></td><td>${esc(e.subjectName||"—")}</td><td>${esc(e.questionCount??"—")}</td><td>${statusBadge(e.status)}</td></tr>`).join(""):`<tr><td colspan="4" class="empty">No examinations created yet.</td></tr>`;
+}
+function fillExamSelect(){
+  const opts=state.exams.map(e=>`<option value="${esc(e.id)}">${esc(e.title||"Exam")}</option>`).join("");
+  $("bulkExam").innerHTML='<option value="">Select examination</option>'+opts;
+}
+$("addExamBtn").onclick=()=>openExamModal();
+function openExamModal(exam=null){
+  state.editing=exam;
+  $("modalTitle").textContent=exam?"Edit Examination":"Create CBT Examination";
+  $("modalSubmit").textContent="Save Examination";
+  $("modalFields").innerHTML=`
+    <div class="field"><label>Exam Title</label><input class="input" name="title" required value="${esc(exam?.title||"")}"></div>
+    <div class="form-grid">
+      <div class="field"><label>Subject</label><select class="select" name="subjectId" required><option value="">Select subject</option>${state.subjects.map(s=>`<option value="${esc(s.id)}" ${String(exam?.subjectId)===String(s.id)?"selected":""}>${esc(s.name)}</option>`).join("")}</select></div>
+      <div class="field"><label>Duration (minutes)</label><input class="input" name="duration" type="number" min="1" required value="${esc(exam?.duration||30)}"></div>
+    </div>
+    <div class="field"><label>Instructions</label><textarea class="textarea" name="instructions">${esc(exam?.instructions||"")}</textarea></div>
+    <div class="field"><label>Status</label><select class="select" name="status"><option value="draft" ${exam?.status==="draft"?"selected":""}>Draft</option><option value="published" ${exam?.status==="published"?"selected":""}>Published</option><option value="closed" ${exam?.status==="closed"?"selected":""}>Closed</option></select></div>`;
+  openModal();
+}
+async function deleteExam(id){
+  if(!confirm("Delete this examination? Its questions and results may also be deleted by the server."))return;
+  try{await api(`${API.exams}/${encodeURIComponent(id)}`,{method:"DELETE"});toast("Examination deleted.");await loadExams();await loadSummary()}
+  catch(e){toast(e.message,true)}
+}
+
+async function loadQuestions(){
+  $("questionsList").innerHTML='<div class="empty">Loading question bank…</div>';
+  try{
+    const params=new URLSearchParams();
+    if($("questionSearch").value)params.set("search",$("questionSearch").value);
+    if($("questionSubject").value)params.set("subjectId",$("questionSubject").value);
+    if($("questionDifficulty").value)params.set("difficulty",$("questionDifficulty").value);
+    const data=await api(API.questionBank+(params.toString()?"?"+params.toString():""));
+    state.questions=arrayFrom(data,["questions","data"]);
+    renderQuestions();
+  }catch(e){$("questionsList").innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+function renderQuestions(){
+  $("questionsList").innerHTML=state.questions.length?state.questions.map(q=>{
+    const opts=Array.isArray(q.options)?q.options:[];
+    return `<article class="question-item"><h4>${esc(q.question||"Question")}</h4>
+      <div class="question-options">${opts.map((o,i)=>`<span>${String.fromCharCode(65+i)}. ${esc(o)} ${Number(q.answer)===i?"✓":""}</span>`).join("")}</div>
+      <div class="question-meta"><div class="toolbar"><span class="badge">${esc(q.difficulty||"unspecified")}</span><span class="badge gray">${esc(q.tags||"Untagged")}</span><span style="font-size:10px;color:#64748b">${esc(q.points??1)} point(s)</span></div>
+      <div class="toolbar"><button class="btn btn-ghost btn-sm" data-edit-question="${esc(q.id)}">Edit</button><button class="btn btn-danger btn-sm" data-delete-question="${esc(q.id)}">Delete</button></div></div></article>`;
+  }).join(""):`<div class="empty">No questions found. Add a question or import a JSON array.</div>`;
+  document.querySelectorAll("[data-edit-question]").forEach(b=>b.onclick=()=>openQuestionModal(state.questions.find(q=>String(q.id)===b.dataset.editQuestion)));
+  document.querySelectorAll("[data-delete-question]").forEach(b=>b.onclick=()=>deleteQuestion(b.dataset.deleteQuestion));
+}
+$("filterQuestions").onclick=loadQuestions;
+$("questionSearch").addEventListener("keydown",e=>{if(e.key==="Enter")loadQuestions()});
+document.querySelectorAll("[data-qtab]").forEach(b=>b.onclick=()=>{
+  state.questionTab=b.dataset.qtab;
+  document.querySelectorAll("[data-qtab]").forEach(x=>x.classList.toggle("active",x===b));
+  $("questionBrowse").style.display=state.questionTab==="browse"?"block":"none";
+  $("questionBulk").style.display=state.questionTab==="bulk"?"block":"none";
+});
+$("addQuestionBtn").onclick=()=>openQuestionModal();
+function openQuestionModal(question=null){
+  state.editing=question;
+  $("modalTitle").textContent=question?"Edit Question":"Add Question";
+  $("modalSubmit").textContent="Save Question";
+  const opts=question?.options||["","","",""];
+  $("modalFields").innerHTML=`
+    <div class="field"><label>Question</label><textarea class="textarea" name="question" required>${esc(question?.question||"")}</textarea></div>
+    <div class="form-grid">${[0,1,2,3].map(i=>`<div class="field"><label>Option ${String.fromCharCode(65+i)}</label><input class="input" name="option${i}" required value="${esc(opts[i]||"")}"></div>`).join("")}</div>
+    <div class="form-grid" style="margin-top:15px">
+      <div class="field"><label>Correct Option</label><select class="select" name="answer">${[0,1,2,3].map(i=>`<option value="${i}" ${Number(question?.answer)===i?"selected":""}>${String.fromCharCode(65+i)}</option>`).join("")}</select></div>
+      <div class="field"><label>Points</label><input class="input" name="points" type="number" min="1" value="${esc(question?.points??1)}"></div>
+      <div class="field"><label>Difficulty</label><select class="select" name="difficulty">${["easy","medium","hard"].map(x=>`<option ${question?.difficulty===x?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div class="field"><label>Tags</label><input class="input" name="tags" value="${esc(question?.tags||"")}"></div>
+    </div>
+    <div class="field" style="margin-top:15px"><label>Examination</label><select class="select" name="examId"><option value="">Question bank only</option>${state.exams.map(e=>`<option value="${esc(e.id)}" ${String(question?.examId)===String(e.id)?"selected":""}>${esc(e.title)}</option>`).join("")}</select></div>`;
+  openModal();
+}
+async function deleteQuestion(id){
+  if(!confirm("Delete this question?"))return;
+  try{await api(`/api/questions/${encodeURIComponent(id)}`,{method:"DELETE"});toast("Question deleted.");await loadQuestions()}
+  catch(e){toast(e.message,true)}
+}
+$("validateJsonBtn").onclick=()=>{
+  try{
+    const data=JSON.parse($("bulkJson").value);
+    if(!Array.isArray(data))throw new Error("The JSON must be an array.");
+    if(!data.length)throw new Error("The array is empty.");
+    data.forEach((q,i)=>{
+      if(typeof q.question!=="string"||!Array.isArray(q.options)||q.options.length<2)throw new Error(`Question ${i+1} needs question text and at least two options.`);
+      if(!Number.isInteger(Number(q.answer))||Number(q.answer)<0||Number(q.answer)>=q.options.length)throw new Error(`Question ${i+1} has an invalid answer index.`);
+    });
+    toast(`Valid JSON: ${data.length} question(s).`);
+  }catch(e){toast("Invalid JSON: "+e.message,true)}
+};
+$("importJsonBtn").onclick=async()=>{
+  let questions;
+  try{questions=JSON.parse($("bulkJson").value);if(!Array.isArray(questions)||!questions.length)throw new Error("Provide a non-empty JSON array.");}
+  catch(e){return toast("Invalid JSON: "+e.message,true)}
+  const examId=$("bulkExam").value;
+  try{
+    // Server bulk endpoint expects a questions array; examId is included for implementations that support it.
+    await api(API.bulkQuestions,{method:"POST",body:{questions,...(examId?{examId}:{})}});
+    toast("Question import request completed.");$("bulkJson").value="";await loadQuestions();await loadExams();
+  }catch(e){toast("Import failed: "+e.message,true)}
+};
+
+async function loadAnnouncements(){
+  $("announcementsTable").innerHTML='<tr><td colspan="4" class="empty">Loading…</td></tr>';
+  try{const data=await api(API.announcements);state.announcements=arrayFrom(data,["announcements","data"]);renderAnnouncements()}
+  catch(e){$("announcementsTable").innerHTML=`<tr><td colspan="4" class="empty">${esc(e.message)}</td></tr>`}
+}
+function renderAnnouncements(){
+  $("announcementsTable").innerHTML=state.announcements.length?state.announcements.map(a=>`<tr><td><strong>${esc(a.title||"Announcement")}</strong></td><td style="white-space:normal;min-width:230px;max-width:450px">${esc(a.message||a.content||"")}</td><td>${dateText(a.createdAt||a.date)}</td><td><button class="btn btn-danger btn-sm" data-delete-announcement="${esc(a.id)}">Delete</button></td></tr>`).join(""):`<tr><td colspan="4" class="empty">No announcements published.</td></tr>`;
+  document.querySelectorAll("[data-delete-announcement]").forEach(b=>b.onclick=()=>deleteAnnouncement(b.dataset.deleteAnnouncement));
+}
+$("addAnnouncementBtn").onclick=()=>{
+  state.editing=null;$("modalTitle").textContent="New Announcement";$("modalSubmit").textContent="Publish";
+  $("modalFields").innerHTML=`<div class="field"><label>Title</label><input class="input" name="title" required></div><div class="field"><label>Message</label><textarea class="textarea" name="message" required></textarea></div>`;
+  openModal();
+};
+async function deleteAnnouncement(id){
+  if(!confirm("Delete this announcement?"))return;
+  try{await api(`${API.announcements}/${encodeURIComponent(id)}`,{method:"DELETE"});toast("Announcement deleted.");await loadAnnouncements()}
+  catch(e){toast(e.message,true)}
+}
+
+async function loadResults(){
+  $("resultsTable").innerHTML='<tr><td colspan="5" class="empty">Loading…</td></tr>';
+  try{const data=await api(API.results);state.results=arrayFrom(data,["results","data"]);renderResults()}
+  catch(e){$("resultsTable").innerHTML=`<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`}
+}
+function renderResults(){
+  const q=$("resultSearch").value.toLowerCase();
+  const list=state.results.filter(r=>[r.studentName,r.studentEmail,r.examTitle,r.title].join(" ").toLowerCase().includes(q));
+  $("resultsTable").innerHTML=list.length?list.map(r=>`<tr><td><strong>${esc(r.studentName||r.fullName||r.studentId||"Student")}</strong><small style="display:block;color:#64748b;margin-top:4px">${esc(r.studentEmail||"")}</small></td><td>${esc(r.examTitle||r.title||r.examId||"—")}</td><td><span class="badge green">${esc(r.score??r.percentage??"—")}${r.percentage!==undefined?"%":""}</span></td><td>${dateText(r.submittedAt||r.createdAt)}</td><td><button class="btn btn-ghost btn-sm" data-result-detail="${esc(r.id)}">View</button></td></tr>`).join(""):`<tr><td colspan="5" class="empty">No results found.</td></tr>`;
+  document.querySelectorAll("[data-result-detail]").forEach(b=>b.onclick=()=>viewResult(b.dataset.resultDetail));
+}
+$("resultSearch").addEventListener("input",renderResults);
+$("resultsRefresh").onclick=loadResults;
+async function viewResult(id){
+  try{
+    const data=await api(`${API.results}/${encodeURIComponent(id)}`);
+    const r=data?.result||data;
+    $("modalTitle").textContent="Result Details";
+    $("modalSubmit").style.display="none";
+    $("modalFields").innerHTML=`<div class="notice"><b>Student:</b> ${esc(r.studentName||r.studentId||"—")}<br><b>Exam:</b> ${esc(r.examTitle||r.examId||"—")}<br><b>Score:</b> ${esc(r.score??"—")}<br><b>Submitted:</b> ${dateText(r.submittedAt||r.createdAt)}</div><pre style="white-space:pre-wrap;word-break:break-word;font-size:11px;color:#94a3b8">${esc(JSON.stringify(r,null,2))}</pre>`;
+    openModal();
+  }catch(e){toast(e.message,true)}
+}
+
+async function loadBranding(){
+  try{
+    const data=await api(API.school);
+    state.school=data?.school||data||state.school||{};
+    renderSchoolIdentity();
+  }catch(e){toast("Could not load school branding: "+e.message,true)}
+}
+function updateBrandPreview(){
+  const name=$("brandSchoolName").value||"Your School";
+  const motto=$("brandMotto").value||"Your school motto appears here";
+  const primary=$("brandPrimary").value||"#2563eb";
+  const secondary=$("brandSecondary").value||"#16a34a";
+  $("previewSchoolName").textContent=name;
+  $("previewMotto").textContent=motto;
+  $("brandPreview").style.background=`linear-gradient(135deg,${primary},#0b1729 78%)`;
+  $("samplePrimary").style.background=primary;$("sampleSecondary").style.background=secondary;
+  $("previewLogo").textContent=initials(name);
+  $("previewLogo").style.background=`linear-gradient(135deg,${primary},${secondary})`;
+}
+["brandSchoolName","brandMotto"].forEach(id=>$(id).addEventListener("input",updateBrandPreview));
+["brandPrimary","brandSecondary"].forEach(id=>{
+  $(id).addEventListener("input",()=>{$(id+"Text").value=$(id).value;updateBrandPreview()});
+  $(id+"Text").addEventListener("input",()=>{
+    const v=$(id+"Text").value;
+    if(/^#[0-9a-f]{6}$/i.test(v)){$(id).value=v;updateBrandPreview()}
+  });
+});
+$("saveBrandingBtn").onclick=async()=>{
+  const body={
+    name:$("brandSchoolName").value.trim(),
+    motto:$("brandMotto").value.trim(),
+    primaryColor:$("brandPrimary").value,
+    secondaryColor:$("brandSecondary").value,
+    theme:$("brandTheme").value
+  };
+  if(!body.name)return toast("School name is required.",true);
+  try{
+    const data=await api(API.branding,{method:"PUT",body});
+    state.school={...(state.school||{}),...(data?.school||data||{}),...body};
+    renderSchoolIdentity();toast("School branding saved.");
+  }catch(e){toast("Could not save branding: "+e.message,true)}
+};
+$("brandLogoFile").addEventListener("change",()=>{
+  const file=$("brandLogoFile").files[0];if(!file)return;
+  if(file.size>5*1024*1024)return toast("Image must be 5 MB or smaller.",true);
+  const reader=new FileReader();
+  reader.onload=()=>{$("brandLogoPreview").innerHTML=`<img src="${reader.result}" alt="Logo preview">`;$("previewLogo").innerHTML=`<img src="${reader.result}" alt="Logo preview">`};
+  reader.readAsDataURL(file);
+});
+$("uploadLogoBtn").onclick=async()=>{
+  const file=$("brandLogoFile").files[0];
+  if(!file)return toast("Choose a logo image first.",true);
+  const form=new FormData();form.append("logo",file);
+  try{
+    const data=await api(API.logo,{method:"POST",body:form});
+    const logo=data?.logo||data?.logoUrl||data?.school?.logo;
+    if(logo){state.school={...(state.school||{}),logo};renderSchoolIdentity()}
+    toast("Logo upload completed.");
+  }catch(e){toast("Logo upload failed: "+e.message,true)}
+};
+
+function renderProfile(){
+  if(!state.me)return;
+  const u=state.me;
+  $("profileFullName").value=u.fullName||u.name||"";
+  $("profileUsername").value=u.username||"";
+  $("profileEmail").value=u.email||"";
+}
+$("saveProfileBtn").onclick=async()=>{
+  const body={
+    fullName:$("profileFullName").value.trim(),
+    username:$("profileUsername").value.trim(),
+    email:$("profileEmail").value.trim()
+  };
+  try{
+    const data=await api("/api/profile",{method:"PUT",body});
+    state.me={...state.me,...(data?.user||data||{}),...body};
+    await loadMe();toast("Profile updated.");
+  }catch(e){toast("Profile update failed: "+e.message,true)}
+};
+$("profileFile").addEventListener("change",()=>{
+  const file=$("profileFile").files[0];if(!file)return;
+  if(file.size>5*1024*1024)return toast("Image must be 5 MB or smaller.",true);
+  const reader=new FileReader();reader.onload=()=>{
+    $("profileAvatar").src=reader.result;$("profileAvatar").style.display="block";$("profileAvatarFallback").style.display="none";
+    $("topAvatar").src=reader.result;$("topAvatar").style.display="block";$("topAvatarFallback").style.display="none";
+  };reader.readAsDataURL(file);
+});
+$("uploadProfileBtn").onclick=async()=>{
+  const file=$("profileFile").files[0];
+  if(!file)return toast("Choose a profile picture first.",true);
+  const form=new FormData();form.append("profilePicture",file);
+  try{
+    const data=await api(API.profilePicture,{method:"POST",body:form});
+    const user=data?.user||data||{};
+    if(user.profilePicture){state.me={...state.me,...user};setImage($("profileAvatar"),$("profileAvatarFallback"),user.profilePicture);setImage($("topAvatar"),$("topAvatarFallback"),user.profilePicture)}
+    toast("Profile picture upload completed.");
+  }catch(e){toast("Profile upload failed: "+e.message,true)}
+};
+
+function openModal(){
+  $("modalBackdrop").classList.add("open");
+  $("modalSubmit").style.display="";
+}
+function closeModal(){
+  $("modalBackdrop").classList.remove("open");
+  $("modalForm").reset();state.editing=null;
+}
+$("modalClose").onclick=closeModal;
+$("modalCancel").onclick=closeModal;
+$("modalBackdrop").addEventListener("click",e=>{if(e.target===$("modalBackdrop"))closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+
+$("modalForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const form=new FormData(e.currentTarget);
+  const data=Object.fromEntries(form.entries());
+  const submit=$("modalSubmit");submit.disabled=true;submit.textContent="Saving…";
+  try{
+    const editing=state.editing;
+    if("fullName" in data){
+      data.active=data.active==="true";
+      if(editing){
+        await api(`${API.users}/${encodeURIComponent(editing.id)}`,{method:"PUT",body:data});
+        toast("User updated.");
+      }else{
+        await api(API.users,{method:"POST",body:data});
+        toast("User created.");
+      }
+      closeModal();await loadUsers();await loadSummary();
+    }else if("subjectId" in data && "duration" in data){
+      data.duration=Number(data.duration);
+      if(editing){
+        await api(`${API.exams}/${encodeURIComponent(editing.id)}`,{method:"PUT",body:data});
+        toast("Examination updated.");
+      }else{
+        await api(API.exams,{method:"POST",body:data});
+        toast("Examination created.");
+      }
+      closeModal();await loadExams();await loadSummary();
+    }else if("option0" in data){
+      const payload={
+        question:data.question,
+        options:[data.option0,data.option1,data.option2,data.option3],
+        answer:Number(data.answer),points:Number(data.points||1),
+        difficulty:data.difficulty,tags:data.tags
+      };
+      const examId=data.examId;
+      if(editing){
+        await api(`/api/questions/${encodeURIComponent(editing.id)}`,{method:"PUT",body:payload});
+      }else if(examId){
+        await api(`/api/exams/${encodeURIComponent(examId)}/questions`,{method:"POST",body:payload});
+      }else{
+        // Use bulk endpoint for question-bank-only creation if supported by server.
+        await api(API.bulkQuestions,{method:"POST",body:{questions:[payload]}});
+      }
+      toast("Question saved.");closeModal();await loadQuestions();await loadExams();
+    }else if("code" in data && "name" in data){
+      if(editing){
+        await api(`${API.subjects}/${encodeURIComponent(editing.id)}`,{method:"PUT",body:data});
+        toast("Subject updated.");
+      }else{
+        await api(API.subjects,{method:"POST",body:data});
+        toast("Subject created.");
+      }
+      closeModal();await loadSubjects();
+    }else if("message" in data && "title" in data){
+      await api(API.announcements,{method:"POST",body:data});
+      toast("Announcement published.");closeModal();await loadAnnouncements();
+    }
+  }catch(err){toast(err.message,true)}
+  finally{submit.disabled=false;submit.textContent="Save"}
+});
+
+$("refreshBtn").onclick=async()=>{
+  $("refreshBtn").classList.add("loading");
+  try{
+    await Promise.all([loadSummary(),loadSchool(),loadMe()]);
+    if($("page-users").classList.contains("active"))await loadUsers();
+    if($("page-exams").classList.contains("active"))await loadExams();
+    toast("Dashboard refreshed.");
+  }catch(e){toast(e.message,true)}
+  finally{$("refreshBtn").classList.remove("loading")}
+};
+$("logoutBtn").onclick=async()=>{
+  try{await api(API.logout,{method:"POST"})}catch(e){console.warn(e)}
+  window.location.href="/login.html";
+};
+
+async function initialize(){
+  $("todayText").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  try{
+    await loadMe();
+    await Promise.all([loadSchool(),loadSummary()]);
+    await Promise.all([loadSubjects(),loadExams()]);
+    renderProfile();
+  }catch(e){
+    toast(e.message+" Redirecting to login…",true);
+    setTimeout(()=>window.location.href="/login.html",1400);
+  }
+}
+initialize();
+</script>
+</body>
+</html>
