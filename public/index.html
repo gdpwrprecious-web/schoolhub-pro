@@ -1,21 +1,1955 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="SchoolHub Pro is a professional multi-school management platform for users, CBT, results, announcements and school branding."><title>SchoolHub Pro | Smart School Management</title><link rel="stylesheet" href="/style.css"></head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="SchoolHub Pro - Smart school management, CBT, results, analytics and administration in one powerful platform."
+  />
+  <title>SchoolHub Pro | Smart School Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --green: #16a34a;
+      --green-dark: #15803d;
+      --dark: #07111f;
+      --dark-2: #0b1729;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --card: rgba(15, 29, 49, 0.72);
+      --border: rgba(255, 255, 255, 0.09);
+      --white: #ffffff;
+      --shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.16), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(22, 163, 74, 0.12), transparent 28%),
+        linear-gradient(135deg, #040a12 0%, #07111f 45%, #091526 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    /* =========================
+       BACKGROUND ANIMATION
+    ========================= */
+
+    .background {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.13;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 55px 55px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(3px);
+      opacity: 0.45;
+      animation: floatOrb 10s ease-in-out infinite;
+    }
+
+    .orb.one {
+      width: 320px;
+      height: 320px;
+      background: rgba(37, 99, 235, 0.18);
+      top: 5%;
+      left: -120px;
+    }
+
+    .orb.two {
+      width: 260px;
+      height: 260px;
+      background: rgba(22, 163, 74, 0.15);
+      right: -80px;
+      top: 35%;
+      animation-delay: -3s;
+    }
+
+    .orb.three {
+      width: 180px;
+      height: 180px;
+      background: rgba(59, 130, 246, 0.13);
+      left: 42%;
+      bottom: 8%;
+      animation-delay: -6s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate3d(35px, -45px, 0) scale(1.08);
+      }
+    }
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: 18px 5%;
+      transition: 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      padding: 12px 5%;
+      background: rgba(4, 10, 18, 0.82);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1250px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-icon::after {
+      content: "";
+      position: absolute;
+      width: 70px;
+      height: 20px;
+      background: rgba(255,255,255,0.2);
+      transform: rotate(-45deg);
+      animation: shine 4s infinite;
+    }
+
+    .logo-icon span {
+      font-size: 20px;
+      z-index: 2;
+    }
+
+    @keyframes shine {
+      0%, 55% {
+        left: -100px;
+      }
+      75%, 100% {
+        left: 100px;
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.25s;
+    }
+
+    .nav-links a:hover {
+      color: white;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 12px 19px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-outline {
+      color: white;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-green {
+      color: white;
+      background: linear-gradient(135deg, var(--green), #22c55e);
+      box-shadow: 0 12px 30px rgba(22, 163, 74, 0.22);
+    }
+
+    .btn-green:hover {
+      transform: translateY(-3px);
+    }
+
+    .mobile-menu {
+      display: none;
+      background: transparent;
+      border: 0;
+      color: white;
+      font-size: 25px;
+      cursor: pointer;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      min-height: 100vh;
+      padding: 150px 5% 80px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .hero-container {
+      width: 100%;
+      max-width: 1250px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 70px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 13px;
+      border: 1px solid rgba(59, 130, 246, 0.22);
+      background: rgba(37, 99, 235, 0.09);
+      border-radius: 999px;
+      color: #93c5fd;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #22c55e;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.5);
+        opacity: 0.55;
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.99;
+      letter-spacing: -4px;
+      max-width: 760px;
+      margin-bottom: 25px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #60a5fa, #22c55e, #60a5fa);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientMove 5s linear infinite;
+    }
+
+    @keyframes gradientMove {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+      max-width: 650px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .hero-buttons .btn {
+      padding: 15px 23px;
+    }
+
+    .trust-row {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-top: 35px;
+      color: #64748b;
+      font-size: 12px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      font-size: 11px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(25px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================
+       HERO DASHBOARD
+    ========================= */
+
+    .hero-visual {
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: visualIn 1s 0.2s ease both;
+    }
+
+    @keyframes visualIn {
+      from {
+        opacity: 0;
+        transform: translateX(40px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+    }
+
+    .dashboard-window {
+      width: min(100%, 540px);
+      background: rgba(9, 20, 35, 0.86);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      transform: perspective(1200px) rotateY(-5deg) rotateX(2deg);
+      animation: dashboardFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes dashboardFloat {
+      0%, 100% {
+        transform: perspective(1200px) rotateY(-5deg) rotateX(2deg) translateY(0);
+      }
+
+      50% {
+        transform: perspective(1200px) rotateY(-5deg) rotateX(2deg) translateY(-12px);
+      }
+    }
+
+    .window-top {
+      height: 52px;
+      padding: 0 17px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.025);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .window-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #334155;
+    }
+
+    .window-title {
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .dashboard-content {
+      padding: 20px;
+    }
+
+    .mini-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .mini-heading {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .mini-user {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #16a34a);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      padding: 14px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .stat small {
+      display: block;
+      color: #64748b;
+      font-size: 9px;
+      margin-bottom: 7px;
+    }
+
+    .stat strong {
+      font-size: 19px;
+    }
+
+    .green-text {
+      color: #4ade80;
+    }
+
+    .blue-text {
+      color: #60a5fa;
+    }
+
+    .chart-card {
+      padding: 17px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+    }
+
+    .chart-title {
+      display: flex;
+      justify-content: space-between;
+      color: #cbd5e1;
+      font-size: 11px;
+      margin-bottom: 17px;
+    }
+
+    .chart {
+      height: 110px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .bar {
+      flex: 1;
+      min-width: 10px;
+      border-radius: 6px 6px 2px 2px;
+      background: linear-gradient(to top, #2563eb, #60a5fa);
+      animation: barGrow 1.5s ease both;
+      transform-origin: bottom;
+    }
+
+    .bar:nth-child(1) { height: 40%; }
+    .bar:nth-child(2) { height: 55%; animation-delay: .1s; }
+    .bar:nth-child(3) { height: 47%; animation-delay: .2s; }
+    .bar:nth-child(4) { height: 70%; animation-delay: .3s; }
+    .bar:nth-child(5) { height: 61%; animation-delay: .4s; }
+    .bar:nth-child(6) { height: 84%; animation-delay: .5s; }
+    .bar:nth-child(7) { height: 94%; animation-delay: .6s; }
+
+    @keyframes barGrow {
+      from {
+        transform: scaleY(0);
+      }
+
+      to {
+        transform: scaleY(1);
+      }
+    }
+
+    .floating-card {
+      position: absolute;
+      background: rgba(11, 23, 41, 0.94);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      backdrop-filter: blur(15px);
+      border-radius: 15px;
+      padding: 14px;
+      animation: cardFloat 5s ease-in-out infinite;
+    }
+
+    .floating-card.one {
+      left: -15px;
+      top: 65px;
+    }
+
+    .floating-card.two {
+      right: -10px;
+      bottom: 70px;
+      animation-delay: -2s;
+    }
+
+    .float-label {
+      font-size: 9px;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .float-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .float-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 8px;
+      background: rgba(34,197,94,0.12);
+      color: #4ade80;
+      margin-right: 7px;
+    }
+
+    @keyframes cardFloat {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-13px) rotate(1deg);
+      }
+    }
+
+    /* =========================
+       STATS
+    ========================= */
+
+    .platform-stats {
+      padding: 20px 5% 70px;
+    }
+
+    .stats-container {
+      max-width: 1050px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .platform-stat {
+      background: rgba(255,255,255,0.025);
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .platform-stat strong {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .platform-stat span {
+      color: #64748b;
+      font-size: 11px;
+    }
+
+    /* =========================
+       GENERAL SECTIONS
+    ========================= */
+
+    section {
+      padding: 110px 5%;
+    }
+
+    .section-container {
+      max-width: 1250px;
+      margin: auto;
+    }
+
+    .section-heading {
+      max-width: 720px;
+      margin-bottom: 55px;
+    }
+
+    .eyebrow {
+      color: #60a5fa;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(34px, 4vw, 52px);
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+      line-height: 1.05;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    /* =========================
+       FEATURES
+    ========================= */
+
+    .features {
+      background: rgba(255,255,255,0.015);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      position: relative;
+      padding: 30px;
+      min-height: 245px;
+      border: 1px solid var(--border);
+      background: linear-gradient(
+        145deg,
+        rgba(255,255,255,0.055),
+        rgba(255,255,255,0.018)
+      );
+      border-radius: 20px;
+      overflow: hidden;
+      transition: 0.35s ease;
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: rgba(37,99,235,0.1);
+      top: -65px;
+      right: -65px;
+      transition: 0.35s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(59,130,246,0.3);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+
+    .feature-card:hover::before {
+      transform: scale(1.6);
+    }
+
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+      margin-bottom: 22px;
+      background: rgba(37,99,235,0.12);
+      border: 1px solid rgba(37,99,235,0.16);
+    }
+
+    .feature-card h3 {
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* =========================
+       WORKFLOW
+    ========================= */
+
+    .workflow {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .workflow-image {
+      min-height: 430px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .workflow-circle {
+      width: 330px;
+      height: 330px;
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      animation: rotateSlow 20s linear infinite;
+    }
+
+    .workflow-circle::before,
+    .workflow-circle::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px dashed rgba(34,197,94,0.15);
+    }
+
+    .workflow-circle::before {
+      inset: 35px;
+    }
+
+    .workflow-circle::after {
+      inset: 75px;
+    }
+
+    @keyframes rotateSlow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .center-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #2563eb, #16a34a);
+      box-shadow: 0 25px 60px rgba(37,99,235,0.3);
+      animation: counterRotate 20s linear infinite;
+    }
+
+    @keyframes counterRotate {
+      to {
+        transform: rotate(-360deg);
+      }
+    }
+
+    .workflow-node {
+      position: absolute;
+      padding: 10px 13px;
+      border-radius: 12px;
+      background: #0d1a2d;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    }
+
+    .node-1 { top: 20px; }
+    .node-2 { right: -8px; top: 110px; }
+    .node-3 { right: 20px; bottom: 35px; }
+    .node-4 { left: 15px; bottom: 50px; }
+    .node-5 { left: -12px; top: 115px; }
+
+    .workflow-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .workflow-item {
+      display: flex;
+      gap: 17px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.025);
+      transition: 0.3s;
+    }
+
+    .workflow-item:hover {
+      transform: translateX(7px);
+      background: rgba(255,255,255,0.045);
+    }
+
+    .workflow-number {
+      min-width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(37,99,235,0.12);
+      color: #60a5fa;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .workflow-item h3 {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .workflow-item p {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* =========================
+       ROLES
+    ========================= */
+
+    .roles {
+      background: rgba(255,255,255,0.015);
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .role-card {
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.025);
+      transition: 0.3s;
+    }
+
+    .role-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .role-card .role-icon {
+      font-size: 30px;
+      margin-bottom: 20px;
+    }
+
+    .role-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .role-card p {
+      color: #64748b;
+      line-height: 1.8;
+      font-size: 13px;
+    }
+
+    /* =========================
+       CTA
+    ========================= */
+
+    .cta {
+      padding-top: 90px;
+      padding-bottom: 110px;
+    }
+
+    .cta-box {
+      max-width: 1100px;
+      margin: auto;
+      padding: 70px 40px;
+      text-align: center;
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(37,99,235,0.35), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(22,163,74,0.25), transparent 30%),
+        linear-gradient(135deg, #0d1c31, #091425);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .cta-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.04),
+        transparent
+      );
+      transform: translateX(-100%);
+      animation: ctaShine 5s infinite;
+    }
+
+    @keyframes ctaShine {
+      50%, 100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .cta-box h2 {
+      position: relative;
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: -2px;
+      margin-bottom: 15px;
+    }
+
+    .cta-box p {
+      position: relative;
+      color: #94a3b8;
+      max-width: 580px;
+      margin: 0 auto 28px;
+      line-height: 1.8;
+    }
+
+    .cta-buttons {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 5%;
+      background: rgba(0,0,0,0.16);
+    }
+
+    .footer-inner {
+      max-width: 1250px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    .footer-brand .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+    }
+
+    .footer-copy {
+      color: #475569;
+      font-size: 11px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      color: #64748b;
+      font-size: 11px;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    /* =========================
+       REVEAL ANIMATION
+    ========================= */
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: 0.8s ease;
+    }
+
+    .reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 1000px) {
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 45px;
+      }
+
+      .hero {
+        padding-top: 135px;
+      }
+
+      .hero-content {
+        text-align: center;
+      }
+
+      .hero p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-buttons,
+      .trust-row {
+        justify-content: center;
+      }
+
+      .hero-visual {
+        min-height: 470px;
+      }
+
+      .workflow {
+        grid-template-columns: 1fr;
+      }
+
+      .workflow-image {
+        order: 2;
+      }
+
+      .feature-grid,
+      .role-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .nav-links,
+      .nav-actions {
+        display: none;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .navbar.mobile-open {
+        background: rgba(4,10,18,0.96);
+        backdrop-filter: blur(20px);
+      }
+
+      .navbar.mobile-open .nav-links {
+        position: absolute;
+        top: 75px;
+        left: 5%;
+        right: 5%;
+        display: flex;
+        flex-direction: column;
+        padding: 25px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: #091525;
+      }
+
+      .navbar.mobile-open .nav-actions {
+        position: absolute;
+        top: 270px;
+        left: 5%;
+        right: 5%;
+        display: flex;
+        padding: 0 25px 25px;
+        background: #091525;
+        border: 1px solid var(--border);
+        border-top: 0;
+        border-radius: 0 0 18px 18px;
+      }
+
+      .navbar.mobile-open .nav-actions .btn {
+        flex: 1;
+      }
+
+      .hero h1 {
+        letter-spacing: -2.5px;
+      }
+
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .feature-grid,
+      .role-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .workflow-circle {
+        width: 280px;
+        height: 280px;
+      }
+
+      .floating-card.one {
+        left: -5px;
+      }
+
+      .floating-card.two {
+        right: -5px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .footer-links {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 520px) {
+      section {
+        padding: 80px 5%;
+      }
+
+      .hero {
+        padding-left: 5%;
+        padding-right: 5%;
+      }
+
+      .hero-visual {
+        min-height: 390px;
+      }
+
+      .dashboard-window {
+        border-radius: 18px;
+      }
+
+      .dashboard-content {
+        padding: 13px;
+      }
+
+      .floating-card {
+        transform: scale(0.85);
+      }
+
+      .stats {
+        gap: 6px;
+      }
+
+      .stat {
+        padding: 10px;
+      }
+
+      .stat strong {
+        font-size: 16px;
+      }
+
+      .trust-row {
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .workflow-circle {
+        width: 240px;
+        height: 240px;
+      }
+
+      .node-1 { top: 5px; }
+      .node-2 { right: -20px; }
+      .node-3 { right: 0; }
+      .node-4 { left: 0; }
+      .node-5 { left: -20px; }
+
+      .cta-box {
+        padding: 50px 20px;
+      }
+    }
+  </style>
+</head>
+
 <body>
-<header class="top"><a class="brand" href="/"><span class="brandmark">S</span><span>SchoolHub Pro</span></a><nav><a class="btn alt" href="/login.html">Sign in</a> <a class="btn" href="/register.html">Create school</a></nav></header>
-<section class="hero"><div class="container"><div>
-<span class="eyebrow">Multi-school management platform</span><h1>Everything your school needs in one workspace.</h1>
-<p>Run school operations with dedicated admin, teacher and student experiences. Manage users, subjects, CBT examinations, questions, results, announcements and branding from one responsive platform.</p>
-<div class="hero-actions"><a class="btn" href="/register.html">Start your school</a><a class="btn alt" href="#features">Explore features</a></div>
-<div class="stats-strip"><div class="mini-stat"><b>100%</b><span>school scoped</span></div><div class="mini-stat"><b>CBT</b><span>automated results</span></div><div class="mini-stat"><b>24/7</b><span>web access</span></div></div>
-</div><div class="mock"><div class="mock-head"><div><strong>SchoolHub Pro</strong><div class="small muted">School overview</div></div><span class="pill">Live</span></div><div class="mock-bars"><span></span><span></span><span></span><span></span></div><div class="grid" style="margin-top:15px"><div class="card stat"><span class="stat-label">Students</span><b>1,248</b></div><div class="card stat"><span class="stat-label">Teachers</span><b>86</b></div><div class="card stat"><span class="stat-label">CBTs</span><b>42</b></div><div class="card stat"><span class="stat-label">Results</span><b>3.8k</b></div></div><div class="mock-chart"></div></div></div></section>
-<section id="features" class="section-block"><div class="container"><div class="section-heading"><span class="eyebrow" style="color:var(--primary)">Built for modern schools</span><h2>A complete school workspace, not just a dashboard.</h2><p>Each school gets its own users, records, branding and operational workspace.</p></div><div class="featuregrid stagger">
-<div class="feature"><div class="feature-icon">01</div><h3>Multi-school isolation</h3><p>School-owned records are tied to the correct school so one school's users and settings do not spill into another.</p></div>
-<div class="feature"><div class="feature-icon">02</div><h3>Admin control</h3><p>Create and manage teachers, students, subjects, CBTs, announcements and school branding from one place.</p></div>
-<div class="feature"><div class="feature-icon">03</div><h3>CBT & question bank</h3><p>Create examinations, add questions, publish tests and calculate student scores automatically.</p></div>
-<div class="feature"><div class="feature-icon">04</div><h3>Teacher workspace</h3><p>Teachers get a focused dashboard for subjects, examinations, announcements and results.</p></div>
-<div class="feature"><div class="feature-icon">05</div><h3>Student experience</h3><p>Students see available CBTs, take published examinations and review their own results.</p></div>
-<div class="feature"><div class="feature-icon">06</div><h3>Your school identity</h3><p>Logo, name, motto, colors and theme can be applied to your school's workspace.</p></div>
-</div></div></section>
-<section class="section-block" style="padding-top:10px"><div class="container"><div class="card" style="background:linear-gradient(135deg,#07152f,#123f7c);color:white;padding:clamp(25px,5vw,55px)"><div class="split" style="align-items:center"><div><span class="eyebrow">Ready to get started?</span><h2 style="font-size:clamp(30px,4vw,48px);line-height:1.05;letter-spacing:-.04em;margin:10px 0">Give your school a professional digital workspace.</h2><p style="color:#cbd5e1">Start with your school, configure the brand and invite your team.</p></div><div><a class="btn" href="/register.html">Create your school account</a></div></div></div></div></section>
-<footer class="footer">© 2026 SchoolHub Pro · Secure · Smart · Scalable</footer><script src="/app.js"></script></body></html>
+
+  <!-- Animated background -->
+  <div class="background">
+    <div class="grid"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="navbar" id="navbar">
+    <div class="nav-inner">
+
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <span>S</span>
+        </div>
+        <span id="navBrand">SchoolHub Pro</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#workflow">How it works</a>
+        <a href="#roles">For Schools</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/login.html" class="btn btn-outline">Sign in</a>
+        <a href="/register.html" class="btn btn-primary">Get Started</a>
+      </div>
+
+      <button class="mobile-menu" id="mobileMenu">
+        ☰
+      </button>
+
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main>
+
+    <section class="hero">
+      <div class="hero-container">
+
+        <div class="hero-content">
+
+          <div class="badge">
+            <span class="badge-dot"></span>
+            SMART SCHOOL MANAGEMENT PLATFORM
+          </div>
+
+          <h1>
+            Run your school
+            <span class="gradient-text">smarter.</span>
+          </h1>
+
+          <p>
+            Everything your school needs to manage students, teachers,
+            CBT examinations, results, announcements and school operations
+            from one modern platform.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="/register.html" class="btn btn-primary">
+              Get Started Free
+              <span>→</span>
+            </a>
+
+            <a href="/login.html" class="btn btn-outline">
+              Sign in to your school
+            </a>
+          </div>
+
+          <div class="trust-row">
+            <div class="trust-item">
+              <span class="check">✓</span>
+              Multi-school ready
+            </div>
+
+            <div class="trust-item">
+              <span class="check">✓</span>
+              CBT & Results
+            </div>
+
+            <div class="trust-item">
+              <span class="check">✓</span>
+              Secure accounts
+            </div>
+          </div>
+
+        </div>
+
+        <!-- DASHBOARD VISUAL -->
+        <div class="hero-visual">
+
+          <div class="floating-card one">
+            <div class="float-label">Students</div>
+            <div class="float-value">
+              <span class="float-icon">👨‍🎓</span>
+              <span id="floatingStudents">1,248</span>
+            </div>
+          </div>
+
+          <div class="floating-card two">
+            <div class="float-label">Exam performance</div>
+            <div class="float-value green-text">+18.6%</div>
+          </div>
+
+          <div class="dashboard-window">
+
+            <div class="window-top">
+              <div class="window-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <div class="window-title">
+                SchoolHub Pro Dashboard
+              </div>
+            </div>
+
+            <div class="dashboard-content">
+
+              <div class="mini-header">
+                <div class="mini-heading">
+                  School Overview
+                </div>
+
+                <div class="mini-user">
+                  <div class="avatar">AD</div>
+                  Admin
+                </div>
+              </div>
+
+              <div class="stats">
+
+                <div class="stat">
+                  <small>Students</small>
+                  <strong>1,248</strong>
+                </div>
+
+                <div class="stat">
+                  <small>Teachers</small>
+                  <strong>86</strong>
+                </div>
+
+                <div class="stat">
+                  <small>Exams</small>
+                  <strong class="blue-text">24</strong>
+                </div>
+
+              </div>
+
+              <div class="stats">
+
+                <div class="stat">
+                  <small>Submissions</small>
+                  <strong>934</strong>
+                </div>
+
+                <div class="stat">
+                  <small>Average</small>
+                  <strong class="green-text">78%</strong>
+                </div>
+
+                <div class="stat">
+                  <small>Subjects</small>
+                  <strong>32</strong>
+                </div>
+
+              </div>
+
+              <div class="chart-card">
+
+                <div class="chart-title">
+                  <span>Academic Performance</span>
+                  <span class="green-text">This year</span>
+                </div>
+
+                <div class="chart">
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PLATFORM STATS -->
+    <div class="platform-stats">
+      <div class="stats-container reveal">
+
+        <div class="platform-stat">
+          <strong>01</strong>
+          <span>Unified Platform</span>
+        </div>
+
+        <div class="platform-stat">
+          <strong>24/7</strong>
+          <span>School Access</span>
+        </div>
+
+        <div class="platform-stat">
+          <strong>100%</strong>
+          <span>Digital Management</span>
+        </div>
+
+        <div class="platform-stat">
+          <strong>∞</strong>
+          <span>Scalable Schools</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+
+      <div class="section-container">
+
+        <div class="section-heading reveal">
+          <div class="eyebrow">Everything connected</div>
+
+          <h2>
+            Powerful tools for a
+            <span class="gradient-text">modern school.</span>
+          </h2>
+
+          <p>
+            Replace scattered spreadsheets and disconnected systems with
+            one professional platform built for administrators, teachers
+            and students.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">🎓</div>
+            <h3>Student Management</h3>
+            <p>
+              Organize student accounts, profiles, academic information
+              and school activities from one place.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">📝</div>
+            <h3>CBT Examinations</h3>
+            <p>
+              Create computer-based tests, manage question banks,
+              set durations and automatically score submissions.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">📊</div>
+            <h3>Results & Analytics</h3>
+            <p>
+              Monitor examination results, student performance,
+              averages and academic statistics.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">👨‍🏫</div>
+            <h3>Teacher Management</h3>
+            <p>
+              Give teachers their own workspace for subjects,
+              examinations, questions and student performance.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">📢</div>
+            <h3>Announcements</h3>
+            <p>
+              Publish important school announcements and keep
+              students and staff informed.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">🎨</div>
+            <h3>School Branding</h3>
+            <p>
+              Customize your school's name, colors, logo and theme
+              without affecting other schools on the platform.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- WORKFLOW -->
+    <section id="workflow">
+
+      <div class="section-container">
+
+        <div class="workflow">
+
+          <div class="workflow-image reveal">
+
+            <div class="workflow-circle">
+
+              <div class="center-logo">
+                S
+              </div>
+
+              <div class="workflow-node node-1">
+                🏫 School
+              </div>
+
+              <div class="workflow-node node-2">
+                👨‍🏫 Teachers
+              </div>
+
+              <div class="workflow-node node-3">
+                📊 Results
+              </div>
+
+              <div class="workflow-node node-4">
+                📝 CBT
+              </div>
+
+              <div class="workflow-node node-5">
+                🎓 Students
+              </div>
+
+            </div>
+
+          </div>
+
+          <div>
+
+            <div class="section-heading reveal">
+              <div class="eyebrow">Simple workflow</div>
+
+              <h2>
+                One platform.
+                <span class="gradient-text">Every department.</span>
+              </h2>
+
+              <p>
+                SchoolHub Pro connects the people and processes that
+                keep your school running every day.
+              </p>
+            </div>
+
+            <div class="workflow-list">
+
+              <div class="workflow-item reveal">
+                <div class="workflow-number">01</div>
+                <div>
+                  <h3>Create your school</h3>
+                  <p>
+                    Set up your school account and configure your
+                    school identity.
+                  </p>
+                </div>
+              </div>
+
+              <div class="workflow-item reveal">
+                <div class="workflow-number">02</div>
+                <div>
+                  <h3>Add teachers and students</h3>
+                  <p>
+                    Create accounts and give each user the correct
+                    access level.
+                  </p>
+                </div>
+              </div>
+
+              <div class="workflow-item reveal">
+                <div class="workflow-number">03</div>
+                <div>
+                  <h3>Manage learning</h3>
+                  <p>
+                    Create subjects, question banks, CBT exams and
+                    academic activities.
+                  </p>
+                </div>
+              </div>
+
+              <div class="workflow-item reveal">
+                <div class="workflow-number">04</div>
+                <div>
+                  <h3>Track performance</h3>
+                  <p>
+                    Review submissions, results and performance
+                    analytics from the dashboard.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ROLES -->
+    <section class="roles" id="roles">
+
+      <div class="section-container">
+
+        <div class="section-heading reveal">
+          <div class="eyebrow">Built for everyone</div>
+
+          <h2>
+            A workspace for
+            <span class="gradient-text">every role.</span>
+          </h2>
+
+          <p>
+            Each user gets the tools they need while your school's
+            data remains separated from other schools.
+          </p>
+        </div>
+
+        <div class="role-grid">
+
+          <article class="role-card reveal">
+            <div class="role-icon">👑</div>
+            <h3>School Administrators</h3>
+            <p>
+              Manage users, branding, subjects, examinations,
+              announcements, results and school operations.
+            </p>
+          </article>
+
+          <article class="role-card reveal">
+            <div class="role-icon">👨‍🏫</div>
+            <h3>Teachers</h3>
+            <p>
+              Manage assigned subjects, create CBT questions,
+              publish examinations and monitor submissions.
+            </p>
+          </article>
+
+          <article class="role-card reveal">
+            <div class="role-icon">🎓</div>
+            <h3>Students</h3>
+            <p>
+              Access available examinations, take CBT tests,
+              submit answers and view academic results.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+
+      <div class="cta-box reveal">
+
+        <h2>
+          Ready to upgrade
+          <span class="gradient-text">your school?</span>
+        </h2>
+
+        <p>
+          Start building a smarter digital school experience with
+          SchoolHub Pro.
+        </p>
+
+        <div class="cta-buttons">
+
+          <a href="/register.html" class="btn btn-primary">
+            Create School Account →
+          </a>
+
+          <a href="/login.html" class="btn btn-outline">
+            Sign In
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+
+    <div class="footer-inner">
+
+      <div class="footer-brand">
+        <div class="logo-icon">
+          <span>S</span>
+        </div>
+        <span id="footerBrand">SchoolHub Pro</span>
+      </div>
+
+      <div class="footer-copy">
+        © <span id="year"></span> SchoolHub Pro. Smart school management.
+      </div>
+
+      <div class="footer-links">
+        <a href="/login.html">Login</a>
+        <a href="/register.html">Register</a>
+      </div>
+
+    </div>
+
+  </footer>
+
+  <script>
+    /* =========================
+       PLATFORM CONFIG
+       Matches server.js:
+       GET /api/platform-config
+    ========================= */
+
+    async function loadPlatformConfig() {
+      try {
+        const response = await fetch("/api/platform-config");
+
+        if (!response.ok) return;
+
+        const config = await response.json();
+
+        const platformName =
+          config.platformName ||
+          config.name ||
+          "SchoolHub Pro";
+
+        document.title =
+          platformName + " | Smart School Management";
+
+        document.querySelector("#navBrand").textContent =
+          platformName;
+
+        document.querySelector("#footerBrand").textContent =
+          platformName;
+
+      } catch (error) {
+        console.log("Platform config unavailable:", error);
+      }
+    }
+
+    /* =========================
+       NAVBAR SCROLL EFFECT
+    ========================= */
+
+    const navbar = document.getElementById("navbar");
+
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 30) {
+        navbar.classList.add("scrolled");
+      } else {
+        navbar.classList.remove("scrolled");
+      }
+    });
+
+    /* =========================
+       MOBILE MENU
+    ========================= */
+
+    const mobileMenu =
+      document.getElementById("mobileMenu");
+
+    mobileMenu.addEventListener("click", () => {
+      navbar.classList.toggle("mobile-open");
+
+      mobileMenu.textContent =
+        navbar.classList.contains("mobile-open")
+          ? "✕"
+          : "☰";
+    });
+
+    document.querySelectorAll(".nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        navbar.classList.remove("mobile-open");
+        mobileMenu.textContent = "☰";
+      });
+    });
+
+    /* =========================
+       SCROLL REVEAL
+    ========================= */
+
+    const revealElements =
+      document.querySelectorAll(".reveal");
+
+    const observer =
+      new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("show");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.12
+        }
+      );
+
+    revealElements.forEach(element => {
+      observer.observe(element);
+    });
+
+    /* =========================
+       YEAR
+    ========================= */
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    /* =========================
+       START
+    ========================= */
+
+    loadPlatformConfig();
+  </script>
+
+</body>
+</html>
