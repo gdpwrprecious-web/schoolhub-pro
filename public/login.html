@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Sign In | SchoolHub Pro</title>
 
+  <meta
+    name="description"
+    content="Sign in to SchoolHub Pro."
+  >
+
   <style>
-    :root {
-      --primary: #2563eb;
-      --secondary: #16a34a;
-      --dark: #07111f;
-      --dark2: #0f172a;
-      --text: #172033;
-      --muted: #64748b;
-      --border: #e5e7eb;
-      --bg: #f7f9fc;
-      --white: #fff;
-      --danger: #dc2626;
-    }
 
     * {
       box-sizing: border-box;
@@ -25,839 +24,1059 @@
       padding: 0;
     }
 
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --green: #16a34a;
+      --dark: #07111f;
+      --text: #111827;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --white: #ffffff;
+      --bg: #f8fafc;
+    }
+
     body {
       min-height: 100vh;
-      font-family: Inter, Arial, sans-serif;
+
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
       background: var(--bg);
       color: var(--text);
     }
 
     .page {
       min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-    }
 
-    /* LEFT */
+      display: grid;
+
+      grid-template-columns:
+        45% 55%;
+    }
 
     .hero {
       position: relative;
+
       overflow: hidden;
-      background:
-        radial-gradient(circle at 15% 15%, rgba(37,99,235,.3), transparent 30%),
-        radial-gradient(circle at 85% 75%, rgba(22,163,74,.2), transparent 28%),
-        linear-gradient(145deg, #050b14, #0c1728 55%, #101d31);
+
+      padding: 55px;
+
       color: white;
-      padding: 45px;
+
+      background:
+        radial-gradient(
+          circle at 15% 20%,
+          rgba(37,99,235,.35),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 85% 75%,
+          rgba(22,163,74,.24),
+          transparent 35%
+        ),
+        linear-gradient(
+          145deg,
+          #050b14,
+          #0b1727 55%,
+          #10213a
+        );
+
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    .hero::before,
-    .hero::after {
-      content: "";
-      position: absolute;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 50%;
-    }
-
     .hero::before {
-      width: 500px;
-      height: 500px;
-      right: -230px;
-      top: -180px;
-    }
+      content: "";
 
-    .hero::after {
+      position: absolute;
+
       width: 350px;
       height: 350px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.08);
+
+      border-radius: 50%;
+
+      top: -130px;
+      right: -100px;
+    }
+
+    .hero::after {
+      content: "";
+
+      position: absolute;
+
+      width: 500px;
+      height: 500px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.05);
+
+      border-radius: 50%;
+
+      bottom: -280px;
       left: -180px;
-      bottom: -150px;
+    }
+
+    .brand {
+      position: relative;
+      z-index: 2;
+
+      display: flex;
+      align-items: center;
+
+      gap: 13px;
+
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--blue),
+          var(--green)
+        );
+
+      box-shadow:
+        0 10px 30px
+        rgba(37,99,235,.25);
+
+      font-size: 22px;
+      font-weight: 900;
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      max-width: 650px;
-    }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+      max-width: 560px;
 
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      font-weight: 900;
-      font-size: 22px;
-      box-shadow: 0 10px 30px rgba(37,99,235,.25);
-    }
-
-    .brand strong {
-      font-size: 19px;
-    }
-
-    .brand span {
-      display: block;
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: #94a3b8;
-      margin-top: 3px;
-    }
-
-    .hero-main {
-      margin-top: 100px;
+      margin: auto 0;
     }
 
     .eyebrow {
-      display: inline-flex;
-      padding: 7px 11px;
-      border-radius: 30px;
-      background: rgba(37,99,235,.13);
-      border: 1px solid rgba(96,165,250,.2);
       color: #93c5fd;
-      font-size: 10px;
+
+      font-size: 13px;
+
       font-weight: 800;
-      letter-spacing: 1px;
+
+      letter-spacing: 2px;
     }
 
-    .hero h1 {
-      margin-top: 22px;
-      font-size: clamp(35px, 4vw, 57px);
-      line-height: 1.05;
-      letter-spacing: -2px;
-    }
+    h1 {
+      margin-top: 18px;
 
-    .hero h1 span {
-      background: linear-gradient(90deg, #60a5fa, #4ade80);
-      -webkit-background-clip: text;
-      color: transparent;
+      font-size:
+        clamp(42px, 5vw, 68px);
+
+      line-height: 1.02;
+
+      letter-spacing: -3px;
     }
 
     .hero-description {
-      margin-top: 22px;
-      color: #a9b7ca;
-      line-height: 1.8;
-      max-width: 570px;
-      font-size: 14px;
+      margin-top: 25px;
+
+      max-width: 500px;
+
+      color: #b8c5d6;
+
+      font-size: 17px;
+
+      line-height: 1.75;
     }
 
     .features {
-      margin-top: 35px;
       display: grid;
-      gap: 12px;
+
+      gap: 15px;
+
+      margin-top: 35px;
     }
 
     .feature {
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #dbe5f1;
-      font-size: 13px;
+
+      gap: 13px;
+
+      color: #dbeafe;
+
+      font-size: 14px;
     }
 
     .feature-icon {
-      width: 32px;
-      height: 32px;
+      width: 31px;
+      height: 31px;
+
       display: grid;
       place-items: center;
+
       border-radius: 9px;
-      background: rgba(255,255,255,.07);
+
+      background:
+        rgba(255,255,255,.08);
+
+      color: #86efac;
     }
 
     .hero-footer {
       position: relative;
       z-index: 2;
-      color: #64748b;
-      font-size: 10px;
+
+      display: flex;
+      justify-content: space-between;
+
+      gap: 20px;
+
+      color: #718096;
+
+      font-size: 12px;
     }
 
-    /* FORM */
-
-    .form-side {
+    .form-area {
       background: white;
+
       display: flex;
+
       align-items: center;
       justify-content: center;
-      padding: 35px;
+
+      padding: 45px;
     }
 
-    .form-box {
+    .form-card {
       width: 100%;
-      max-width: 440px;
-      animation: slideUp .5s ease;
+      max-width: 470px;
     }
 
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(18px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .mobile-brand {
-      display: none;
+    .form-header {
+      margin-bottom: 28px;
     }
 
     .form-header h2 {
-      font-size: 30px;
-      letter-spacing: -.7px;
+      color: #0f172a;
+
+      font-size: 36px;
+
+      letter-spacing: -1.5px;
     }
 
     .form-header p {
-      margin-top: 8px;
+      margin-top: 9px;
+
       color: var(--muted);
-      font-size: 13px;
+
       line-height: 1.6;
     }
 
-    .form {
-      margin-top: 28px;
+    .message {
+      display: none;
+
+      padding: 13px 15px;
+
+      margin-bottom: 18px;
+
+      border-radius: 11px;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    .message.error {
+      display: block;
+
+      background: #fef2f2;
+
+      color: #b91c1c;
+
+      border:
+        1px solid
+        #fecaca;
+    }
+
+    .message.success {
+      display: block;
+
+      background: #f0fdf4;
+
+      color: #15803d;
+
+      border:
+        1px solid
+        #bbf7d0;
     }
 
     .field {
-      margin-bottom: 16px;
+      margin-bottom: 17px;
     }
 
     label {
       display: block;
-      font-size: 11px;
-      font-weight: 800;
+
       margin-bottom: 7px;
+
       color: #334155;
-    }
 
-    .input-wrap {
-      position: relative;
-    }
+      font-size: 13px;
 
-    .input-icon {
-      position: absolute;
-      left: 13px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      font-size: 15px;
+      font-weight: 700;
     }
 
     input {
       width: 100%;
-      border: 1px solid var(--border);
+
+      height: 53px;
+
+      padding: 0 15px;
+
+      border:
+        1px solid
+        var(--border);
+
       border-radius: 12px;
-      padding: 13px 13px 13px 40px;
+
+      background: #fbfdff;
+
+      color: #0f172a;
+
+      font-size: 14px;
+
       outline: none;
-      color: var(--text);
-      background: #fff;
-      transition: .2s;
+
+      transition:
+        border .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
     }
 
     input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.08);
+      border-color: var(--blue);
+
+      background: white;
+
+      box-shadow:
+        0 0 0 4px
+        rgba(37,99,235,.09);
     }
 
-    .password-toggle {
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input {
+      padding-right: 70px;
+    }
+
+    .show-password {
       position: absolute;
-      right: 10px;
+
       top: 50%;
-      transform: translateY(-50%);
+      right: 12px;
+
+      transform:
+        translateY(-50%);
+
       border: 0;
+
       background: transparent;
-      color: #64748b;
+
+      color: var(--blue);
+
+      font-size: 12px;
+
+      font-weight: 700;
+
       cursor: pointer;
     }
 
     .submit {
       width: 100%;
+
+      height: 53px;
+
       border: 0;
-      border-radius: 12px;
-      padding: 14px;
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--blue),
+          var(--blue-dark)
+        );
+
       color: white;
+
+      font-size: 14px;
+
       font-weight: 800;
-      background: linear-gradient(100deg, var(--primary), #1d4ed8);
-      box-shadow: 0 10px 25px rgba(37,99,235,.2);
+
       cursor: pointer;
-      transition: .2s;
+
+      box-shadow:
+        0 12px 25px
+        rgba(37,99,235,.20);
+
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        opacity .2s ease;
     }
 
     .submit:hover {
-      transform: translateY(-1px);
+      transform:
+        translateY(-1px);
+
+      box-shadow:
+        0 15px 30px
+        rgba(37,99,235,.25);
     }
 
     .submit:disabled {
-      opacity: .6;
-      cursor: wait;
+      opacity: .65;
+
+      cursor: not-allowed;
+
+      transform: none;
     }
 
     .divider {
       display: flex;
+
       align-items: center;
-      gap: 12px;
-      margin: 23px 0;
-      color: #94a3b8;
-      font-size: 10px;
+
+      gap: 13px;
+
+      margin: 25px 0;
     }
 
     .divider::before,
     .divider::after {
       content: "";
-      height: 1px;
+
       flex: 1;
-      background: var(--border);
+
+      height: 1px;
+
+      background: #e2e8f0;
     }
 
-    .google-btn {
+    .divider span {
+      color: #94a3b8;
+
+      font-size: 12px;
+
+      font-weight: 700;
+    }
+
+    .google {
       width: 100%;
-      min-height: 48px;
-      border: 1px solid var(--border);
-      background: white;
-      border-radius: 12px;
+
+      height: 53px;
+
       display: flex;
+
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      font-weight: 750;
+
+      gap: 11px;
+
+      border:
+        1px solid
+        #dbe2ea;
+
+      border-radius: 13px;
+
+      background: white;
+
       color: #1f2937;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
       cursor: pointer;
-      transition: .2s;
+
+      text-decoration: none;
+
+      transition:
+        background .2s ease,
+        border .2s ease,
+        transform .2s ease;
     }
 
-    .google-btn:hover {
+    .google:hover {
       background: #f8fafc;
+
       border-color: #cbd5e1;
+
+      transform:
+        translateY(-1px);
     }
 
     .google-icon {
-      width: 19px;
-      height: 19px;
+      width: 20px;
+      height: 20px;
+
+      display: grid;
+      place-items: center;
+
+      font-weight: 900;
+
+      font-size: 17px;
     }
 
     .google-note {
-      color: #94a3b8;
-      text-align: center;
-      font-size: 10px;
-      margin-top: 8px;
-    }
+      margin-top: 12px;
 
-    .message {
-      display: none;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      font-size: 12px;
+      color: #94a3b8;
+
+      text-align: center;
+
+      font-size: 11px;
+
       line-height: 1.5;
     }
 
-    .message.show {
-      display: block;
-    }
-
-    .message.error {
-      color: #991b1b;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-    }
-
-    .message.success {
-      color: #166534;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-    }
-
     .register-link {
+      margin-top: 22px;
+
+      color: #64748b;
+
       text-align: center;
-      margin-top: 25px;
-      color: var(--muted);
-      font-size: 12px;
+
+      font-size: 13px;
     }
 
     .register-link a {
-      color: var(--primary);
+      color: var(--blue);
+
       font-weight: 800;
+
       text-decoration: none;
     }
 
     .security {
-      margin-top: 25px;
-      display: flex;
-      justify-content: center;
-      gap: 18px;
+      margin-top: 27px;
+
+      padding-top: 20px;
+
+      border-top:
+        1px solid
+        #eef2f7;
+
       color: #94a3b8;
-      font-size: 9px;
+
+      text-align: center;
+
+      font-size: 11px;
+
+      line-height: 1.6;
     }
 
-    @media(max-width: 900px) {
+    @media (max-width: 950px) {
 
       .page {
         grid-template-columns: 1fr;
       }
 
       .hero {
-        display: none;
+        min-height: 390px;
+
+        padding: 35px;
       }
 
-      .form-side {
-        min-height: 100vh;
+      .hero-footer {
+        margin-top: 45px;
       }
 
-      .mobile-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 45px;
-      }
-
-      .mobile-brand .logo {
-        width: 42px;
-        height: 42px;
+      .form-area {
+        padding: 35px 22px;
       }
 
     }
 
-    @media(max-width: 500px) {
+    @media (max-width: 600px) {
 
-      .form-side {
-        padding: 25px 18px;
+      .hero {
+        min-height: auto;
+
+        padding: 28px 22px;
+      }
+
+      h1 {
+        font-size: 42px;
+
+        letter-spacing: -2px;
+      }
+
+      .form-area {
+        padding: 30px 18px;
       }
 
       .form-header h2 {
-        font-size: 27px;
+        font-size: 30px;
       }
 
-      .security {
-        gap: 9px;
+      .hero-footer {
+        display: block;
+
+        line-height: 1.7;
+      }
+
+      .hero-footer span {
+        display: block;
       }
 
     }
+
   </style>
+
 </head>
 
 <body>
 
-<div class="page">
+  <div class="page">
 
-  <section class="hero">
-
-    <div class="hero-content">
+    <section class="hero">
 
       <div class="brand">
-        <div class="logo">S</div>
 
-        <div>
-          <strong>SchoolHub Pro</strong>
-          <span>SMART SCHOOL MANAGEMENT</span>
+        <div class="brand-logo">
+          S
         </div>
+
+        <span>
+          SchoolHub Pro
+        </span>
+
       </div>
 
 
-      <div class="hero-main">
+      <div class="hero-content">
 
         <div class="eyebrow">
-          SCHOOL MANAGEMENT PLATFORM
+          SMART SCHOOL MANAGEMENT
         </div>
 
         <h1>
-          Everything your school needs,
-          <span>in one place.</span>
+          Everything your school needs, in one place.
         </h1>
 
         <p class="hero-description">
-          Manage students, teachers, CBT examinations, results,
-          announcements and school operations through one secure
-          professional platform.
+          Manage students, teachers, examinations,
+          CBTs, results and school operations from
+          one secure platform.
         </p>
 
 
         <div class="features">
 
           <div class="feature">
-            <div class="feature-icon">👥</div>
-            Student & Teacher Management
+
+            <div class="feature-icon">
+              ✓
+            </div>
+
+            <span>
+              Student Management
+            </span>
+
           </div>
 
-          <div class="feature">
-            <div class="feature-icon">📝</div>
-            CBT, Question Bank & Results
-          </div>
 
           <div class="feature">
-            <div class="feature-icon">📊</div>
-            School Analytics & Administration
+
+            <div class="feature-icon">
+              ✓
+            </div>
+
+            <span>
+              CBT & Results
+            </span>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="feature-icon">
+              ✓
+            </div>
+
+            <span>
+              Analytics & School Management
+            </span>
+
           </div>
 
         </div>
 
       </div>
 
-    </div>
+
+      <div class="hero-footer">
+
+        <span>
+          © 2026 SchoolHub Pro
+        </span>
+
+        <span>
+          Secure • Smart • Scalable
+        </span>
+
+      </div>
+
+    </section>
 
 
-    <div class="hero-footer">
-      © 2026 SchoolHub Pro · Secure · Smart · Scalable
-    </div>
+    <main class="form-area">
 
-  </section>
+      <div class="form-card">
 
+        <div class="form-header">
 
-  <section class="form-side">
+          <h2>
+            Welcome back
+          </h2>
 
-    <div class="form-box">
+          <p>
+            Sign in to continue to your SchoolHub
+            workspace.
+          </p>
 
-      <div class="mobile-brand">
-
-        <div class="logo">S</div>
-
-        <div>
-          <strong>SchoolHub Pro</strong>
-          <small style="display:block;color:#94a3b8;font-size:9px;letter-spacing:1px">
-            SMART SCHOOL MANAGEMENT
-          </small>
         </div>
 
-      </div>
+
+        <div
+          id="message"
+          class="message"
+        ></div>
 
 
-      <div class="form-header">
+        <form id="loginForm">
 
-        <h2>Welcome back</h2>
+          <div class="field">
 
-        <p>
-          Sign in to your SchoolHub Pro account to continue.
-        </p>
-
-      </div>
-
-
-      <div class="message" id="message"></div>
-
-
-      <form class="form" id="loginForm">
-
-        <div class="field">
-
-          <label>Email or Username</label>
-
-          <div class="input-wrap">
-
-            <span class="input-icon">◉</span>
+            <label for="identifier">
+              Email or username
+            </label>
 
             <input
               id="identifier"
-              name="identifier"
+              type="text"
+              placeholder="Enter email or username"
               autocomplete="username"
-              placeholder="Enter your email or username"
-              required>
+              required
+            >
 
           </div>
 
-        </div>
 
+          <div class="field">
 
-        <div class="field">
+            <label for="password">
+              Password
+            </label>
 
-          <label>Password</label>
+            <div class="password-wrap">
 
-          <div class="input-wrap">
+              <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              >
 
-            <span class="input-icon">●</span>
+              <button
+                type="button"
+                class="show-password"
+                id="showPassword"
+              >
+                Show
+              </button>
 
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Enter your password"
-              required>
-
-            <button
-              type="button"
-              class="password-toggle"
-              id="togglePassword">
-              Show
-            </button>
+            </div>
 
           </div>
 
+
+          <button
+            type="submit"
+            class="submit"
+            id="loginButton"
+          >
+            Sign In
+          </button>
+
+        </form>
+
+
+        <div class="divider">
+          <span>OR</span>
         </div>
 
 
-        <button class="submit" id="loginButton">
-          Sign In
-        </button>
+        <!--
+          IMPORTANT:
+          This is intentionally a normal link.
+          There is NO Google Identity Services script here.
+        -->
 
-      </form>
+        <a
+          href="/auth/google"
+          class="google"
+          id="googleButton"
+        >
 
+          <span class="google-icon">
+            G
+          </span>
 
-      <div class="divider">
-        OR CONTINUE WITH
-      </div>
+          <span>
+            Continue with Google
+          </span>
 
-
-      <button class="google-btn" id="googleButton">
-
-        <svg class="google-icon" viewBox="0 0 24 24">
-          <path fill="#4285F4"
-            d="M21.35 12.27c0-.77-.07-1.51-.22-2.22H12v4.2h5.23a4.47 4.47 0 0 1-1.94 2.93v2.44h3.14c1.84-1.7 2.92-4.2 2.92-7.35z"/>
-          <path fill="#34A853"
-            d="M12 21.99c2.64 0 4.85-.87 6.46-2.37l-3.14-2.44c-.87.58-1.98.92-3.32.92-2.55 0-4.71-1.72-5.49-4.03H3.27v2.52A9.76 9.76 0 0 0 12 21.99z"/>
-          <path fill="#FBBC05"
-            d="M6.51 14.07A5.87 5.87 0 0 1 6.2 12c0-.72.12-1.42.31-2.07V7.41H3.27A9.99 9.99 0 0 0 2 12c0 1.61.39 3.13 1.27 4.59l3.24-2.52z"/>
-          <path fill="#EA4335"
-            d="M12 5.9c1.44 0 2.72.5 3.74 1.48l2.8-2.8C16.85 2.97 14.64 2 12 2a9.76 9.76 0 0 0-8.73 5.41l3.24 2.52C7.29 7.62 9.45 5.9 12 5.9z"/>
-        </svg>
-
-        Continue with Google
-
-      </button>
-
-      <div class="google-note">
-        Google sign-in must be configured by the platform administrator.
-      </div>
-
-
-      <div class="register-link">
-
-        Don't have an account?
-
-        <a href="/register.html">
-          Register your school
         </a>
 
+
+        <div class="google-note">
+          Google Sign-In uses secure OAuth 2.0.
+          Register your SchoolHub account first.
+        </div>
+
+
+        <div class="register-link">
+
+          Don't have a school account?
+
+          <a href="/register.html">
+            Create one
+          </a>
+
+        </div>
+
+
+        <div class="security">
+
+          Your connection is protected by your
+          SchoolHub session. Never share your
+          password or security credentials.
+
+        </div>
+
       </div>
 
+    </main>
 
-      <div class="security">
-        <span>🔒 Secure Login</span>
-        <span>•</span>
-        <span>School Isolated</span>
-        <span>•</span>
-        <span>Protected</span>
-      </div>
-
-    </div>
-
-  </section>
-
-</div>
+  </div>
 
 
-<script>
+  <script>
 
-  const message = document.getElementById("message");
-
-
-  function showMessage(text, type = "error") {
-
-    message.textContent = text;
-
-    message.className = `message show ${type}`;
-
-  }
-
-
-  function redirectByRole(user) {
-
-    const role = String(user.role || "").toLowerCase();
-
-    if (
-      role === "superadmin" ||
-      role === "systemadmin" ||
-      role === "system_admin" ||
-      role === "admin" ||
-      role === "school_admin"
-    ) {
-      window.location.href = "/admin.html";
-      return;
-    }
-
-    if (role === "teacher") {
-      window.location.href = "/teacher.html";
-      return;
-    }
-
-    if (role === "student") {
-      window.location.href = "/student.html";
-      return;
-    }
-
-    window.location.href = "/login.html";
-
-  }
-
-
-  async function login() {
+    const form =
+      document.getElementById("loginForm");
 
     const identifier =
-      document.getElementById("identifier").value.trim();
+      document.getElementById("identifier");
 
     const password =
-      document.getElementById("password").value;
+      document.getElementById("password");
 
-    const button =
+    const message =
+      document.getElementById("message");
+
+    const loginButton =
       document.getElementById("loginButton");
 
-    button.disabled = true;
-    button.textContent = "Signing in...";
 
-    try {
+    function showMessage(
+      text,
+      type = "error"
+    ) {
 
-      const response = await fetch("/api/login", {
+      message.textContent = text;
 
-        method: "POST",
-
-        credentials: "include",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          identifier,
-          username: identifier,
-          email: identifier,
-          password
-        })
-
-      });
-
-
-      const data = await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.error ||
-          data.message ||
-          "Invalid login details."
-        );
-
-      }
-
-
-      showMessage("Login successful. Redirecting...", "success");
-
-      const user =
-        data.user ||
-        data;
-
-
-      setTimeout(() => {
-        redirectByRole(user);
-      }, 300);
-
-
-    } catch (error) {
-
-      showMessage(error.message);
-
-      button.disabled = false;
-      button.textContent = "Sign In";
+      message.className =
+        "message " + type;
 
     }
 
-  }
+
+    function getErrorFromUrl() {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      return params.get("error");
+
+    }
 
 
-  document.getElementById("loginForm")
-    .addEventListener("submit", event => {
-
-      event.preventDefault();
-
-      login();
-
-    });
+    const urlError =
+      getErrorFromUrl();
 
 
-  document.getElementById("togglePassword")
-    .addEventListener("click", () => {
+    if (urlError) {
 
-      const input =
-        document.getElementById("password");
+      showMessage(
+        urlError,
+        "error"
+      );
 
-      const button =
-        document.getElementById("togglePassword");
+      window.history.replaceState(
+        {},
+        document.title,
+        "/login.html"
+      );
 
-      if (input.type === "password") {
+    }
 
-        input.type = "text";
-        button.textContent = "Hide";
 
-      } else {
+    document
+      .getElementById("showPassword")
+      .addEventListener(
+        "click",
+        () => {
 
-        input.type = "password";
-        button.textContent = "Show";
+          const isPassword =
+            password.type === "password";
+
+          password.type =
+            isPassword
+              ? "text"
+              : "password";
+
+          document.getElementById(
+            "showPassword"
+          ).textContent =
+            isPassword
+              ? "Hide"
+              : "Show";
+
+        }
+      );
+
+
+    form.addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        message.className =
+          "message";
+
+        message.textContent =
+          "";
+
+        loginButton.disabled =
+          true;
+
+        loginButton.textContent =
+          "Signing in...";
+
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/login",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify({
+
+                  identifier:
+                    identifier.value.trim(),
+
+                  password:
+                    password.value
+
+                })
+              }
+            );
+
+
+          const data =
+            await response.json()
+              .catch(() => ({}));
+
+
+          if (!response.ok || !data.ok) {
+
+            throw new Error(
+              data.message ||
+              "Unable to sign in."
+            );
+
+          }
+
+
+          showMessage(
+            "Login successful. Redirecting...",
+            "success"
+          );
+
+
+          window.location.href =
+            data.redirect ||
+            "/login.html";
+
+        } catch (error) {
+
+          showMessage(
+            error.message ||
+            "An internal error occurred during login.",
+            "error"
+          );
+
+          loginButton.disabled =
+            false;
+
+          loginButton.textContent =
+            "Sign In";
+
+        }
 
       }
-
-    });
-
-
-  document.getElementById("googleButton")
-    .addEventListener("click", () => {
-
-      /*
-        The server handles Google OAuth.
-
-        The browser is redirected to:
-        /auth/google
-
-        The server then sends the user to Google and
-        receives the callback at:
-        /auth/google/callback
-      */
-
-      window.location.href = "/auth/google";
-
-    });
-
-
-  /*
-    If the server redirects back with an OAuth error,
-    display a friendly message.
-  */
-
-  const params =
-    new URLSearchParams(window.location.search);
-
-  const error =
-    params.get("error");
-
-  if (error) {
-
-    const messages = {
-      google_failed:
-        "Google sign-in failed. Please try again.",
-
-      google_not_configured:
-        "Google sign-in has not been configured yet.",
-
-      google_auth_failed:
-        "Google authentication could not be completed.",
-
-      inactive:
-        "This account has been disabled."
-    };
-
-    showMessage(
-      messages[error] ||
-      "Authentication could not be completed."
     );
 
-  }
-
-</script>
+  </script>
 
 </body>
 </html>
