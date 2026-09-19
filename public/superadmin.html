@@ -1,0 +1,4619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Superadmin Dashboard | SchoolHub Pro</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --sidebar: #0b1220;
+      --sidebar-hover: #172033;
+
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+
+      --shadow:
+        0 10px 30px rgba(15, 23, 42, 0.07);
+
+      --radius: 16px;
+    }
+
+    body.dark {
+      --bg: #080d16;
+      --card: #111827;
+      --sidebar: #050912;
+
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #243044;
+
+      --shadow:
+        0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    body {
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: var(--bg);
+      color: var(--text);
+
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* ======================================================
+       LAYOUT
+    ====================================================== */
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar);
+      color: white;
+
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+
+      z-index: 100;
+
+      display: flex;
+      flex-direction: column;
+
+      transition:
+        transform 0.3s ease;
+    }
+
+    .brand {
+      height: 76px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+
+      padding: 0 22px;
+
+      border-bottom:
+        1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+
+      border-radius: 12px;
+
+      display: grid;
+      place-items: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #16a34a
+        );
+
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .brand-text {
+      line-height: 1.1;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      margin-top: 4px;
+
+      color: #94a3b8;
+
+      font-size: 10px;
+      letter-spacing: 1.4px;
+    }
+
+    .sidebar-content {
+      flex: 1;
+
+      padding: 18px 12px;
+
+      overflow-y: auto;
+    }
+
+    .nav-label {
+      padding:
+        10px 12px 7px;
+
+      color: #64748b;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      letter-spacing: 1.2px;
+
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      width: 100%;
+
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+
+      padding: 12px 13px;
+
+      margin-bottom: 4px;
+
+      border: 0;
+      border-radius: 10px;
+
+      background: transparent;
+
+      color: #cbd5e1;
+
+      text-align: left;
+
+      transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: white;
+
+      transform:
+        translateX(2px);
+    }
+
+    .nav-item.active {
+      background:
+        linear-gradient(
+          90deg,
+          rgba(37,99,235,0.22),
+          rgba(37,99,235,0.08)
+        );
+
+      color: white;
+    }
+
+    .nav-icon {
+      width: 21px;
+
+      text-align: center;
+
+      font-size: 17px;
+    }
+
+    .sidebar-footer {
+      padding: 15px;
+
+      border-top:
+        1px solid rgba(255,255,255,0.08);
+    }
+
+    .admin-mini {
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+
+      margin-bottom: 12px;
+
+      padding: 9px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #16a34a
+        );
+
+      display: grid;
+      place-items: center;
+
+      overflow: hidden;
+
+      flex-shrink: 0;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .admin-name {
+      font-size: 12px;
+      font-weight: 700;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .admin-role {
+      color: #94a3b8;
+
+      font-size: 10px;
+
+      margin-top: 2px;
+    }
+
+    .logout-btn {
+      width: 100%;
+
+      padding: 10px;
+
+      border: 1px solid
+        rgba(255,255,255,0.1);
+
+      border-radius: 9px;
+
+      background: rgba(255,255,255,0.04);
+
+      color: #cbd5e1;
+
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(220,38,38,0.15);
+      color: #fca5a5;
+    }
+
+    /* ======================================================
+       MAIN
+    ====================================================== */
+
+    .main {
+      width: calc(100% - 260px);
+      margin-left: 260px;
+
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 76px;
+
+      background: var(--card);
+
+      border-bottom:
+        1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 28px;
+
+      position: sticky;
+      top: 0;
+
+      z-index: 50;
+    }
+
+    .mobile-menu {
+      display: none;
+
+      width: 40px;
+      height: 40px;
+
+      border: 1px solid var(--border);
+
+      background: var(--card);
+
+      color: var(--text);
+
+      border-radius: 10px;
+    }
+
+    .page-title h1 {
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .page-title p {
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+
+      border-radius: 10px;
+
+      border: 1px solid var(--border);
+
+      background: var(--card);
+
+      color: var(--text);
+
+      transition: 0.2s;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    /* ======================================================
+       SECTIONS
+    ====================================================== */
+
+    .section {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-header {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 15px;
+
+      margin-bottom: 20px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+    }
+
+    .section-header p {
+      color: var(--muted);
+
+      font-size: 13px;
+
+      margin-top: 4px;
+    }
+
+    /* ======================================================
+       STATS
+    ====================================================== */
+
+    .stats {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 16px;
+
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--card);
+
+      border: 1px solid var(--border);
+
+      border-radius: var(--radius);
+
+      padding: 20px;
+
+      box-shadow: var(--shadow);
+
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform:
+        translateY(-3px);
+
+      box-shadow:
+        0 16px 35px
+        rgba(15,23,42,0.1);
+    }
+
+    .stat-top {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      margin-bottom: 15px;
+    }
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+
+      border-radius: 12px;
+
+      display: grid;
+      place-items: center;
+
+      font-size: 18px;
+
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .dark .stat-icon {
+      background: #172554;
+    }
+
+    .stat-label {
+      color: var(--muted);
+
+      font-size: 12px;
+
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 28px;
+
+      font-weight: 850;
+
+      letter-spacing: -1px;
+    }
+
+    .stat-note {
+      margin-top: 6px;
+
+      color: var(--muted);
+
+      font-size: 11px;
+    }
+
+    /* ======================================================
+       CARDS
+    ====================================================== */
+
+    .card {
+      background: var(--card);
+
+      border: 1px solid var(--border);
+
+      border-radius: var(--radius);
+
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      padding: 18px 20px;
+
+      border-bottom:
+        1px solid var(--border);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 10px;
+    }
+
+    .card-header h3 {
+      font-size: 15px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 18px;
+    }
+
+    .quick-actions {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 12px;
+    }
+
+    .quick-action {
+      padding: 18px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 12px;
+
+      background: var(--card);
+
+      text-align: left;
+
+      color: var(--text);
+
+      transition: 0.2s;
+    }
+
+    .quick-action:hover {
+      border-color: var(--primary);
+
+      transform:
+        translateY(-2px);
+    }
+
+    .quick-action strong {
+      display: block;
+
+      margin-bottom: 5px;
+    }
+
+    .quick-action span {
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+    /* ======================================================
+       TABLE
+    ====================================================== */
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      min-width: 700px;
+    }
+
+    th,
+    td {
+      padding: 13px 15px;
+
+      border-bottom:
+        1px solid var(--border);
+
+      text-align: left;
+
+      font-size: 12px;
+    }
+
+    th {
+      color: var(--muted);
+
+      font-size: 10px;
+
+      text-transform: uppercase;
+
+      letter-spacing: 0.8px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .school-cell {
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+    }
+
+    .school-logo {
+      width: 36px;
+      height: 36px;
+
+      border-radius: 9px;
+
+      display: grid;
+      place-items: center;
+
+      overflow: hidden;
+
+      background: #eff6ff;
+
+      color: var(--primary);
+
+      font-weight: 800;
+    }
+
+    .school-logo img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .school-name {
+      font-weight: 700;
+    }
+
+    .school-motto {
+      color: var(--muted);
+
+      font-size: 10px;
+
+      margin-top: 2px;
+    }
+
+    /* ======================================================
+       BADGES
+    ====================================================== */
+
+    .badge {
+      display: inline-flex;
+
+      align-items: center;
+
+      padding: 5px 8px;
+
+      border-radius: 999px;
+
+      font-size: 10px;
+
+      font-weight: 700;
+    }
+
+    .badge-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-orange {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    body.dark .badge-green {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+
+    body.dark .badge-red {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    body.dark .badge-blue {
+      background: #1e3a8a;
+      color: #bfdbfe;
+    }
+
+    /* ======================================================
+       BUTTONS
+    ====================================================== */
+
+    .btn {
+      border: 0;
+
+      border-radius: 9px;
+
+      padding: 10px 14px;
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      transition: 0.2s;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 7px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background:
+        var(--primary-dark);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--card);
+
+      border:
+        1px solid var(--border);
+
+      color: var(--text);
+    }
+
+    .btn-small {
+      padding: 7px 10px;
+
+      font-size: 10px;
+    }
+
+    .actions {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 6px;
+    }
+
+    /* ======================================================
+       FORMS
+    ====================================================== */
+
+    .form-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 7px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: var(--text);
+
+      font-size: 12px;
+
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 9px;
+
+      background: var(--card);
+
+      color: var(--text);
+
+      padding: 11px 12px;
+
+      outline: none;
+
+      transition: 0.2s;
+    }
+
+    textarea {
+      min-height: 100px;
+
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color:
+        var(--primary);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(37,99,235,0.1);
+    }
+
+    .form-actions {
+      margin-top: 18px;
+
+      display: flex;
+
+      gap: 9px;
+
+      justify-content: flex-end;
+    }
+
+    /* ======================================================
+       SEARCH
+    ====================================================== */
+
+    .toolbar {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 10px;
+
+      margin-bottom: 15px;
+    }
+
+    .search-box {
+      max-width: 300px;
+    }
+
+    /* ======================================================
+       MODAL
+    ====================================================== */
+
+    .modal {
+      position: fixed;
+
+      inset: 0;
+
+      background:
+        rgba(2,6,23,0.62);
+
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+
+      z-index: 500;
+
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(
+        600px,
+        100%
+      );
+
+      max-height: 90vh;
+
+      overflow-y: auto;
+
+      background: var(--card);
+
+      border-radius: 18px;
+
+      box-shadow:
+        0 30px 80px
+        rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      padding: 18px 20px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      border-bottom:
+        1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-size: 16px;
+    }
+
+    .modal-close {
+      width: 34px;
+      height: 34px;
+
+      border: 1px solid var(--border);
+
+      background: var(--card);
+
+      color: var(--text);
+
+      border-radius: 8px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    /* ======================================================
+       TOAST
+    ====================================================== */
+
+    .toast {
+      position: fixed;
+
+      right: 20px;
+      bottom: 20px;
+
+      min-width: 280px;
+
+      max-width: 400px;
+
+      padding: 13px 15px;
+
+      border-radius: 11px;
+
+      background: #111827;
+
+      color: white;
+
+      box-shadow:
+        0 15px 40px
+        rgba(0,0,0,0.25);
+
+      transform:
+        translateY(120px);
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition: 0.3s;
+
+      z-index: 1000;
+
+      font-size: 12px;
+    }
+
+    .toast.show {
+      transform:
+        translateY(0);
+
+      opacity: 1;
+    }
+
+    .toast.success {
+      background:
+        #166534;
+    }
+
+    .toast.error {
+      background:
+        #991b1b;
+    }
+
+    /* ======================================================
+       EMPTY
+    ====================================================== */
+
+    .empty {
+      padding: 40px 20px;
+
+      text-align: center;
+
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 30px;
+
+      margin-bottom: 8px;
+    }
+
+    /* ======================================================
+       LOADING
+    ====================================================== */
+
+    .loading {
+      opacity: 0.6;
+
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+
+      border: 2px solid
+        rgba(255,255,255,0.4);
+
+      border-top-color: white;
+
+      border-radius: 50%;
+
+      animation:
+        spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform:
+          rotate(360deg);
+      }
+    }
+
+    /* ======================================================
+       RESPONSIVE
+    ====================================================== */
+
+    @media (max-width: 1100px) {
+      .stats {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .quick-actions {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 850px) {
+      .sidebar {
+        transform:
+          translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform:
+          translateX(0);
+      }
+
+      .main {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .grid-2,
+      .form-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+      .form-group.full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns:
+          1fr;
+      }
+
+      .quick-actions {
+        grid-template-columns:
+          1fr;
+      }
+
+      .page-title h1 {
+        font-size: 17px;
+      }
+
+      .page-title p {
+        display: none;
+      }
+
+      .top-actions .profile-top {
+        display: none;
+      }
+
+      .section-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- =====================================================
+       SIDEBAR
+  ====================================================== -->
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+
+      <div class="brand-logo">
+        S
+      </div>
+
+      <div class="brand-text">
+
+        <div class="brand-title">
+          SchoolHub Pro
+        </div>
+
+        <div class="brand-subtitle">
+          SUPERADMIN
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="sidebar-content">
+
+      <div class="nav-label">
+        Platform
+      </div>
+
+      <button
+        class="nav-item active"
+        data-section="overview"
+      >
+        <span class="nav-icon">▦</span>
+        <span>Overview</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-section="schools"
+      >
+        <span class="nav-icon">🏫</span>
+        <span>Schools</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-section="users"
+      >
+        <span class="nav-icon">👥</span>
+        <span>All Users</span>
+      </button>
+
+      <div class="nav-label">
+        Management
+      </div>
+
+      <button
+        class="nav-item"
+        data-section="create-school"
+      >
+        <span class="nav-icon">＋</span>
+        <span>Create School</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-section="settings"
+      >
+        <span class="nav-icon">⚙</span>
+        <span>Platform Settings</span>
+      </button>
+
+      <button
+        class="nav-item"
+        data-section="profile"
+      >
+        <span class="nav-icon">◉</span>
+        <span>My Profile</span>
+      </button>
+
+    </div>
+
+    <div class="sidebar-footer">
+
+      <div class="admin-mini">
+
+        <div class="avatar">
+          <img
+            id="sidebarAvatar"
+            alt="Profile"
+            style="display:none"
+          >
+
+          <span id="avatarLetter">
+            S
+          </span>
+        </div>
+
+        <div>
+
+          <div
+            class="admin-name"
+            id="sidebarName"
+          >
+            Super Admin
+          </div>
+
+          <div class="admin-role">
+            Platform Owner
+          </div>
+
+        </div>
+
+      </div>
+
+      <button
+        class="logout-btn"
+        id="logoutBtn"
+      >
+        Sign out
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div style="display:flex;align-items:center;gap:12px">
+
+        <button
+          class="mobile-menu"
+          id="mobileMenu"
+        >
+          ☰
+        </button>
+
+        <div class="page-title">
+
+          <h1 id="pageTitle">
+            Platform Overview
+          </h1>
+
+          <p id="pageSubtitle">
+            Manage your entire SchoolHub platform.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="top-actions">
+
+        <button
+          class="icon-btn"
+          id="refreshBtn"
+          title="Refresh"
+        >
+          ↻
+        </button>
+
+        <button
+          class="icon-btn"
+          id="themeBtn"
+          title="Toggle theme"
+        >
+          ☾
+        </button>
+
+        <div
+          class="avatar profile-top"
+          style="width:40px;height:40px"
+        >
+          <img
+            id="topAvatar"
+            alt="Profile"
+            style="display:none"
+          >
+
+          <span id="topAvatarLetter">
+            S
+          </span>
+        </div>
+
+      </div>
+
+    </header>
+
+    <div class="content">
+
+      <!-- =================================================
+           OVERVIEW
+      ================================================== -->
+
+      <section
+        class="section active"
+        id="section-overview"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              Platform Overview
+            </h2>
+
+            <p>
+              Monitor schools, users and platform activity.
+            </p>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            onclick="showSection('create-school')"
+          >
+            ＋ Create School
+          </button>
+
+        </div>
+
+        <div class="stats">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Total Schools
+              </div>
+
+              <div class="stat-icon">
+                🏫
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statSchools"
+            >
+              0
+            </div>
+
+            <div class="stat-note">
+              Registered schools
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Active Schools
+              </div>
+
+              <div class="stat-icon">
+                ✓
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statActiveSchools"
+            >
+              0
+            </div>
+
+            <div class="stat-note">
+              Currently operating
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Total Users
+              </div>
+
+              <div class="stat-icon">
+                👥
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statUsers"
+            >
+              0
+            </div>
+
+            <div class="stat-note">
+              Across all schools
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Active Users
+              </div>
+
+              <div class="stat-icon">
+                ●
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statActiveUsers"
+            >
+              0
+            </div>
+
+            <div class="stat-note">
+              Active accounts
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="stats">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                School Admins
+              </div>
+
+              <div class="stat-icon">
+                🛡
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statAdmins"
+            >
+              0
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Teachers
+              </div>
+
+              <div class="stat-icon">
+                👨‍🏫
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statTeachers"
+            >
+              0
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Students
+              </div>
+
+              <div class="stat-icon">
+                🎓
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statStudents"
+            >
+              0
+            </div>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <div class="stat-label">
+                Exams
+              </div>
+
+              <div class="stat-icon">
+                📝
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              id="statExams"
+            >
+              0
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="grid-2">
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <h3>
+                Quick Actions
+              </h3>
+
+            </div>
+
+            <div class="card-body">
+
+              <div class="quick-actions">
+
+                <button
+                  class="quick-action"
+                  onclick="showSection('schools')"
+                >
+                  <strong>
+                    🏫 Manage Schools
+                  </strong>
+
+                  <span>
+                    View and manage every school.
+                  </span>
+                </button>
+
+                <button
+                  class="quick-action"
+                  onclick="showSection('users')"
+                >
+                  <strong>
+                    👥 View Users
+                  </strong>
+
+                  <span>
+                    Manage all platform users.
+                  </span>
+                </button>
+
+                <button
+                  class="quick-action"
+                  onclick="showSection('settings')"
+                >
+                  <strong>
+                    ⚙ Platform Settings
+                  </strong>
+
+                  <span>
+                    Configure SchoolHub globally.
+                  </span>
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <h3>
+                Platform Information
+              </h3>
+
+            </div>
+
+            <div class="card-body">
+
+              <div
+                id="platformInfo"
+                style="
+                  display:grid;
+                  gap:12px;
+                "
+              >
+
+                <div>
+                  <small
+                    style="color:var(--muted)"
+                  >
+                    Platform
+                  </small>
+
+                  <div
+                    id="platformNameDisplay"
+                    style="font-weight:700;margin-top:3px"
+                  >
+                    SchoolHub Pro
+                  </div>
+                </div>
+
+                <div>
+                  <small
+                    style="color:var(--muted)"
+                  >
+                    Version
+                  </small>
+
+                  <div
+                    style="font-weight:700;margin-top:3px"
+                  >
+                    5.0.0
+                  </div>
+                </div>
+
+                <div>
+                  <small
+                    style="color:var(--muted)"
+                  >
+                    Google Authentication
+                  </small>
+
+                  <div
+                    id="googleStatus"
+                    style="margin-top:4px"
+                  >
+                    Checking...
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           SCHOOLS
+      ================================================== -->
+
+      <section
+        class="section"
+        id="section-schools"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              Schools
+            </h2>
+
+            <p>
+              Manage every school registered on SchoolHub.
+            </p>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            onclick="showSection('create-school')"
+          >
+            ＋ Create School
+          </button>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h3>
+              School Directory
+            </h3>
+
+            <button
+              class="btn btn-secondary btn-small"
+              onclick="loadSchools()"
+            >
+              Refresh
+            </button>
+
+          </div>
+
+          <div class="card-body">
+
+            <div class="toolbar">
+
+              <input
+                class="search-box"
+                id="schoolSearch"
+                placeholder="Search schools..."
+              >
+
+            </div>
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      School
+                    </th>
+
+                    <th>
+                      Users
+                    </th>
+
+                    <th>
+                      Teachers
+                    </th>
+
+                    <th>
+                      Students
+                    </th>
+
+                    <th>
+                      Exams
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Actions
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody
+                  id="schoolsTable"
+                >
+
+                  <tr>
+                    <td
+                      colspan="7"
+                      class="empty"
+                    >
+                      Loading schools...
+                    </td>
+                  </tr>
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           USERS
+      ================================================== -->
+
+      <section
+        class="section"
+        id="section-users"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              All Users
+            </h2>
+
+            <p>
+              View users across every school.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h3>
+              User Directory
+            </h3>
+
+            <button
+              class="btn btn-secondary btn-small"
+              onclick="loadUsers()"
+            >
+              Refresh
+            </button>
+
+          </div>
+
+          <div class="card-body">
+
+            <div class="toolbar">
+
+              <input
+                class="search-box"
+                id="userSearch"
+                placeholder="Search users..."
+              >
+
+              <select
+                id="roleFilter"
+                style="max-width:180px"
+              >
+
+                <option value="">
+                  All roles
+                </option>
+
+                <option value="school_admin">
+                  School Admin
+                </option>
+
+                <option value="teacher">
+                  Teacher
+                </option>
+
+                <option value="student">
+                  Student
+                </option>
+
+                <option value="superadmin">
+                  Superadmin
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      User
+                    </th>
+
+                    <th>
+                      Email
+                    </th>
+
+                    <th>
+                      School
+                    </th>
+
+                    <th>
+                      Role
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Actions
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody
+                  id="usersTable"
+                >
+
+                  <tr>
+                    <td
+                      colspan="6"
+                      class="empty"
+                    >
+                      Loading users...
+                    </td>
+                  </tr>
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           CREATE SCHOOL
+      ================================================== -->
+
+      <section
+        class="section"
+        id="section-create-school"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              Create School
+            </h2>
+
+            <p>
+              Add a new school to the SchoolHub platform.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h3>
+              School Information
+            </h3>
+
+          </div>
+
+          <div class="card-body">
+
+            <form
+              id="createSchoolForm"
+            >
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label>
+                    School Name *
+                  </label>
+
+                  <input
+                    id="schoolName"
+                    required
+                    placeholder="e.g. Bright Future College"
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    School Motto
+                  </label>
+
+                  <input
+                    id="schoolMotto"
+                    placeholder="e.g. Excellence and Integrity"
+                  >
+
+                </div>
+
+                <div class="form-group full">
+
+                  <label>
+                    Logo URL
+                  </label>
+
+                  <input
+                    id="schoolLogo"
+                    placeholder="https://..."
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Primary Color
+                  </label>
+
+                  <input
+                    type="color"
+                    id="primaryColor"
+                    value="#2563eb"
+                    style="height:44px;padding:5px"
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Secondary Color
+                  </label>
+
+                  <input
+                    type="color"
+                    id="secondaryColor"
+                    value="#16a34a"
+                    style="height:44px;padding:5px"
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Theme
+                  </label>
+
+                  <select id="schoolTheme">
+
+                    <option value="light">
+                      Light
+                    </option>
+
+                    <option value="dark">
+                      Dark
+                    </option>
+
+                    <option value="system">
+                      System
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+              <div class="form-actions">
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="showSection('schools')"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="createSchoolBtn"
+                >
+                  Create School
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           SETTINGS
+      ================================================== -->
+
+      <section
+        class="section"
+        id="section-settings"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              Platform Settings
+            </h2>
+
+            <p>
+              Control global SchoolHub configuration.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h3>
+              General Settings
+            </h3>
+
+          </div>
+
+          <div class="card-body">
+
+            <form id="settingsForm">
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label>
+                    Platform Name
+                  </label>
+
+                  <input
+                    id="platformName"
+                    value="SchoolHub Pro"
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Default Theme
+                  </label>
+
+                  <select
+                    id="defaultTheme"
+                  >
+
+                    <option value="light">
+                      Light
+                    </option>
+
+                    <option value="dark">
+                      Dark
+                    </option>
+
+                    <option value="system">
+                      System
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div class="form-group full">
+
+                  <label>
+                    Platform Description
+                  </label>
+
+                  <textarea
+                    id="platformDescription"
+                  ></textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Allow Registration
+                  </label>
+
+                  <select
+                    id="allowRegistration"
+                  >
+
+                    <option value="true">
+                      Enabled
+                    </option>
+
+                    <option value="false">
+                      Disabled
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Google Login
+                  </label>
+
+                  <select
+                    id="allowGoogleLogin"
+                  >
+
+                    <option value="true">
+                      Enabled
+                    </option>
+
+                    <option value="false">
+                      Disabled
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Maintenance Mode
+                  </label>
+
+                  <select
+                    id="maintenanceMode"
+                  >
+
+                    <option value="false">
+                      Disabled
+                    </option>
+
+                    <option value="true">
+                      Enabled
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+              <div class="form-actions">
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                >
+                  Save Platform Settings
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================
+           PROFILE
+      ================================================== -->
+
+      <section
+        class="section"
+        id="section-profile"
+      >
+
+        <div class="section-header">
+
+          <div>
+            <h2>
+              My Profile
+            </h2>
+
+            <p>
+              Manage your superadmin account.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h3>
+              Account Information
+            </h3>
+
+          </div>
+
+          <div class="card-body">
+
+            <form id="profileForm">
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label>
+                    Full Name
+                  </label>
+
+                  <input
+                    id="profileName"
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Email
+                  </label>
+
+                  <input
+                    id="profileEmail"
+                    disabled
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Username
+                  </label>
+
+                  <input
+                    id="profileUsername"
+                    disabled
+                  >
+
+                </div>
+
+                <div class="form-group">
+
+                  <label>
+                    Profile Picture URL
+                  </label>
+
+                  <input
+                    id="profilePicture"
+                    placeholder="https://..."
+                  >
+
+                </div>
+
+                <div class="form-group full">
+
+                  <label>
+                    New Password
+                  </label>
+
+                  <input
+                    id="profilePassword"
+                    type="password"
+                    placeholder="Leave empty to keep current password"
+                  >
+
+                </div>
+
+              </div>
+
+              <div class="form-actions">
+
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  Save Profile
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+<!-- =======================================================
+     EDIT SCHOOL MODAL
+======================================================== -->
+
+<div
+  class="modal"
+  id="schoolModal"
+>
+
+  <div class="modal-card">
+
+    <div class="modal-header">
+
+      <h3>
+        Edit School
+      </h3>
+
+      <button
+        class="modal-close"
+        onclick="closeModal('schoolModal')"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <form id="editSchoolForm">
+
+        <input
+          type="hidden"
+          id="editSchoolId"
+        >
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>
+              School Name
+            </label>
+
+            <input
+              id="editSchoolName"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              Motto
+            </label>
+
+            <input
+              id="editSchoolMotto"
+            >
+
+          </div>
+
+          <div class="form-group full">
+
+            <label>
+              Logo URL
+            </label>
+
+            <input
+              id="editSchoolLogo"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              Primary Color
+            </label>
+
+            <input
+              type="color"
+              id="editPrimaryColor"
+              style="height:44px;padding:5px"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              Secondary Color
+            </label>
+
+            <input
+              type="color"
+              id="editSecondaryColor"
+              style="height:44px;padding:5px"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              Theme
+            </label>
+
+            <select id="editSchoolTheme">
+
+              <option value="light">
+                Light
+              </option>
+
+              <option value="dark">
+                Dark
+              </option>
+
+              <option value="system">
+                System
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="closeModal('schoolModal')"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Changes
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- =======================================================
+     TOAST
+======================================================== -->
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+<script>
+
+  /* ========================================================
+     STATE
+  ======================================================== */
+
+  let currentUser = null;
+  let schools = [];
+  let users = [];
+
+  /* ========================================================
+     HELPERS
+  ======================================================== */
+
+  async function api(
+    url,
+    options = {}
+  ) {
+
+    const response =
+      await fetch(
+        url,
+        {
+          credentials: "include",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            ...(options.headers || {})
+          },
+
+          ...options
+        }
+      );
+
+    let data = {};
+
+    try {
+      data =
+        await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (
+      response.status === 401
+    ) {
+      window.location.href =
+        "/login.html";
+
+      throw new Error(
+        "Authentication required."
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        "Request failed."
+      );
+    }
+
+    return data;
+  }
+
+  function showToast(
+    message,
+    type = "success"
+  ) {
+
+    const toast =
+      document.getElementById(
+        "toast"
+      );
+
+    toast.textContent =
+      message;
+
+    toast.className =
+      `toast show ${type}`;
+
+    clearTimeout(
+      window.toastTimer
+    );
+
+    window.toastTimer =
+      setTimeout(
+        () => {
+          toast.className =
+            "toast";
+        },
+        3000
+      );
+  }
+
+  function escapeHtml(
+    value
+  ) {
+
+    return String(
+      value ?? ""
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+  }
+
+  /* ========================================================
+     SECTION NAVIGATION
+  ======================================================== */
+
+  const pageInfo = {
+
+    overview: [
+      "Platform Overview",
+      "Manage your entire SchoolHub platform."
+    ],
+
+    schools: [
+      "Schools",
+      "Manage every school registered on SchoolHub."
+    ],
+
+    users: [
+      "All Users",
+      "View and manage users across every school."
+    ],
+
+    "create-school": [
+      "Create School",
+      "Add a new school to SchoolHub."
+    ],
+
+    settings: [
+      "Platform Settings",
+      "Control global SchoolHub configuration."
+    ],
+
+    profile: [
+      "My Profile",
+      "Manage your superadmin account."
+    ]
+
+  };
+
+  function showSection(
+    section
+  ) {
+
+    document
+      .querySelectorAll(
+        ".section"
+      )
+      .forEach(
+        element => {
+          element.classList.remove(
+            "active"
+          );
+        }
+      );
+
+    document
+      .querySelector(
+        `#section-${section}`
+      )
+      ?.classList.add(
+        "active"
+      );
+
+    document
+      .querySelectorAll(
+        ".nav-item"
+      )
+      .forEach(
+        item => {
+          item.classList.toggle(
+            "active",
+            item.dataset.section ===
+              section
+          );
+        }
+      );
+
+    const info =
+      pageInfo[section];
+
+    if (info) {
+
+      document.getElementById(
+        "pageTitle"
+      ).textContent =
+        info[0];
+
+      document.getElementById(
+        "pageSubtitle"
+      ).textContent =
+        info[1];
+
+    }
+
+    document
+      .getElementById(
+        "sidebar"
+      )
+      .classList.remove(
+        "open"
+      );
+
+    if (
+      section ===
+      "schools"
+    ) {
+      loadSchools();
+    }
+
+    if (
+      section ===
+      "users"
+    ) {
+      loadUsers();
+    }
+
+    if (
+      section ===
+      "settings"
+    ) {
+      loadSettings();
+    }
+
+    if (
+      section ===
+      "profile"
+    ) {
+      fillProfile();
+    }
+  }
+
+  document
+    .querySelectorAll(
+      ".nav-item"
+    )
+    .forEach(
+      item => {
+
+        item.addEventListener(
+          "click",
+          () => {
+
+            showSection(
+              item.dataset.section
+            );
+
+          }
+        );
+
+      }
+    );
+
+  /* ========================================================
+     CURRENT USER
+  ======================================================== */
+
+  async function loadCurrentUser() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/me"
+        );
+
+      if (
+        !data.authenticated
+      ) {
+        window.location.href =
+          "/login.html";
+
+        return;
+      }
+
+      currentUser =
+        data.user;
+
+      if (
+        currentUser.role !==
+        "superadmin"
+      ) {
+
+        window.location.href =
+          data.redirect ||
+          "/login.html";
+
+        return;
+      }
+
+      updateProfileUI();
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+    }
+
+  }
+
+  function updateProfileUI() {
+
+    if (!currentUser) {
+      return;
+    }
+
+    const name =
+      currentUser.fullName ||
+      "Super Admin";
+
+    document.getElementById(
+      "sidebarName"
+    ).textContent =
+      name;
+
+    const letter =
+      name
+        .charAt(0)
+        .toUpperCase();
+
+    document.getElementById(
+      "avatarLetter"
+    ).textContent =
+      letter;
+
+    document.getElementById(
+      "topAvatarLetter"
+    ).textContent =
+      letter;
+
+    if (
+      currentUser.profilePicture
+    ) {
+
+      const sidebarAvatar =
+        document.getElementById(
+          "sidebarAvatar"
+        );
+
+      const topAvatar =
+        document.getElementById(
+          "topAvatar"
+        );
+
+      sidebarAvatar.src =
+        currentUser.profilePicture;
+
+      sidebarAvatar.style.display =
+        "block";
+
+      document.getElementById(
+        "avatarLetter"
+      ).style.display =
+        "none";
+
+      topAvatar.src =
+        currentUser.profilePicture;
+
+      topAvatar.style.display =
+        "block";
+
+      document.getElementById(
+        "topAvatarLetter"
+      ).style.display =
+        "none";
+
+    }
+
+  }
+
+  /* ========================================================
+     SUMMARY
+  ======================================================== */
+
+  async function loadSummary() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/summary"
+        );
+
+      const s =
+        data.summary || {};
+
+      document.getElementById(
+        "statSchools"
+      ).textContent =
+        s.schools || 0;
+
+      document.getElementById(
+        "statActiveSchools"
+      ).textContent =
+        s.activeSchools || 0;
+
+      document.getElementById(
+        "statUsers"
+      ).textContent =
+        s.users || 0;
+
+      document.getElementById(
+        "statActiveUsers"
+      ).textContent =
+        s.activeUsers || 0;
+
+      document.getElementById(
+        "statAdmins"
+      ).textContent =
+        s.schoolAdmins || 0;
+
+      document.getElementById(
+        "statTeachers"
+      ).textContent =
+        s.teachers || 0;
+
+      document.getElementById(
+        "statStudents"
+      ).textContent =
+        s.students || 0;
+
+      document.getElementById(
+        "statExams"
+      ).textContent =
+        s.exams || 0;
+
+    } catch (error) {
+
+      showToast(
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+  /* ========================================================
+     PLATFORM
+  ======================================================== */
+
+  async function loadPlatform() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/platform"
+        );
+
+      const platform =
+        data.platform || {};
+
+      document.getElementById(
+        "platformNameDisplay"
+      ).textContent =
+        platform.name ||
+        "SchoolHub Pro";
+
+      document.getElementById(
+        "googleStatus"
+      ).innerHTML =
+        platform.allowGoogleLogin
+          ? `<span class="badge badge-green">Enabled</span>`
+          : `<span class="badge badge-red">Disabled</span>`;
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+    }
+
+  }
+
+  /* ========================================================
+     SCHOOLS
+  ======================================================== */
+
+  async function loadSchools() {
+
+    const tbody =
+      document.getElementById(
+        "schoolsTable"
+      );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty">
+          Loading schools...
+        </td>
+      </tr>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/schools"
+        );
+
+      schools =
+        data.schools || [];
+
+      renderSchools();
+
+    } catch (error) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">
+            ${escapeHtml(
+              error.message
+            )}
+          </td>
+        </tr>
+      `;
+
+    }
+
+  }
+
+  function renderSchools() {
+
+    const tbody =
+      document.getElementById(
+        "schoolsTable"
+      );
+
+    const search =
+      document
+        .getElementById(
+          "schoolSearch"
+        )
+        .value
+        .toLowerCase()
+        .trim();
+
+    const filtered =
+      schools.filter(
+        school => {
+
+          const text =
+            [
+              school.name,
+              school.motto
+            ]
+              .join(" ")
+              .toLowerCase();
+
+          return text.includes(
+            search
+          );
+
+        }
+      );
+
+    if (!filtered.length) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">
+            <div class="empty-icon">🏫</div>
+            No schools found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    tbody.innerHTML =
+      filtered
+        .map(
+          school => {
+
+            const initial =
+              escapeHtml(
+                (
+                  school.name ||
+                  "S"
+                )
+                  .charAt(0)
+                  .toUpperCase()
+              );
+
+            const logo =
+              school.logo
+                ? `
+                  <img
+                    src="${escapeHtml(
+                      school.logo
+                    )}"
+                    alt=""
+                    onerror="this.style.display='none'"
+                  >
+                `
+                : initial;
+
+            const active =
+              school.active !==
+              false;
+
+            return `
+              <tr>
+
+                <td>
+
+                  <div class="school-cell">
+
+                    <div class="school-logo">
+                      ${logo}
+                    </div>
+
+                    <div>
+
+                      <div class="school-name">
+                        ${escapeHtml(
+                          school.name
+                        )}
+                      </div>
+
+                      <div class="school-motto">
+                        ${escapeHtml(
+                          school.motto ||
+                          "No motto"
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td>
+                  ${school.userCount || 0}
+                </td>
+
+                <td>
+                  ${school.teacherCount || 0}
+                </td>
+
+                <td>
+                  ${school.studentCount || 0}
+                </td>
+
+                <td>
+                  ${school.examCount || 0}
+                </td>
+
+                <td>
+
+                  ${
+                    active
+                      ? `
+                        <span class="badge badge-green">
+                          Active
+                        </span>
+                      `
+                      : `
+                        <span class="badge badge-red">
+                          Inactive
+                        </span>
+                      `
+                  }
+
+                </td>
+
+                <td>
+
+                  <div class="actions">
+
+                    <button
+                      class="btn btn-secondary btn-small"
+                      onclick="editSchool('${school.id}')"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      class="btn ${
+                        active
+                          ? "btn-danger"
+                          : "btn-success"
+                      } btn-small"
+                      onclick="toggleSchool('${school.id}', ${active})"
+                    >
+                      ${
+                        active
+                          ? "Deactivate"
+                          : "Activate"
+                      }
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+  document
+    .getElementById(
+      "schoolSearch"
+    )
+    .addEventListener(
+      "input",
+      renderSchools
+    );
+
+  /* ========================================================
+     EDIT SCHOOL
+  ======================================================== */
+
+  function editSchool(
+    schoolId
+  ) {
+
+    const school =
+      schools.find(
+        s =>
+          s.id ===
+          schoolId
+      );
+
+    if (!school) {
+      return;
+    }
+
+    document.getElementById(
+      "editSchoolId"
+    ).value =
+      school.id;
+
+    document.getElementById(
+      "editSchoolName"
+    ).value =
+      school.name || "";
+
+    document.getElementById(
+      "editSchoolMotto"
+    ).value =
+      school.motto || "";
+
+    document.getElementById(
+      "editSchoolLogo"
+    ).value =
+      school.logo || "";
+
+    document.getElementById(
+      "editPrimaryColor"
+    ).value =
+      validColor(
+        school.primaryColor
+      )
+        ? school.primaryColor
+        : "#2563eb";
+
+    document.getElementById(
+      "editSecondaryColor"
+    ).value =
+      validColor(
+        school.secondaryColor
+      )
+        ? school.secondaryColor
+        : "#16a34a";
+
+    document.getElementById(
+      "editSchoolTheme"
+    ).value =
+      school.theme ||
+      "light";
+
+    document.getElementById(
+      "schoolModal"
+    ).classList.add(
+      "show"
+    );
+
+  }
+
+  function validColor(
+    color
+  ) {
+
+    return /^#[0-9a-fA-F]{6}$/.test(
+      color || ""
+    );
+
+  }
+
+  function closeModal(
+    id
+  ) {
+
+    document.getElementById(
+      id
+    ).classList.remove(
+      "show"
+    );
+
+  }
+
+  document
+    .getElementById(
+      "editSchoolForm"
+    )
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        const id =
+          document.getElementById(
+            "editSchoolId"
+          ).value;
+
+        try {
+
+          await api(
+            `/api/admin/schools/${id}`,
+            {
+              method: "PUT",
+
+              body:
+                JSON.stringify({
+                  name:
+                    document.getElementById(
+                      "editSchoolName"
+                    ).value,
+
+                  motto:
+                    document.getElementById(
+                      "editSchoolMotto"
+                    ).value,
+
+                  logo:
+                    document.getElementById(
+                      "editSchoolLogo"
+                    ).value,
+
+                  primaryColor:
+                    document.getElementById(
+                      "editPrimaryColor"
+                    ).value,
+
+                  secondaryColor:
+                    document.getElementById(
+                      "editSecondaryColor"
+                    ).value,
+
+                  theme:
+                    document.getElementById(
+                      "editSchoolTheme"
+                    ).value
+                })
+            }
+          );
+
+          closeModal(
+            "schoolModal"
+          );
+
+          showToast(
+            "School updated successfully."
+          );
+
+          await loadSchools();
+          await loadSummary();
+
+        } catch (error) {
+
+          showToast(
+            error.message,
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+  /* ========================================================
+     TOGGLE SCHOOL
+  ======================================================== */
+
+  async function toggleSchool(
+    schoolId,
+    currentlyActive
+  ) {
+
+    const action =
+      currentlyActive
+        ? "deactivate"
+        : "activate";
+
+    if (
+      !confirm(
+        `Are you sure you want to ${action} this school?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+
+      await api(
+        `/api/admin/schools/${schoolId}/status`,
+        {
+          method: "PUT",
+
+          body:
+            JSON.stringify({
+              active:
+                !currentlyActive
+            })
+        }
+      );
+
+      showToast(
+        currentlyActive
+          ? "School deactivated."
+          : "School activated."
+      );
+
+      await loadSchools();
+      await loadSummary();
+
+    } catch (error) {
+
+      showToast(
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+  /* ========================================================
+     USERS
+  ======================================================== */
+
+  async function loadUsers() {
+
+    const tbody =
+      document.getElementById(
+        "usersTable"
+      );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty">
+          Loading users...
+        </td>
+      </tr>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/users"
+        );
+
+      users =
+        data.users || [];
+
+      renderUsers();
+
+    } catch (error) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            ${escapeHtml(
+              error.message
+            )}
+          </td>
+        </tr>
+      `;
+
+    }
+
+  }
+
+  function renderUsers() {
+
+    const tbody =
+      document.getElementById(
+        "usersTable"
+      );
+
+    const search =
+      document
+        .getElementById(
+          "userSearch"
+        )
+        .value
+        .toLowerCase()
+        .trim();
+
+    const role =
+      document.getElementById(
+        "roleFilter"
+      ).value;
+
+    const filtered =
+      users.filter(
+        user => {
+
+          const text =
+            [
+              user.fullName,
+              user.username,
+              user.email,
+              user.schoolName
+            ]
+              .join(" ")
+              .toLowerCase();
+
+          const matchesSearch =
+            text.includes(
+              search
+            );
+
+          const matchesRole =
+            !role ||
+            user.role ===
+              role;
+
+          return (
+            matchesSearch &&
+            matchesRole
+          );
+
+        }
+      );
+
+    if (!filtered.length) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty">
+            <div class="empty-icon">👥</div>
+            No users found.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    tbody.innerHTML =
+      filtered
+        .map(
+          user => {
+
+            const active =
+              user.active !==
+              false;
+
+            let roleClass =
+              "badge-blue";
+
+            if (
+              user.role ===
+              "superadmin"
+            ) {
+              roleClass =
+                "badge-orange";
+            }
+
+            if (
+              user.role ===
+              "teacher"
+            ) {
+              roleClass =
+                "badge-green";
+            }
+
+            if (
+              user.role ===
+              "student"
+            ) {
+              roleClass =
+                "badge-blue";
+            }
+
+            return `
+              <tr>
+
+                <td>
+
+                  <div
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:9px;
+                    "
+                  >
+
+                    <div class="avatar">
+
+                      ${
+                        user.profilePicture
+                          ? `
+                            <img
+                              src="${escapeHtml(
+                                user.profilePicture
+                              )}"
+                              alt=""
+                              onerror="this.style.display='none'"
+                            >
+                          `
+                          : escapeHtml(
+                              (
+                                user.fullName ||
+                                "U"
+                              )
+                                .charAt(0)
+                                .toUpperCase()
+                            )
+                      }
+
+                    </div>
+
+                    <div>
+
+                      <div
+                        style="font-weight:700"
+                      >
+                        ${escapeHtml(
+                          user.fullName ||
+                          "Unnamed"
+                        )}
+                      </div>
+
+                      <div
+                        style="
+                          color:var(--muted);
+                          font-size:10px;
+                        "
+                      >
+                        @${escapeHtml(
+                          user.username ||
+                          ""
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    user.email ||
+                    ""
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    user.schoolName ||
+                    "Platform"
+                  )}
+                </td>
+
+                <td>
+
+                  <span
+                    class="badge ${roleClass}"
+                  >
+                    ${formatRole(
+                      user.role
+                    )}
+                  </span>
+
+                </td>
+
+                <td>
+
+                  ${
+                    active
+                      ? `
+                        <span class="badge badge-green">
+                          Active
+                        </span>
+                      `
+                      : `
+                        <span class="badge badge-red">
+                          Disabled
+                        </span>
+                      `
+                  }
+
+                </td>
+
+                <td>
+
+                  ${
+                    user.role ===
+                    "superadmin"
+                      ? `
+                        <span
+                          class="badge badge-orange"
+                        >
+                          Protected
+                        </span>
+                      `
+                      : `
+                        <button
+                          class="btn ${
+                            active
+                              ? "btn-danger"
+                              : "btn-success"
+                          } btn-small"
+                          onclick="toggleUser('${user.id}', ${active})"
+                        >
+                          ${
+                            active
+                              ? "Disable"
+                              : "Enable"
+                          }
+                        </button>
+                      `
+                  }
+
+                </td>
+
+              </tr>
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+  function formatRole(
+    role
+  ) {
+
+    const roles = {
+
+      superadmin:
+        "Superadmin",
+
+      school_admin:
+        "School Admin",
+
+      teacher:
+        "Teacher",
+
+      student:
+        "Student"
+
+    };
+
+    return (
+      roles[role] ||
+      role ||
+      "User"
+    );
+
+  }
+
+  document
+    .getElementById(
+      "userSearch"
+    )
+    .addEventListener(
+      "input",
+      renderUsers
+    );
+
+  document
+    .getElementById(
+      "roleFilter"
+    )
+    .addEventListener(
+      "change",
+      renderUsers
+    );
+
+  /* ========================================================
+     TOGGLE USER
+  ======================================================== */
+
+  async function toggleUser(
+    userId,
+    currentlyActive
+  ) {
+
+    try {
+
+      await api(
+        `/api/admin/users/${userId}/status`,
+        {
+          method: "PUT",
+
+          body:
+            JSON.stringify({
+              active:
+                !currentlyActive
+            })
+        }
+      );
+
+      showToast(
+        currentlyActive
+          ? "User disabled."
+          : "User enabled."
+      );
+
+      await loadUsers();
+      await loadSummary();
+
+    } catch (error) {
+
+      showToast(
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+  /* ========================================================
+     CREATE SCHOOL
+  ======================================================== */
+
+  document
+    .getElementById(
+      "createSchoolForm"
+    )
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        const button =
+          document.getElementById(
+            "createSchoolBtn"
+          );
+
+        button.disabled =
+          true;
+
+        button.textContent =
+          "Creating...";
+
+        try {
+
+          await api(
+            "/api/admin/schools",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify({
+
+                  name:
+                    document.getElementById(
+                      "schoolName"
+                    ).value,
+
+                  motto:
+                    document.getElementById(
+                      "schoolMotto"
+                    ).value,
+
+                  logo:
+                    document.getElementById(
+                      "schoolLogo"
+                    ).value,
+
+                  primaryColor:
+                    document.getElementById(
+                      "primaryColor"
+                    ).value,
+
+                  secondaryColor:
+                    document.getElementById(
+                      "secondaryColor"
+                    ).value,
+
+                  theme:
+                    document.getElementById(
+                      "schoolTheme"
+                    ).value
+
+                })
+            }
+          );
+
+          document
+            .getElementById(
+              "createSchoolForm"
+            )
+            .reset();
+
+          document.getElementById(
+            "primaryColor"
+          ).value =
+            "#2563eb";
+
+          document.getElementById(
+            "secondaryColor"
+          ).value =
+            "#16a34a";
+
+          showToast(
+            "School created successfully."
+          );
+
+          await loadSummary();
+
+          showSection(
+            "schools"
+          );
+
+        } catch (error) {
+
+          showToast(
+            error.message,
+            "error"
+          );
+
+        } finally {
+
+          button.disabled =
+            false;
+
+          button.textContent =
+            "Create School";
+
+        }
+
+      }
+    );
+
+  /* ========================================================
+     SETTINGS
+  ======================================================== */
+
+  async function loadSettings() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/platform-config"
+        );
+
+      const s =
+        data.settings || {};
+
+      document.getElementById(
+        "platformName"
+      ).value =
+        s.platformName ||
+        "SchoolHub Pro";
+
+      document.getElementById(
+        "platformDescription"
+      ).value =
+        s.platformDescription ||
+        "";
+
+      document.getElementById(
+        "defaultTheme"
+      ).value =
+        s.defaultTheme ||
+        "light";
+
+      document.getElementById(
+        "allowRegistration"
+      ).value =
+        String(
+          s.allowRegistration !==
+            false
+        );
+
+      document.getElementById(
+        "allowGoogleLogin"
+      ).value =
+        String(
+          s.allowGoogleLogin !==
+            false
+        );
+
+      document.getElementById(
+        "maintenanceMode"
+      ).value =
+        String(
+          Boolean(
+            s.maintenanceMode
+          )
+        );
+
+    } catch (error) {
+
+      showToast(
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+  document
+    .getElementById(
+      "settingsForm"
+    )
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        try {
+
+          await api(
+            "/api/admin/settings",
+            {
+              method: "PUT",
+
+              body:
+                JSON.stringify({
+
+                  platformName:
+                    document.getElementById(
+                      "platformName"
+                    ).value,
+
+                  platformDescription:
+                    document.getElementById(
+                      "platformDescription"
+                    ).value,
+
+                  defaultTheme:
+                    document.getElementById(
+                      "defaultTheme"
+                    ).value,
+
+                  allowRegistration:
+                    document.getElementById(
+                      "allowRegistration"
+                    ).value ===
+                    "true",
+
+                  allowGoogleLogin:
+                    document.getElementById(
+                      "allowGoogleLogin"
+                    ).value ===
+                    "true",
+
+                  maintenanceMode:
+                    document.getElementById(
+                      "maintenanceMode"
+                    ).value ===
+                    "true"
+
+                })
+            }
+          );
+
+          showToast(
+            "Platform settings saved."
+          );
+
+          await loadPlatform();
+
+        } catch (error) {
+
+          showToast(
+            error.message,
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+  /* ========================================================
+     PROFILE
+  ======================================================== */
+
+  function fillProfile() {
+
+    if (!currentUser) {
+      return;
+    }
+
+    document.getElementById(
+      "profileName"
+    ).value =
+      currentUser.fullName ||
+      "";
+
+    document.getElementById(
+      "profileEmail"
+    ).value =
+      currentUser.email ||
+      "";
+
+    document.getElementById(
+      "profileUsername"
+    ).value =
+      currentUser.username ||
+      "";
+
+    document.getElementById(
+      "profilePicture"
+    ).value =
+      currentUser.profilePicture ||
+      "";
+
+  }
+
+  document
+    .getElementById(
+      "profileForm"
+    )
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        try {
+
+          const password =
+            document.getElementById(
+              "profilePassword"
+            ).value;
+
+          const data =
+            await api(
+              "/api/profile",
+              {
+                method: "PUT",
+
+                body:
+                  JSON.stringify({
+
+                    fullName:
+                      document.getElementById(
+                        "profileName"
+                      ).value,
+
+                    profilePicture:
+                      document.getElementById(
+                        "profilePicture"
+                      ).value,
+
+                    ...(password
+                      ? {
+                          password
+                        }
+                      : {})
+
+                  })
+              }
+            );
+
+          currentUser =
+            data.user;
+
+          updateProfileUI();
+
+          document.getElementById(
+            "profilePassword"
+          ).value =
+            "";
+
+          showToast(
+            "Profile updated successfully."
+          );
+
+        } catch (error) {
+
+          showToast(
+            error.message,
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+  /* ========================================================
+     LOGOUT
+  ======================================================== */
+
+  document
+    .getElementById(
+      "logoutBtn"
+    )
+    .addEventListener(
+      "click",
+      async () => {
+
+        try {
+
+          await api(
+            "/api/logout",
+            {
+              method: "POST"
+            }
+          );
+
+        } catch (error) {
+
+          console.error(
+            error
+          );
+
+        }
+
+        window.location.href =
+          "/login.html";
+
+      }
+    );
+
+  /* ========================================================
+     REFRESH
+  ======================================================== */
+
+  document
+    .getElementById(
+      "refreshBtn"
+    )
+    .addEventListener(
+      "click",
+      async () => {
+
+        await loadSummary();
+        await loadPlatform();
+
+        const activeSection =
+          document
+            .querySelector(
+              ".section.active"
+            )
+            ?.id
+            .replace(
+              "section-",
+              ""
+            );
+
+        if (
+          activeSection ===
+          "schools"
+        ) {
+          await loadSchools();
+        }
+
+        if (
+          activeSection ===
+          "users"
+        ) {
+          await loadUsers();
+        }
+
+        if (
+          activeSection ===
+          "settings"
+        ) {
+          await loadSettings();
+        }
+
+        showToast(
+          "Dashboard refreshed."
+        );
+
+      }
+    );
+
+  /* ========================================================
+     THEME
+  ======================================================== */
+
+  const savedTheme =
+    localStorage.getItem(
+      "schoolhub-superadmin-theme"
+    );
+
+  if (
+    savedTheme ===
+    "dark"
+  ) {
+    document.body.classList.add(
+      "dark"
+    );
+  }
+
+  document
+    .getElementById(
+      "themeBtn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        document.body.classList.toggle(
+          "dark"
+        );
+
+        const dark =
+          document.body.classList.contains(
+            "dark"
+          );
+
+        localStorage.setItem(
+          "schoolhub-superadmin-theme",
+          dark
+            ? "dark"
+            : "light"
+        );
+
+        document.getElementById(
+          "themeBtn"
+        ).textContent =
+          dark
+            ? "☀"
+            : "☾";
+
+      }
+    );
+
+  /* ========================================================
+     MOBILE MENU
+  ======================================================== */
+
+  document
+    .getElementById(
+      "mobileMenu"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        document
+          .getElementById(
+            "sidebar"
+          )
+          .classList.toggle(
+            "open"
+          );
+
+      }
+    );
+
+  /* ========================================================
+     INITIALIZE
+  ======================================================== */
+
+  async function initialize() {
+
+    await loadCurrentUser();
+
+    if (!currentUser) {
+      return;
+    }
+
+    await Promise.all([
+      loadSummary(),
+      loadPlatform()
+    ]);
+
+  }
+
+  initialize();
+
+</script>
+
+</body>
+</html>
