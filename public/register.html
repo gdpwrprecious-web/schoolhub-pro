@@ -2,31 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Register Your School | SchoolHub Pro</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Create School | SchoolHub Pro</title>
+
+  <meta
+    name="description"
+    content="Create your school account on SchoolHub Pro."
+  >
 
   <style>
-    :root {
-      --primary: #2563eb;
-      --secondary: #16a34a;
-      --dark: #07111f;
-      --text: #172033;
-      --muted: #64748b;
-      --border: #e5e7eb;
-      --bg: #f7f9fc;
-      --danger: #dc2626;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --green: #16a34a;
+      --dark: #07111f;
+      --dark-2: #0d1b2a;
+      --text: #111827;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --white: #ffffff;
+      --bg: #f8fafc;
+    }
+
     body {
       min-height: 100vh;
-      font-family: Inter, Arial, sans-serif;
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
       background: var(--bg);
       color: var(--text);
     }
@@ -34,901 +53,991 @@
     .page {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: .85fr 1.15fr;
+      grid-template-columns: 45% 55%;
     }
-
-    /* LEFT */
 
     .hero {
       position: relative;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 80% 15%, rgba(37,99,235,.28), transparent 30%),
-        radial-gradient(circle at 20% 80%, rgba(22,163,74,.2), transparent 28%),
-        linear-gradient(145deg, #050b14, #0b1727);
+      padding: 55px;
       color: white;
-      padding: 45px;
+
+      background:
+        radial-gradient(
+          circle at 15% 20%,
+          rgba(37, 99, 235, .35),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 85% 75%,
+          rgba(22, 163, 74, .24),
+          transparent 35%
+        ),
+        linear-gradient(
+          145deg,
+          #050b14,
+          #0b1727 55%,
+          #10213a
+        );
+
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    .circle {
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 50%;
+      top: -130px;
+      right: -100px;
+    }
+
+    .hero::after {
+      content: "";
       position: absolute;
       width: 500px;
       height: 500px;
-      border: 1px solid rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.05);
       border-radius: 50%;
-      right: -260px;
-      bottom: -200px;
+      bottom: -280px;
+      left: -180px;
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
+      max-width: 560px;
+      margin: auto 0;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 13px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -.4px;
     }
 
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+
       display: grid;
       place-items: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--blue),
+          var(--green)
+        );
+
+      box-shadow:
+        0 10px 30px rgba(37,99,235,.25);
+
       font-size: 22px;
       font-weight: 900;
-      box-shadow: 0 10px 30px rgba(37,99,235,.25);
-    }
-
-    .brand strong {
-      font-size: 19px;
-    }
-
-    .brand small {
-      display: block;
-      color: #94a3b8;
-      font-size: 9px;
-      letter-spacing: 2px;
-      margin-top: 3px;
-    }
-
-    .hero-main {
-      margin-top: 95px;
     }
 
     .eyebrow {
+      margin-top: 70px;
       color: #93c5fd;
-      font-size: 10px;
+      font-size: 13px;
       font-weight: 800;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
     }
 
-    .hero h1 {
-      margin-top: 17px;
-      font-size: clamp(35px, 4vw, 55px);
-      line-height: 1.04;
-      letter-spacing: -2px;
-    }
-
-    .hero h1 span {
-      color: #4ade80;
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(42px, 5vw, 68px);
+      line-height: 1.02;
+      letter-spacing: -3px;
     }
 
     .hero-description {
-      color: #9fb0c5;
-      line-height: 1.8;
-      margin-top: 20px;
-      font-size: 14px;
+      margin-top: 25px;
+      color: #b8c5d6;
+      font-size: 17px;
+      line-height: 1.75;
       max-width: 500px;
     }
 
-    .steps {
-      margin-top: 35px;
+    .features {
       display: grid;
-      gap: 14px;
+      gap: 15px;
+      margin-top: 35px;
     }
 
-    .step {
+    .feature {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 13px;
+      color: #dbeafe;
+      font-size: 14px;
     }
 
-    .step-number {
-      width: 33px;
-      height: 33px;
+    .feature-icon {
+      width: 31px;
+      height: 31px;
       display: grid;
       place-items: center;
-      border-radius: 50%;
+      border-radius: 9px;
       background: rgba(255,255,255,.08);
-      color: #93c5fd;
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .step span {
-      font-size: 12px;
-      color: #dbe5f1;
+      color: #86efac;
     }
 
     .hero-footer {
       position: relative;
       z-index: 2;
-      color: #64748b;
-      font-size: 10px;
-    }
-
-    /* FORM */
-
-    .form-side {
-      background: white;
-      padding: 35px;
+      color: #718096;
+      font-size: 12px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .form-area {
+      background: white;
+      display: flex;
       align-items: center;
-      overflow-y: auto;
+      justify-content: center;
+      padding: 45px;
     }
 
-    .form-box {
+    .form-card {
       width: 100%;
-      max-width: 600px;
-      animation: appear .5s ease;
+      max-width: 560px;
     }
 
-    @keyframes appear {
-      from {
-        opacity: 0;
-        transform: translateY(15px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .form-header {
+      margin-bottom: 28px;
     }
 
-    .mobile-brand {
-      display: none;
+    .form-header h2 {
+      font-size: 34px;
+      letter-spacing: -1.3px;
+      color: #0f172a;
     }
 
-    .header h2 {
-      font-size: 30px;
-      letter-spacing: -.8px;
-    }
-
-    .header p {
+    .form-header p {
       color: var(--muted);
-      margin-top: 8px;
-      font-size: 13px;
+      margin-top: 9px;
       line-height: 1.6;
-    }
-
-    .form {
-      margin-top: 27px;
-    }
-
-    .section-label {
-      margin: 22px 0 12px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 900;
-      color: #64748b;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 17px;
     }
 
     .field {
-      margin-bottom: 13px;
+      margin-bottom: 17px;
     }
 
-    .full {
+    .field.full {
       grid-column: 1 / -1;
     }
 
     label {
       display: block;
-      font-size: 11px;
-      font-weight: 800;
-      color: #334155;
       margin-bottom: 7px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     input {
       width: 100%;
+      height: 51px;
+      padding: 0 15px;
+
       border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 12px;
+      border-radius: 12px;
+
+      background: #fbfdff;
+      color: #0f172a;
+      font-size: 14px;
       outline: none;
-      color: var(--text);
-      background: white;
-      transition: .2s;
+
+      transition:
+        border .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
     }
 
     input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.08);
+      border-color: var(--blue);
+      background: white;
+      box-shadow:
+        0 0 0 4px rgba(37,99,235,.09);
     }
 
-    .hint {
-      font-size: 9px;
-      color: #94a3b8;
-      margin-top: 5px;
+    .password-wrap {
+      position: relative;
     }
 
-    .password-strength {
-      height: 4px;
-      border-radius: 5px;
+    .password-wrap input {
+      padding-right: 70px;
+    }
+
+    .show-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+
+      border: 0;
+      background: transparent;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .strength {
+      margin-top: 8px;
+      height: 5px;
+      border-radius: 999px;
       background: #e2e8f0;
-      margin-top: 7px;
       overflow: hidden;
     }
 
-    .password-strength div {
+    .strength-bar {
       width: 0;
       height: 100%;
-      transition: .25s;
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    .strength-text {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #94a3b8;
     }
 
     .terms {
-      margin-top: 14px;
       display: flex;
-      gap: 8px;
       align-items: flex-start;
-      color: var(--muted);
-      font-size: 10px;
+      gap: 9px;
+      margin: 5px 0 18px;
+      color: #64748b;
+      font-size: 12px;
       line-height: 1.5;
     }
 
     .terms input {
-      width: auto;
-      margin-top: 2px;
-    }
-
-    .terms a {
-      color: var(--primary);
-      text-decoration: none;
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      flex: 0 0 auto;
+      accent-color: var(--blue);
     }
 
     .submit {
       width: 100%;
+      height: 53px;
+
       border: 0;
-      padding: 14px;
-      margin-top: 20px;
-      border-radius: 12px;
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--blue),
+          var(--blue-dark)
+        );
+
       color: white;
-      background: linear-gradient(100deg, var(--primary), #1d4ed8);
       font-weight: 800;
+      font-size: 14px;
       cursor: pointer;
-      transition: .2s;
-      box-shadow: 0 10px 25px rgba(37,99,235,.18);
+
+      box-shadow:
+        0 12px 25px rgba(37,99,235,.20);
+
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        opacity .2s ease;
     }
 
     .submit:hover {
       transform: translateY(-1px);
+      box-shadow:
+        0 15px 30px rgba(37,99,235,.25);
     }
 
     .submit:disabled {
-      opacity: .6;
-      cursor: wait;
+      opacity: .65;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .message {
       display: none;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 18px;
-      font-size: 12px;
+      padding: 13px 15px;
+      margin-bottom: 18px;
+      border-radius: 11px;
+      font-size: 13px;
       line-height: 1.5;
     }
 
-    .message.show {
-      display: block;
-    }
-
     .message.error {
-      color: #991b1b;
+      display: block;
       background: #fef2f2;
+      color: #b91c1c;
       border: 1px solid #fecaca;
     }
 
     .message.success {
-      color: #166534;
+      display: block;
       background: #f0fdf4;
+      color: #15803d;
       border: 1px solid #bbf7d0;
     }
 
     .login-link {
-      text-align: center;
       margin-top: 20px;
-      font-size: 12px;
-      color: var(--muted);
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
     }
 
     .login-link a {
-      color: var(--primary);
-      text-decoration: none;
+      color: var(--blue);
       font-weight: 800;
+      text-decoration: none;
     }
 
-    @media(max-width: 950px) {
-
+    @media (max-width: 950px) {
       .page {
         grid-template-columns: 1fr;
       }
 
       .hero {
-        display: none;
+        min-height: 390px;
+        padding: 35px;
       }
 
-      .form-side {
-        min-height: 100vh;
+      .eyebrow {
+        margin-top: 40px;
       }
 
-      .mobile-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 35px;
+      .hero-footer {
+        margin-top: 45px;
       }
 
-      .mobile-brand .logo {
-        width: 42px;
-        height: 42px;
+      .form-area {
+        padding: 35px 22px;
       }
-
     }
 
-    @media(max-width: 600px) {
+    @media (max-width: 600px) {
+      .hero {
+        min-height: auto;
+        padding: 28px 22px;
+      }
 
-      .form-side {
-        padding: 25px 17px;
+      h1 {
+        font-size: 42px;
+        letter-spacing: -2px;
+      }
+
+      .features {
+        margin-bottom: 20px;
+      }
+
+      .hero-footer {
+        display: block;
+        line-height: 1.7;
+      }
+
+      .hero-footer span {
+        display: block;
+      }
+
+      .form-area {
+        padding: 30px 18px;
       }
 
       .grid {
         grid-template-columns: 1fr;
+        gap: 0;
       }
 
-      .full {
+      .field.full {
         grid-column: auto;
       }
 
-      .header h2 {
-        font-size: 27px;
+      .form-header h2 {
+        font-size: 29px;
       }
-
     }
   </style>
 </head>
 
 <body>
 
-<div class="page">
+  <div class="page">
 
-  <section class="hero">
-
-    <div class="circle"></div>
-
-    <div class="hero-content">
+    <section class="hero">
 
       <div class="brand">
-
-        <div class="logo">S</div>
-
-        <div>
-          <strong>SchoolHub Pro</strong>
-          <small>SMART SCHOOL MANAGEMENT</small>
-        </div>
-
+        <div class="brand-logo">S</div>
+        <span>SchoolHub Pro</span>
       </div>
 
-
-      <div class="hero-main">
+      <div class="hero-content">
 
         <div class="eyebrow">
-          BUILD YOUR DIGITAL SCHOOL
+          SCHOOL MANAGEMENT PLATFORM
         </div>
 
         <h1>
-          Bring your entire
-          <span>school online.</span>
+          Build a smarter school.
         </h1>
 
         <p class="hero-description">
-          Create your school workspace and manage teachers,
-          students, CBT examinations, results and announcements
-          from one secure platform.
+          Create your school's secure management workspace
+          and bring students, teachers, examinations and
+          results together in one professional platform.
         </p>
 
+        <div class="features">
 
-        <div class="steps">
-
-          <div class="step">
-            <div class="step-number">1</div>
-            <span>Create your school account</span>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Multi-school management</span>
           </div>
 
-          <div class="step">
-            <div class="step-number">2</div>
-            <span>Configure your school branding</span>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>CBT and examination management</span>
           </div>
 
-          <div class="step">
-            <div class="step-number">3</div>
-            <span>Add teachers and students</span>
-          </div>
-
-          <div class="step">
-            <div class="step-number">4</div>
-            <span>Start managing CBT and results</span>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>School-specific branding</span>
           </div>
 
         </div>
 
       </div>
 
-    </div>
-
-
-    <div class="hero-footer">
-      © 2026 SchoolHub Pro · Secure · Smart · Scalable
-    </div>
-
-  </section>
-
-
-  <section class="form-side">
-
-    <div class="form-box">
-
-      <div class="mobile-brand">
-
-        <div class="logo">S</div>
-
-        <div>
-          <strong>SchoolHub Pro</strong>
-          <small style="
-            display:block;
-            color:#94a3b8;
-            font-size:9px;
-            letter-spacing:1px;">
-            SMART SCHOOL MANAGEMENT
-          </small>
-        </div>
-
+      <div class="hero-footer">
+        <span>© 2026 SchoolHub Pro</span>
+        <span>Secure • Smart • Scalable</span>
       </div>
 
-
-      <div class="header">
-
-        <h2>Register your school</h2>
-
-        <p>
-          Create your school workspace and become its
-          school administrator.
-        </p>
-
-      </div>
+    </section>
 
 
-      <div class="message" id="message"></div>
+    <main class="form-area">
 
+      <div class="form-card">
 
-      <form class="form" id="registerForm">
-
-        <div class="section-label">
-          School Information
+        <div class="form-header">
+          <h2>Create your school</h2>
+          <p>
+            Set up your school administrator account
+            to get started with SchoolHub Pro.
+          </p>
         </div>
 
+        <div
+          id="message"
+          class="message"
+        ></div>
 
-        <div class="grid">
+        <form id="registerForm">
 
-          <div class="field full">
+          <div class="grid">
 
-            <label>School Name</label>
+            <div class="field full">
+              <label for="schoolName">
+                School name
+              </label>
 
-            <input
-              id="schoolName"
-              name="schoolName"
-              placeholder="e.g. Bright Future College"
-              required>
+              <input
+                id="schoolName"
+                name="schoolName"
+                type="text"
+                placeholder="e.g. Bright Future College"
+                autocomplete="organization"
+                required
+              >
+            </div>
 
-          </div>
+            <div class="field full">
+              <label for="motto">
+                School motto
+                <span style="font-weight:400;color:#94a3b8">
+                  (optional)
+                </span>
+              </label>
 
+              <input
+                id="motto"
+                name="motto"
+                type="text"
+                placeholder="Your school motto"
+              >
+            </div>
 
-          <div class="field full">
+            <div class="field">
+              <label for="fullName">
+                Administrator name
+              </label>
 
-            <label>School Motto</label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="Full name"
+                autocomplete="name"
+                required
+              >
+            </div>
 
-            <input
-              id="motto"
-              name="motto"
-              placeholder="e.g. Excellence Through Knowledge">
+            <div class="field">
+              <label for="username">
+                Username
+              </label>
 
-          </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Choose username"
+                autocomplete="username"
+                required
+              >
+            </div>
 
-        </div>
+            <div class="field full">
+              <label for="email">
+                Email address
+              </label>
 
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="admin@school.com"
+                autocomplete="email"
+                required
+              >
+            </div>
 
-        <div class="section-label">
-          Administrator Account
-        </div>
+            <div class="field">
+              <label for="password">
+                Password
+              </label>
 
+              <div class="password-wrap">
 
-        <div class="grid">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Minimum 8 characters"
+                  autocomplete="new-password"
+                  minlength="8"
+                  required
+                >
 
-          <div class="field">
+                <button
+                  type="button"
+                  class="show-password"
+                  id="showPassword"
+                >
+                  Show
+                </button>
 
-            <label>Full Name</label>
+              </div>
 
-            <input
-              id="fullName"
-              name="fullName"
-              autocomplete="name"
-              placeholder="Your full name"
-              required>
+              <div class="strength">
+                <div
+                  class="strength-bar"
+                  id="strengthBar"
+                ></div>
+              </div>
 
-          </div>
+              <div
+                class="strength-text"
+                id="strengthText"
+              >
+                Use at least 8 characters.
+              </div>
+            </div>
 
+            <div class="field">
+              <label for="confirmPassword">
+                Confirm password
+              </label>
 
-          <div class="field">
+              <div class="password-wrap">
 
-            <label>Username</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Repeat password"
+                  autocomplete="new-password"
+                  minlength="8"
+                  required
+                >
 
-            <input
-              id="username"
-              name="username"
-              autocomplete="username"
-              placeholder="schooladmin"
-              required>
+                <button
+                  type="button"
+                  class="show-password"
+                  id="showConfirm"
+                >
+                  Show
+                </button>
 
-            <div class="hint">
-              Use letters, numbers, dots, underscores or hyphens.
+              </div>
             </div>
 
           </div>
 
 
-          <div class="field">
-
-            <label>Email Address</label>
+          <label class="terms">
 
             <input
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              placeholder="admin@yourschool.com"
-              required>
-
-          </div>
-
-
-          <div class="field">
-
-            <label>Password</label>
-
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              placeholder="Create a strong password"
+              type="checkbox"
+              id="terms"
               required
-              minlength="8">
+            >
 
-            <div class="password-strength">
-              <div id="strengthBar"></div>
-            </div>
+            <span>
+              I understand that I am creating a
+              SchoolHub Pro school administrator account.
+            </span>
 
-            <div class="hint" id="strengthText">
-              Minimum 8 characters.
-            </div>
-
-          </div>
+          </label>
 
 
-          <div class="field full">
+          <button
+            class="submit"
+            type="submit"
+            id="submitButton"
+          >
+            Create School Account
+          </button>
 
-            <label>Confirm Password</label>
+        </form>
 
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autocomplete="new-password"
-              placeholder="Repeat your password"
-              required>
 
-          </div>
-
+        <div class="login-link">
+          Already have an account?
+          <a href="/login.html">
+            Sign in
+          </a>
         </div>
-
-
-        <label class="terms">
-
-          <input
-            type="checkbox"
-            id="terms"
-            required>
-
-          <span>
-            I confirm that I am authorized to create this
-            school account and agree to use SchoolHub Pro
-            responsibly.
-          </span>
-
-        </label>
-
-
-        <button
-          type="submit"
-          class="submit"
-          id="registerButton">
-
-          Create School Account
-
-        </button>
-
-      </form>
-
-
-      <div class="login-link">
-
-        Already have an account?
-
-        <a href="/login.html">
-          Sign in
-        </a>
 
       </div>
 
-    </div>
+    </main>
 
-  </section>
-
-</div>
+  </div>
 
 
-<script>
+  <script>
 
-  const message =
-    document.getElementById("message");
+    const form =
+      document.getElementById("registerForm");
 
+    const message =
+      document.getElementById("message");
 
-  function showMessage(text, type = "error") {
+    const submitButton =
+      document.getElementById("submitButton");
 
-    message.textContent = text;
+    const password =
+      document.getElementById("password");
 
-    message.className =
-      `message show ${type}`;
+    const confirmPassword =
+      document.getElementById("confirmPassword");
 
-  }
+    const strengthBar =
+      document.getElementById("strengthBar");
 
-
-  const password =
-    document.getElementById("password");
-
-  const strengthBar =
-    document.getElementById("strengthBar");
-
-  const strengthText =
-    document.getElementById("strengthText");
+    const strengthText =
+      document.getElementById("strengthText");
 
 
-  password.addEventListener("input", () => {
+    function showMessage(text, type) {
 
-    const value = password.value;
+      message.textContent = text;
 
-    let score = 0;
+      message.className =
+        "message " + type;
 
-    if (value.length >= 8) score++;
-
-    if (value.length >= 12) score++;
-
-    if (/[A-Z]/.test(value)) score++;
-
-    if (/[0-9]/.test(value)) score++;
-
-    if (/[^A-Za-z0-9]/.test(value)) score++;
+    }
 
 
-    const widths = [
-      "0%",
-      "20%",
-      "40%",
-      "60%",
-      "80%",
-      "100%"
-    ];
+    function passwordStrength(value) {
 
-    strengthBar.style.width =
-      widths[score];
+      let score = 0;
 
+      if (value.length >= 8) score++;
 
-    const labels = [
-      "Minimum 8 characters.",
-      "Very weak",
-      "Weak",
-      "Fair",
-      "Strong",
-      "Very strong"
-    ];
+      if (/[A-Z]/.test(value)) score++;
 
-    strengthText.textContent =
-      labels[score];
+      if (/[a-z]/.test(value)) score++;
 
-  });
+      if (/[0-9]/.test(value)) score++;
+
+      if (/[^A-Za-z0-9]/.test(value)) score++;
+
+      return score;
+    }
 
 
-  document
-    .getElementById("registerForm")
-    .addEventListener("submit", async event => {
+    password.addEventListener(
+      "input",
+      () => {
 
-      event.preventDefault();
+        const score =
+          passwordStrength(password.value);
 
+        const widths = [
+          "0%",
+          "20%",
+          "40%",
+          "60%",
+          "80%",
+          "100%"
+        ];
 
-      const schoolName =
-        document.getElementById("schoolName")
-          .value.trim();
+        strengthBar.style.width =
+          widths[score];
 
-      const motto =
-        document.getElementById("motto")
-          .value.trim();
-
-      const fullName =
-        document.getElementById("fullName")
-          .value.trim();
-
-      const username =
-        document.getElementById("username")
-          .value.trim();
-
-      const email =
-        document.getElementById("email")
-          .value.trim();
-
-      const passwordValue =
-        document.getElementById("password")
-          .value;
-
-      const confirmPassword =
-        document.getElementById("confirmPassword")
-          .value;
-
-      const terms =
-        document.getElementById("terms").checked;
-
-
-      if (!terms) {
-
-        showMessage(
-          "Please confirm the registration agreement."
-        );
-
-        return;
+        if (!password.value) {
+          strengthText.textContent =
+            "Use at least 8 characters.";
+        } else if (score <= 2) {
+          strengthText.textContent =
+            "Weak password";
+        } else if (score === 3) {
+          strengthText.textContent =
+            "Fair password";
+        } else if (score === 4) {
+          strengthText.textContent =
+            "Good password";
+        } else {
+          strengthText.textContent =
+            "Strong password";
+        }
 
       }
+    );
 
 
-      if (passwordValue.length < 8) {
+    document
+      .getElementById("showPassword")
+      .addEventListener(
+        "click",
+        () => {
 
-        showMessage(
-          "Password must contain at least 8 characters."
-        );
+          const isPassword =
+            password.type === "password";
 
-        return;
+          password.type =
+            isPassword ? "text" : "password";
 
-      }
+          document.getElementById(
+            "showPassword"
+          ).textContent =
+            isPassword ? "Hide" : "Show";
 
-
-      if (passwordValue !== confirmPassword) {
-
-        showMessage(
-          "The passwords do not match."
-        );
-
-        return;
-
-      }
-
-
-      const button =
-        document.getElementById("registerButton");
-
-      button.disabled = true;
-
-      button.textContent =
-        "Creating school...";
+        }
+      );
 
 
-      try {
+    document
+      .getElementById("showConfirm")
+      .addEventListener(
+        "click",
+        () => {
 
-        const response =
-          await fetch("/api/register", {
+          const isPassword =
+            confirmPassword.type === "password";
 
-            method: "POST",
+          confirmPassword.type =
+            isPassword ? "text" : "password";
 
-            credentials: "include",
+          document.getElementById(
+            "showConfirm"
+          ).textContent =
+            isPassword ? "Hide" : "Show";
 
-            headers: {
-              "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-
-              schoolName,
-
-              name: schoolName,
-
-              motto,
-
-              fullName,
-
-              username,
-
-              email,
-
-              password
-
-            })
-
-          });
+        }
+      );
 
 
-        const data =
-          await response.json();
+    form.addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        message.className = "message";
+        message.textContent = "";
+
+        const schoolName =
+          document
+            .getElementById("schoolName")
+            .value
+            .trim();
+
+        const motto =
+          document
+            .getElementById("motto")
+            .value
+            .trim();
+
+        const fullName =
+          document
+            .getElementById("fullName")
+            .value
+            .trim();
+
+        const username =
+          document
+            .getElementById("username")
+            .value
+            .trim();
+
+        const email =
+          document
+            .getElementById("email")
+            .value
+            .trim();
+
+        const passwordValue =
+          password.value;
+
+        const confirmValue =
+          confirmPassword.value;
 
 
-        if (!response.ok) {
+        if (passwordValue.length < 8) {
 
-          throw new Error(
-            data.error ||
-            data.message ||
-            "Registration failed."
+          showMessage(
+            "Password must contain at least 8 characters.",
+            "error"
           );
 
+          return;
         }
 
 
-        showMessage(
-          "School account created successfully. Redirecting...",
-          "success"
-        );
+        if (passwordValue !== confirmValue) {
+
+          showMessage(
+            "Passwords do not match.",
+            "error"
+          );
+
+          return;
+        }
 
 
-        setTimeout(() => {
+        submitButton.disabled = true;
+
+        submitButton.textContent =
+          "Creating your school...";
+
+
+        try {
+
+          const response =
+            await fetch("/api/register", {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              credentials: "include",
+
+              body: JSON.stringify({
+
+                schoolName,
+
+                name: schoolName,
+
+                motto,
+
+                fullName,
+
+                username,
+
+                email,
+
+                password:
+                  passwordValue
+
+              })
+
+            });
+
+
+          const data =
+            await response.json()
+              .catch(() => ({}));
+
+
+          if (!response.ok || !data.ok) {
+
+            throw new Error(
+              data.message ||
+              "Registration failed."
+            );
+
+          }
+
+
+          showMessage(
+            "School account created. Redirecting...",
+            "success"
+          );
+
 
           window.location.href =
             data.redirect ||
             "/admin.html";
 
-        }, 500);
+        } catch (error) {
 
+          showMessage(
+            error.message ||
+            "Unable to create your account.",
+            "error"
+          );
 
-      } catch (error) {
+          submitButton.disabled = false;
 
-        showMessage(error.message);
+          submitButton.textContent =
+            "Create School Account";
 
-        button.disabled = false;
-
-        button.textContent =
-          "Create School Account";
+        }
 
       }
+    );
 
-    });
-
-</script>
+  </script>
 
 </body>
 </html>
