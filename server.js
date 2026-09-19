@@ -1,38 +1,25 @@
-/**
- * ============================================================
- * SCHOOLHUB PRO
- * COMPLETE SCHOOL MANAGEMENT + CBT SERVER
- * ============================================================
- *
- * Features:
- * - Multi-school architecture
- * - Superadmin
- * - School Admin
- * - Teacher
- * - Student
- * - Google OAuth
- * - Normal login/register
- * - School branding
- * - User management
- * - Subjects
- * - CBT exams
- * - Question bank
- * - Results
- * - Announcements
- * - Dashboard APIs
- * - Railway persistent storage
- * - JSON database
- *
- * Google OAuth:
- * GOOGLE_CLIENT_ID
- * GOOGLE_CLIENT_SECRET
- * GOOGLE_CALLBACK_URL
- *
- * Railway:
- * STORAGE_ROOT=/app/storage
- *
- * ============================================================
- */
+/*
+=========================================================
+ SCHOOLHUB PRO - MAIN SERVER
+ Multi-School School Management + CBT Platform
+ Version: 6.0.0
+
+ ROLES
+ - superadmin
+ - school_admin
+ - teacher
+ - student
+
+ STORAGE
+ - Local: ./data
+ - Railway: /app/storage
+
+ GOOGLE OAUTH
+ - Passport Google OAuth 2.0
+
+ NO PARENT DASHBOARD
+=========================================================
+*/
 
 require("dotenv").config();
 
@@ -42,45 +29,31 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+
+/* =====================================================
+   APP
+===================================================== */
 
 const app = express();
 
-/* ============================================================
-   CONFIG
-============================================================ */
-
 const PORT = Number(process.env.PORT || 3000);
-
 const HOST = "0.0.0.0";
 
-const NODE_ENV = process.env.NODE_ENV || "development";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 const STORAGE_ROOT =
   process.env.STORAGE_ROOT ||
-  path.join(__dirname, "storage");
-
-const DATA_DIR = path.join(STORAGE_ROOT, "data");
+  path.join(__dirname, "data");
 
 const PUBLIC_DIR = path.join(__dirname, "public");
+const DATA_DIR = STORAGE_ROOT;
 
-const USERS_FILE = path.join(DATA_DIR, "users.json");
-const SCHOOLS_FILE = path.join(DATA_DIR, "schools.json");
-const SUBJECTS_FILE = path.join(DATA_DIR, "subjects.json");
-const EXAMS_FILE = path.join(DATA_DIR, "exams.json");
-const QUESTIONS_FILE = path.join(DATA_DIR, "questions.json");
-const RESULTS_FILE = path.join(DATA_DIR, "results.json");
-const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, "announcements.json");
-const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
-
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  "schoolhub-development-secret-change-this";
-
-/* ============================================================
+/* =====================================================
    CREATE DIRECTORIES
-============================================================ */
+===================================================== */
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -89,137 +62,190 @@ function ensureDir(dir) {
 }
 
 ensureDir(STORAGE_ROOT);
-ensureDir(DATA_DIR);
 ensureDir(PUBLIC_DIR);
 
-/* ============================================================
-   JSON DATABASE HELPERS
-============================================================ */
+/* =====================================================
+   DATABASE FILES
+===================================================== */
 
-function ensureJsonFile(file, defaultValue) {
+const FILES = {
+  users: path.join(DATA_DIR, "users.json"),
+  schools: path.join(DATA_DIR, "schools.json"),
+  settings: path.join(DATA_DIR, "settings.json"),
+  subjects: path.join(DATA_DIR, "subjects.json"),
+  exams: path.join(DATA_DIR, "exams.json"),
+  questions: path.join(DATA_DIR, "questions.json"),
+  results: path.join(DATA_DIR, "results.json"),
+  announcements: path.join(DATA_DIR, "announcements.json")
+};
+
+/* =====================================================
+   DEFAULT DATABASE
+===================================================== */
+
+const DEFAULTS = {
+  users: [],
+  schools: [],
+  settings: {
+    platformName: "SchoolHub Pro",
+    platformDescription:
+      "Smart school management for modern schools.",
+    defaultTheme: "light",
+    maintenanceMode: false
+  },
+  subjects: [],
+  exams: [],
+  questions: [],
+  results: [],
+  announcements: []
+};
+
+/* =====================================================
+   JSON DATABASE HELPERS
+===================================================== */
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function ensureJsonFile(file, fallback) {
   if (!fs.existsSync(file)) {
     fs.writeFileSync(
       file,
-      JSON.stringify(defaultValue, null, 2),
+      JSON.stringify(fallback, null, 2),
       "utf8"
     );
   }
 }
 
-ensureJsonFile(USERS_FILE, []);
-ensureJsonFile(SCHOOLS_FILE, []);
-ensureJsonFile(SUBJECTS_FILE, []);
-ensureJsonFile(EXAMS_FILE, []);
-ensureJsonFile(QUESTIONS_FILE, []);
-ensureJsonFile(RESULTS_FILE, []);
-ensureJsonFile(ANNOUNCEMENTS_FILE, []);
-
-ensureJsonFile(SETTINGS_FILE, {
-  platformName: "SchoolHub Pro",
-  platformDescription:
-    "Smart school management and CBT platform.",
-  defaultTheme: "light",
-  maintenanceMode: false
+Object.keys(FILES).forEach((key) => {
+  ensureJsonFile(FILES[key], DEFAULTS[key]);
 });
 
 function readJson(file, fallback = []) {
   try {
     if (!fs.existsSync(file)) {
-      fs.writeFileSync(
-        file,
-        JSON.stringify(fallback, null, 2),
-        "utf8"
-      );
-      return fallback;
+      writeJson(file, fallback);
+      return clone(fallback);
     }
 
-    const content = fs.readFileSync(file, "utf8").trim();
+    const raw = fs.readFileSync(file, "utf8").trim();
 
-    if (!content) {
-      return fallback;
+    if (!raw) {
+      writeJson(file, fallback);
+      return clone(fallback);
     }
 
-    return JSON.parse(content);
+    return JSON.parse(raw);
   } catch (error) {
     console.error("JSON READ ERROR:", file, error.message);
-    return fallback;
+    return clone(fallback);
   }
 }
 
 function writeJson(file, data) {
-  const temp = `${file}.tmp`;
+  const tempFile = `${file}.tmp`;
 
   fs.writeFileSync(
-    temp,
+    tempFile,
     JSON.stringify(data, null, 2),
     "utf8"
   );
 
-  fs.renameSync(temp, file);
+  fs.renameSync(tempFile, file);
 }
 
-function users() {
-  return readJson(USERS_FILE, []);
+function getUsers() {
+  return readJson(FILES.users, []);
 }
 
-function schools() {
-  return readJson(SCHOOLS_FILE, []);
+function saveUsers(data) {
+  writeJson(FILES.users, data);
 }
 
-function subjects() {
-  return readJson(SUBJECTS_FILE, []);
+function getSchools() {
+  return readJson(FILES.schools, []);
 }
 
-function exams() {
-  return readJson(EXAMS_FILE, []);
+function saveSchools(data) {
+  writeJson(FILES.schools, data);
 }
 
-function questions() {
-  return readJson(QUESTIONS_FILE, []);
+function getSettings() {
+  return readJson(FILES.settings, DEFAULTS.settings);
 }
 
-function results() {
-  return readJson(RESULTS_FILE, []);
+function saveSettings(data) {
+  writeJson(FILES.settings, data);
 }
 
-function announcements() {
-  return readJson(ANNOUNCEMENTS_FILE, []);
+function getSubjects() {
+  return readJson(FILES.subjects, []);
 }
 
-function settings() {
-  return readJson(SETTINGS_FILE, {
-    platformName: "SchoolHub Pro",
-    platformDescription:
-      "Smart school management and CBT platform.",
-    defaultTheme: "light",
-    maintenanceMode: false
-  });
+function saveSubjects(data) {
+  writeJson(FILES.subjects, data);
 }
 
-/* ============================================================
-   ID GENERATOR
-============================================================ */
+function getExams() {
+  return readJson(FILES.exams, []);
+}
+
+function saveExams(data) {
+  writeJson(FILES.exams, data);
+}
+
+function getQuestions() {
+  return readJson(FILES.questions, []);
+}
+
+function saveQuestions(data) {
+  writeJson(FILES.questions, data);
+}
+
+function getResults() {
+  return readJson(FILES.results, []);
+}
+
+function saveResults(data) {
+  writeJson(FILES.results, data);
+}
+
+function getAnnouncements() {
+  return readJson(FILES.announcements, []);
+}
+
+function saveAnnouncements(data) {
+  writeJson(FILES.announcements, data);
+}
+
+/* =====================================================
+   HELPERS
+===================================================== */
 
 function id(prefix = "id") {
-  return `${prefix}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substring(2, 10)}`;
-}
-
-/* ============================================================
-   BASIC HELPERS
-============================================================ */
-
-function clean(value) {
-  return String(value || "").trim();
-}
-
-function lower(value) {
-  return clean(value).toLowerCase();
+  return `${prefix}_${crypto.randomUUID()}`;
 }
 
 function now() {
   return new Date().toISOString();
+}
+
+function clean(value) {
+  return String(value ?? "").trim();
+}
+
+function normalizeEmail(value) {
+  return clean(value).toLowerCase();
+}
+
+function normalizeUsername(value) {
+  return clean(value).toLowerCase();
+}
+
+function safeNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 function publicUser(user) {
@@ -227,71 +253,103 @@ function publicUser(user) {
 
   return {
     id: user.id,
-    fullName: user.fullName,
-    username: user.username,
-    email: user.email,
-    role: user.role,
+    fullName: user.fullName || "",
+    username: user.username || "",
+    email: user.email || "",
+    role: user.role || "",
     schoolId: user.schoolId || null,
     profilePicture: user.profilePicture || "",
-    provider: user.provider || "local",
     active: user.active !== false,
-    createdAt: user.createdAt
+    provider: user.provider || "local",
+    createdAt: user.createdAt || null
   };
 }
 
-function findUserById(userId) {
-  return users().find(u => u.id === userId);
+function getSchoolById(schoolId) {
+  if (!schoolId) return null;
+
+  return getSchools().find(
+    (school) => school.id === schoolId
+  ) || null;
 }
 
-function findSchoolById(schoolId) {
-  return schools().find(s => s.id === schoolId);
+function getUserById(userId) {
+  return getUsers().find(
+    (user) => user.id === userId
+  ) || null;
 }
 
-function roleRedirect(user) {
-  if (!user) return "/login.html";
+function getUserByEmail(email) {
+  const normalized = normalizeEmail(email);
 
+  return getUsers().find(
+    (user) =>
+      normalizeEmail(user.email) === normalized
+  ) || null;
+}
+
+function getUserByUsername(username) {
+  const normalized = normalizeUsername(username);
+
+  return getUsers().find(
+    (user) =>
+      normalizeUsername(user.username) === normalized
+  ) || null;
+}
+
+function roleRedirect(role) {
   if (
-    user.role === "superadmin" ||
-    user.role === "school_admin"
+    role === "superadmin" ||
+    role === "school_admin"
   ) {
     return "/admin.html";
   }
 
-  if (user.role === "teacher") {
+  if (role === "teacher") {
     return "/teacher.html";
   }
 
-  if (user.role === "student") {
+  if (role === "student") {
     return "/student.html";
   }
 
   return "/login.html";
 }
 
-/* ============================================================
-   EXPRESS
-============================================================ */
+function sameSchool(user, schoolId) {
+  if (!user) return false;
+
+  if (user.role === "superadmin") {
+    return true;
+  }
+
+  return Boolean(
+    user.schoolId &&
+    schoolId &&
+    user.schoolId === schoolId
+  );
+}
+
+/* =====================================================
+   EXPRESS CONFIG
+===================================================== */
 
 app.disable("x-powered-by");
 
-app.set("trust proxy", 1);
-
 app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "10mb"
-  })
-);
-
-/* ============================================================
+/* =====================================================
    SESSION
-============================================================ */
+===================================================== */
+
+const sessionSecret =
+  process.env.SESSION_SECRET ||
+  "CHANGE_THIS_SESSION_SECRET_IN_PRODUCTION";
 
 app.use(
   session({
-    secret: SESSION_SECRET,
+    secret: sessionSecret,
 
     resave: false,
 
@@ -300,7 +358,7 @@ app.use(
     cookie: {
       httpOnly: true,
 
-      secure: NODE_ENV === "production",
+      secure: IS_PRODUCTION,
 
       sameSite: "lax",
 
@@ -309,9 +367,9 @@ app.use(
   })
 );
 
-/* ============================================================
+/* =====================================================
    PASSPORT
-============================================================ */
+===================================================== */
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -321,7 +379,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((userId, done) => {
-  const user = findUserById(userId);
+  const user = getUserById(userId);
 
   if (!user) {
     return done(null, false);
@@ -330,9 +388,9 @@ passport.deserializeUser((userId, done) => {
   done(null, user);
 });
 
-/* ============================================================
-   GOOGLE AUTH CONFIGURATION
-============================================================ */
+/* =====================================================
+   GOOGLE AUTH CONFIG
+===================================================== */
 
 const GOOGLE_CLIENT_ID =
   process.env.GOOGLE_CLIENT_ID || "";
@@ -341,7 +399,8 @@ const GOOGLE_CLIENT_SECRET =
   process.env.GOOGLE_CLIENT_SECRET || "";
 
 const GOOGLE_CALLBACK_URL =
-  process.env.GOOGLE_CALLBACK_URL || "";
+  process.env.GOOGLE_CALLBACK_URL ||
+  "http://localhost:3000/auth/google/callback";
 
 const googleConfigured =
   Boolean(
@@ -350,71 +409,52 @@ const googleConfigured =
     GOOGLE_CALLBACK_URL
   );
 
+/* =====================================================
+   GOOGLE STRATEGY
+===================================================== */
+
 if (googleConfigured) {
   passport.use(
     new GoogleStrategy(
       {
         clientID: GOOGLE_CLIENT_ID,
-
         clientSecret: GOOGLE_CLIENT_SECRET,
-
         callbackURL: GOOGLE_CALLBACK_URL
       },
 
-      async (
-        accessToken,
-        refreshToken,
-        profile,
-        done
-      ) => {
+      async (accessToken, refreshToken, profile, done) => {
         try {
-          const allUsers = users();
+          const users = getUsers();
 
           const googleId = profile.id;
 
           const email =
-            lower(
-              profile.emails &&
-              profile.emails[0]
-                ? profile.emails[0].value
-                : ""
+            normalizeEmail(
+              profile.emails?.[0]?.value || ""
             );
 
-          const fullName =
+          const displayName =
             profile.displayName ||
+            profile.name?.givenName ||
             "Google User";
-
-          const picture =
-            profile.photos &&
-            profile.photos[0]
-              ? profile.photos[0].value
-              : "";
 
           if (!email) {
             return done(
               new Error(
-                "Google account did not provide an email address."
+                "Google did not provide an email address."
               )
             );
           }
 
           let user =
-            allUsers.find(
-              u => u.googleId === googleId
+            users.find(
+              (item) =>
+                item.googleId === googleId
             ) ||
-            allUsers.find(
-              u =>
-                lower(u.email) === email
+            users.find(
+              (item) =>
+                normalizeEmail(item.email) === email
             );
-
-          /*
-           * IMPORTANT:
-           * Google does not automatically create a
-           * SchoolHub account.
-           *
-           * User must register first with the same email,
-           * then Google can connect to that account.
-           */
 
           if (!user) {
             return done(
@@ -433,379 +473,336 @@ if (googleConfigured) {
           }
 
           user.googleId = googleId;
-
           user.provider = "google";
-
-          user.profilePicture =
-            picture ||
-            user.profilePicture ||
-            "";
-
           user.updatedAt = now();
 
-          writeJson(USERS_FILE, allUsers);
+          if (
+            !user.profilePicture &&
+            profile.photos?.[0]?.value
+          ) {
+            user.profilePicture =
+              profile.photos[0].value;
+          }
 
-          done(null, user);
+          saveUsers(users);
+
+          return done(null, user);
         } catch (error) {
-          done(error);
+          return done(error);
         }
       }
     )
   );
-
-  console.log("Google Auth: CONFIGURED");
-} else {
-  console.log("Google Auth: NOT CONFIGURED");
 }
 
-/* ============================================================
+/* =====================================================
    AUTH MIDDLEWARE
-============================================================ */
+===================================================== */
 
 function requireAuth(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
+  const user = getUserById(req.session.userId);
+
+  if (!user) {
+    return res.status(401).json({
+      ok: false,
+      error: "Authentication required."
+    });
   }
 
-  if (req.session && req.session.userId) {
-    const user = findUserById(
-      req.session.userId
-    );
+  if (user.active === false) {
+    req.session.destroy(() => {});
 
-    if (user) {
-      req.user = user;
-      return next();
-    }
+    return res.status(403).json({
+      ok: false,
+      error: "Your account has been disabled."
+    });
   }
 
-  return res.status(401).json({
-    ok: false,
-    message: "Authentication required."
-  });
+  req.currentUser = user;
+
+  next();
 }
 
-function requireRole(...allowedRoles) {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        ok: false,
-        message: "Authentication required."
-      });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
+function requireSuperadmin(req, res, next) {
+  requireAuth(req, res, () => {
+    if (req.currentUser.role !== "superadmin") {
       return res.status(403).json({
         ok: false,
-        message: "You do not have permission."
+        error: "Superadmin access required."
       });
     }
 
     next();
-  };
+  });
 }
 
 function requireSchoolAdmin(req, res, next) {
-  if (
-    !req.user ||
-    ![
-      "school_admin",
-      "superadmin"
-    ].includes(req.user.role)
-  ) {
-    return res.status(403).json({
-      ok: false,
-      message: "School administrator access required."
-    });
-  }
+  requireAuth(req, res, () => {
+    if (
+      req.currentUser.role !== "school_admin" &&
+      req.currentUser.role !== "superadmin"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error: "School administrator access required."
+      });
+    }
 
-  next();
+    next();
+  });
 }
 
-function sameSchool(req, schoolId) {
-  if (!req.user) return false;
+function requireTeacher(req, res, next) {
+  requireAuth(req, res, () => {
+    if (
+      req.currentUser.role !== "teacher" &&
+      req.currentUser.role !== "school_admin" &&
+      req.currentUser.role !== "superadmin"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error: "Teacher access required."
+      });
+    }
 
-  if (req.user.role === "superadmin") {
-    return true;
-  }
-
-  return req.user.schoolId === schoolId;
+    next();
+  });
 }
 
-/* ============================================================
-   REQUEST USER
-============================================================ */
-
-app.use((req, res, next) => {
-  if (!req.user && req.session.userId) {
-    req.user = findUserById(
-      req.session.userId
-    );
-  }
-
-  next();
-});
-
-/* ============================================================
+/* =====================================================
    HEALTH
-============================================================ */
+===================================================== */
 
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
     status: "online",
     service: "SchoolHub Pro",
-    version: "5.0.0",
-    environment: NODE_ENV,
+    version: "6.0.0",
+    environment:
+      process.env.NODE_ENV || "development",
     port: PORT,
     storage: STORAGE_ROOT,
-    googleAuth: googleConfigured
-      ? "CONFIGURED"
-      : "NOT CONFIGURED",
+    googleAuth:
+      googleConfigured
+        ? "CONFIGURED"
+        : "NOT_CONFIGURED",
     time: now()
   });
 });
 
-/* ============================================================
+/* =====================================================
    PLATFORM
-============================================================ */
+===================================================== */
 
 app.get("/api/platform", (req, res) => {
+  const settings = getSettings();
+
   res.json({
     ok: true,
-    platform: settings()
+
+    platform: {
+      name:
+        settings.platformName ||
+        "SchoolHub Pro",
+
+      description:
+        settings.platformDescription ||
+        "",
+
+      defaultTheme:
+        settings.defaultTheme ||
+        "light",
+
+      maintenanceMode:
+        Boolean(settings.maintenanceMode)
+    }
   });
 });
 
 app.get(
   "/api/platform-config",
   (req, res) => {
-    const config = settings();
+    const settings = getSettings();
 
     res.json({
       ok: true,
-
-      platformName:
-        config.platformName ||
-        "SchoolHub Pro",
-
-      platformDescription:
-        config.platformDescription ||
-        "",
-
-      defaultTheme:
-        config.defaultTheme ||
-        "light",
-
-      googleAuth:
-        googleConfigured,
-
-      maintenanceMode:
-        Boolean(config.maintenanceMode)
+      settings
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    CURRENT USER
-============================================================ */
+===================================================== */
 
-app.get(
-  "/api/me",
-  requireAuth,
-  (req, res) => {
-    const school =
-      req.user.schoolId
-        ? findSchoolById(
-            req.user.schoolId
-          )
-        : null;
-
-    res.json({
-      ok: true,
-
-      user: publicUser(req.user),
-
-      school: school || null,
-
-      redirect:
-        roleRedirect(req.user)
-    });
-  }
-);
-
-/* ============================================================
-   REGISTER
-============================================================ */
-
-app.post(
-  "/api/register",
-  async (req, res) => {
-    try {
-      const {
-        schoolName,
-        schoolMotto,
-        fullName,
-        username,
-        email,
-        password
-      } = req.body;
-
-      const schoolNameClean =
-        clean(schoolName);
-
-      const nameClean =
-        clean(fullName);
-
-      const usernameClean =
-        lower(username);
-
-      const emailClean =
-        lower(email);
-
-      if (
-        !schoolNameClean ||
-        !nameClean ||
-        !usernameClean ||
-        !emailClean ||
-        !password
-      ) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Please complete all required fields."
-        });
-      }
-
-      if (password.length < 6) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Password must be at least 6 characters."
-        });
-      }
-
-      const allUsers = users();
-
-      if (
-        allUsers.some(
-          u =>
-            lower(u.email) ===
-            emailClean
+app.get("/api/me", requireAuth, (req, res) => {
+  const school =
+    req.currentUser.schoolId
+      ? getSchoolById(
+          req.currentUser.schoolId
         )
-      ) {
-        return res.status(409).json({
-          ok: false,
-          message:
-            "An account with this email already exists."
-        });
-      }
+      : null;
 
-      if (
-        allUsers.some(
-          u =>
-            lower(u.username) ===
-            usernameClean
-        )
-      ) {
-        return res.status(409).json({
-          ok: false,
-          message:
-            "Username already exists."
-        });
-      }
+  res.json({
+    ok: true,
 
-      const schoolId =
-        id("school");
+    user: publicUser(req.currentUser),
 
-      const userId =
-        id("user");
+    school,
 
-      const passwordHash =
-        await bcrypt.hash(
-          password,
-          12
-        );
+    redirect:
+      roleRedirect(
+        req.currentUser.role
+      )
+  });
+});
 
-      const school = {
-        id: schoolId,
+/* =====================================================
+   REGISTER SCHOOL
+===================================================== */
 
-        name: schoolNameClean,
+app.post("/api/register", async (req, res) => {
+  try {
+    const {
+      schoolName,
+      schoolMotto,
+      fullName,
+      username,
+      email,
+      password
+    } = req.body;
 
-        motto:
-          clean(schoolMotto) ||
-          "Smart education for a brighter future.",
-
-        logo: "",
-
-        primaryColor: "#2563eb",
-
-        secondaryColor: "#16a34a",
-
-        theme: "light",
-
-        active: true,
-
-        createdAt: now(),
-
-        updatedAt: now()
-      };
-
-      const user = {
-        id: userId,
-
-        fullName: nameClean,
-
-        username: usernameClean,
-
-        email: emailClean,
-
-        passwordHash,
-
-        role: "school_admin",
-
-        schoolId,
-
-        profilePicture: "",
-
-        provider: "local",
-
-        active: true,
-
-        createdAt: now(),
-
-        updatedAt: now()
-      };
-
-      const allSchools =
-        schools();
-
-      allSchools.push(school);
-
-      allUsers.push(user);
-
-      writeJson(
-        SCHOOLS_FILE,
-        allSchools
-      );
-
-      writeJson(
-        USERS_FILE,
-        allUsers
-      );
-
-      req.session.userId =
-        user.id;
-
-      req.login(user, err => {
-        if (err) {
-          console.error(
-            "REGISTER LOGIN ERROR:",
-            err
-          );
-        }
+    if (
+      !schoolName ||
+      !fullName ||
+      !username ||
+      !email ||
+      !password
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "School name, full name, username, email and password are required."
       });
+    }
 
-      res.status(201).json({
+    if (password.length < 6) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Password must contain at least 6 characters."
+      });
+    }
+
+    const normalizedEmail =
+      normalizeEmail(email);
+
+    const normalizedUsername =
+      normalizeUsername(username);
+
+    const users = getUsers();
+
+    if (
+      users.some(
+        (user) =>
+          normalizeEmail(user.email) ===
+          normalizedEmail
+      )
+    ) {
+      return res.status(409).json({
+        ok: false,
+        error:
+          "An account with this email already exists."
+      });
+    }
+
+    if (
+      users.some(
+        (user) =>
+          normalizeUsername(user.username) ===
+          normalizedUsername
+      )
+    ) {
+      return res.status(409).json({
+        ok: false,
+        error:
+          "This username is already in use."
+      });
+    }
+
+    const schools = getSchools();
+
+    const school = {
+      id: id("school"),
+
+      name: clean(schoolName),
+
+      motto: clean(schoolMotto),
+
+      logo: "",
+
+      primaryColor: "#2563eb",
+
+      secondaryColor: "#16a34a",
+
+      theme: "light",
+
+      active: true,
+
+      createdAt: now(),
+
+      updatedAt: now()
+    };
+
+    schools.push(school);
+
+    saveSchools(schools);
+
+    const passwordHash =
+      await bcrypt.hash(password, 12);
+
+    const user = {
+      id: id("user"),
+
+      fullName: clean(fullName),
+
+      username: normalizedUsername,
+
+      email: normalizedEmail,
+
+      passwordHash,
+
+      role: "school_admin",
+
+      schoolId: school.id,
+
+      profilePicture: "",
+
+      provider: "local",
+
+      active: true,
+
+      createdAt: now(),
+
+      updatedAt: now()
+    };
+
+    users.push(user);
+
+    saveUsers(users);
+
+    req.session.userId = user.id;
+
+    req.login(user, (loginError) => {
+      if (loginError) {
+        console.error(
+          "Register session error:",
+          loginError
+        );
+      }
+
+      return res.status(201).json({
         ok: true,
 
         message:
@@ -817,197 +814,181 @@ app.post(
 
         redirect: "/admin.html"
       });
-    } catch (error) {
-      console.error(
-        "REGISTER ERROR:",
-        error
-      );
+    });
+  } catch (error) {
+    console.error(
+      "REGISTER ERROR:",
+      error
+    );
 
-      res.status(500).json({
-        ok: false,
-        message:
-          "Unable to create account."
-      });
-    }
-  }
-);
-
-/* ============================================================
-   LOGIN
-============================================================ */
-
-app.post(
-  "/api/login",
-  async (req, res) => {
-    try {
-      const login =
-        lower(
-          req.body.login ||
-          req.body.email ||
-          req.body.username
-        );
-
-      const password =
-        String(
-          req.body.password || ""
-        );
-
-      if (!login || !password) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Enter your username/email and password."
-        });
-      }
-
-      const allUsers =
-        users();
-
-      const user =
-        allUsers.find(
-          u =>
-            lower(u.email) ===
-              login ||
-            lower(u.username) ===
-              login
-        );
-
-      if (!user) {
-        return res.status(401).json({
-          ok: false,
-          message:
-            "Invalid login details."
-        });
-      }
-
-      if (user.active === false) {
-        return res.status(403).json({
-          ok: false,
-          message:
-            "This account has been disabled."
-        });
-      }
-
-      if (!user.passwordHash) {
-        return res.status(401).json({
-          ok: false,
-          message:
-            "This account uses Google Sign-In. Please use Google."
-        });
-      }
-
-      const valid =
-        await bcrypt.compare(
-          password,
-          user.passwordHash
-        );
-
-      if (!valid) {
-        return res.status(401).json({
-          ok: false,
-          message:
-            "Invalid login details."
-        });
-      }
-
-      req.session.userId =
-        user.id;
-
-      req.login(user, err => {
-        if (err) {
-          console.error(
-            "PASSPORT LOGIN ERROR:",
-            err
-          );
-
-          return res.status(500).json({
-            ok: false,
-            message:
-              "Login session could not be created."
-          });
-        }
-
-        return res.json({
-          ok: true,
-
-          message:
-            "Login successful.",
-
-          user: publicUser(user),
-
-          redirect:
-            roleRedirect(user)
-        });
-      });
-    } catch (error) {
-      console.error(
-        "LOGIN ERROR:",
-        error
-      );
-
-      res.status(500).json({
-        ok: false,
-        message:
-          "An internal error occurred during login."
-      });
-    }
-  }
-);
-
-/* ============================================================
-   LOGOUT
-============================================================ */
-
-app.post(
-  "/api/logout",
-  (req, res) => {
-    req.logout(err => {
-      if (err) {
-        console.error(
-          "LOGOUT ERROR:",
-          err
-        );
-      }
-
-      req.session.destroy(() => {
-        res.clearCookie("connect.sid");
-
-        res.json({
-          ok: true,
-          message:
-            "Logged out successfully."
-        });
-      });
+    res.status(500).json({
+      ok: false,
+      error: "Registration failed."
     });
   }
-);
+});
 
-/* ============================================================
-   GOOGLE AUTH
-============================================================ */
+/* =====================================================
+   NORMAL LOGIN
+===================================================== */
 
-app.get(
-  "/auth/google",
-  (req, res, next) => {
-    if (!googleConfigured) {
-      return res.redirect(
-        "/login.html?error=google_not_configured"
+app.post("/api/login", async (req, res) => {
+  try {
+    const identifier =
+      clean(
+        req.body.identifier ||
+        req.body.email ||
+        req.body.username
       );
+
+    const password =
+      String(req.body.password || "");
+
+    if (!identifier || !password) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Username/email and password are required."
+      });
     }
 
-    passport.authenticate(
-      "google",
-      {
-        scope: [
-          "profile",
-          "email"
-        ],
+    const users = getUsers();
 
-        prompt: "select_account"
+    const normalized =
+      identifier.toLowerCase();
+
+    const user =
+      users.find(
+        (item) =>
+          normalizeEmail(item.email) ===
+            normalized ||
+          normalizeUsername(item.username) ===
+            normalized
+      );
+
+    if (!user) {
+      return res.status(401).json({
+        ok: false,
+        error:
+          "Invalid username/email or password."
+      });
+    }
+
+    if (user.active === false) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Your account has been disabled."
+      });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(401).json({
+        ok: false,
+        error:
+          "This account does not have a local password. Use Google Sign-In."
+      });
+    }
+
+    const passwordMatches =
+      await bcrypt.compare(
+        password,
+        user.passwordHash
+      );
+
+    if (!passwordMatches) {
+      return res.status(401).json({
+        ok: false,
+        error:
+          "Invalid username/email or password."
+      });
+    }
+
+    req.session.userId = user.id;
+
+    req.login(user, (loginError) => {
+      if (loginError) {
+        console.error(
+          "LOGIN SESSION ERROR:",
+          loginError
+        );
+
+        return res.status(500).json({
+          ok: false,
+          error:
+            "Login session could not be created."
+        });
       }
-    )(req, res, next);
+
+      return res.json({
+        ok: true,
+
+        message: "Login successful.",
+
+        user: publicUser(user),
+
+        redirect:
+          roleRedirect(user.role)
+      });
+    });
+  } catch (error) {
+    console.error(
+      "LOGIN ERROR:",
+      error
+    );
+
+    res.status(500).json({
+      ok: false,
+      error:
+        "An internal error occurred during login."
+    });
   }
-);
+});
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+app.post("/api/logout", (req, res) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.json({
+        ok: true,
+        message: "Logged out successfully."
+      });
+    });
+  });
+});
+
+/* =====================================================
+   GOOGLE AUTH START
+===================================================== */
+
+app.get("/auth/google", (req, res, next) => {
+  if (!googleConfigured) {
+    return res.status(503).send(`
+      <html>
+        <head>
+          <title>Google Sign-In</title>
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+        </head>
+        <body style="font-family:Arial;padding:40px">
+          <h2>Google Sign-In is not configured.</h2>
+          <p>Please configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_CALLBACK_URL.</p>
+        </body>
+      </html>
+    `);
+  }
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account"
+  })(req, res, next);
+});
+
+/* =====================================================
+   GOOGLE CALLBACK
+===================================================== */
 
 app.get(
   "/auth/google/callback",
@@ -1020,36 +1001,30 @@ app.get(
 
     passport.authenticate(
       "google",
-      {
-        failureRedirect:
-          "/login.html?error=google_failed",
-
-        failureMessage: true
-      },
-      (err, user) => {
-        if (err) {
+      (error, user) => {
+        if (error) {
           console.error(
             "GOOGLE CALLBACK ERROR:",
-            err.message
+            error.message
           );
 
           return res.redirect(
-            "/login.html?error=" +
-              encodeURIComponent(
-                err.message
-              )
+            `/login.html?error=${encodeURIComponent(
+              error.message ||
+              "Google authentication failed."
+            )}`
           );
         }
 
         if (!user) {
           return res.redirect(
-            "/login.html?error=google_failed"
+            "/login.html?error=google_login_failed"
           );
         }
 
         req.logIn(
           user,
-          loginError => {
+          (loginError) => {
             if (loginError) {
               console.error(
                 "GOOGLE SESSION ERROR:",
@@ -1057,30 +1032,14 @@ app.get(
               );
 
               return res.redirect(
-                "/login.html?error=session_failed"
+                "/login.html?error=session_error"
               );
             }
 
-            req.session.userId =
-              user.id;
+            req.session.userId = user.id;
 
-            req.session.save(
-              saveError => {
-                if (saveError) {
-                  console.error(
-                    "SESSION SAVE ERROR:",
-                    saveError
-                  );
-
-                  return res.redirect(
-                    "/login.html?error=session_failed"
-                  );
-                }
-
-                return res.redirect(
-                  roleRedirect(user)
-                );
-              }
+            return res.redirect(
+              roleRedirect(user.role)
             );
           }
         );
@@ -1089,15 +1048,15 @@ app.get(
   }
 );
 
-/* ============================================================
-   SCHOOL INFORMATION
-============================================================ */
+/* =====================================================
+   SCHOOL
+===================================================== */
 
 app.get(
   "/api/school",
   requireAuth,
   (req, res) => {
-    if (!req.user.schoolId) {
+    if (req.currentUser.role === "superadmin") {
       return res.json({
         ok: true,
         school: null
@@ -1105,131 +1064,98 @@ app.get(
     }
 
     const school =
-      findSchoolById(
-        req.user.schoolId
-      );
-
-    res.json({
-      ok: true,
-      school: school || null
-    });
-  }
-);
-
-/* ============================================================
-   SCHOOL BRANDING
-============================================================ */
-
-app.put(
-  "/api/school/branding",
-  requireAuth,
-  requireSchoolAdmin,
-  (req, res) => {
-    if (
-      req.user.role !==
-      "superadmin" &&
-      !req.user.schoolId
-    ) {
-      return res.status(400).json({
-        ok: false,
-        message:
-          "No school is associated with this account."
-      });
-    }
-
-    const schoolId =
-      req.user.role === "superadmin"
-        ? clean(req.body.schoolId)
-        : req.user.schoolId;
-
-    const allSchools =
-      schools();
-
-    const school =
-      allSchools.find(
-        s => s.id === schoolId
+      getSchoolById(
+        req.currentUser.schoolId
       );
 
     if (!school) {
       return res.status(404).json({
         ok: false,
-        message:
-          "School not found."
+        error: "School not found."
       });
     }
 
-    if (
-      req.user.role !== "superadmin" &&
-      school.id !== req.user.schoolId
-    ) {
-      return res.status(403).json({
+    res.json({
+      ok: true,
+      school
+    });
+  }
+);
+
+/* =====================================================
+   SCHOOL BRANDING
+===================================================== */
+
+app.put(
+  "/api/school/branding",
+  requireSchoolAdmin,
+  (req, res) => {
+    const {
+      name,
+      motto,
+      logo,
+      primaryColor,
+      secondaryColor,
+      theme
+    } = req.body;
+
+    if (req.currentUser.role === "superadmin") {
+      return res.status(400).json({
         ok: false,
-        message:
-          "You cannot edit another school."
+        error:
+          "Superadmin should manage platform settings or a specific school."
       });
     }
 
-    if (
-      req.body.name !== undefined
-    ) {
-      school.name =
-        clean(req.body.name);
+    const schools = getSchools();
+
+    const index =
+      schools.findIndex(
+        (school) =>
+          school.id ===
+          req.currentUser.schoolId
+      );
+
+    if (index === -1) {
+      return res.status(404).json({
+        ok: false,
+        error: "School not found."
+      });
     }
 
-    if (
-      req.body.motto !== undefined
-    ) {
-      school.motto =
-        clean(req.body.motto);
+    const school = schools[index];
+
+    if (name !== undefined) {
+      school.name = clean(name);
     }
 
-    if (
-      req.body.logo !== undefined
-    ) {
-      school.logo =
-        clean(req.body.logo);
+    if (motto !== undefined) {
+      school.motto = clean(motto);
     }
 
-    if (
-      req.body.primaryColor !== undefined
-    ) {
+    if (logo !== undefined) {
+      school.logo = clean(logo);
+    }
+
+    if (primaryColor !== undefined) {
       school.primaryColor =
-        clean(req.body.primaryColor);
+        clean(primaryColor);
     }
 
-    if (
-      req.body.secondaryColor !== undefined
-    ) {
+    if (secondaryColor !== undefined) {
       school.secondaryColor =
-        clean(req.body.secondaryColor);
+        clean(secondaryColor);
     }
 
-    if (
-      req.body.theme !== undefined
-    ) {
-      const allowedThemes = [
-        "light",
-        "dark",
-        "blue",
-        "green"
-      ];
-
-      if (
-        allowedThemes.includes(
-          req.body.theme
-        )
-      ) {
-        school.theme =
-          req.body.theme;
-      }
+    if (theme !== undefined) {
+      school.theme = clean(theme);
     }
 
     school.updatedAt = now();
 
-    writeJson(
-      SCHOOLS_FILE,
-      allSchools
-    );
+    schools[index] = school;
+
+    saveSchools(schools);
 
     res.json({
       ok: true,
@@ -1240,50 +1166,37 @@ app.put(
   }
 );
 
-/* ============================================================
-   USER MANAGEMENT
-============================================================ */
+/* =====================================================
+   USERS
+===================================================== */
 
 app.get(
   "/api/users",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const allUsers =
-      users();
+    let users = getUsers();
 
-    let visible;
-
-    if (
-      req.user.role ===
-      "superadmin"
-    ) {
-      visible = allUsers;
-    } else {
-      visible =
-        allUsers.filter(
-          u =>
-            u.schoolId ===
-            req.user.schoolId
-        );
+    if (req.currentUser.role !== "superadmin") {
+      users = users.filter(
+        (user) =>
+          user.schoolId ===
+          req.currentUser.schoolId
+      );
     }
 
     res.json({
       ok: true,
-
-      users:
-        visible.map(publicUser)
+      users: users.map(publicUser)
     });
   }
 );
 
-/* ============================================================
-   CREATE USER
-============================================================ */
+/* =====================================================
+   CREATE SCHOOL USER
+===================================================== */
 
 app.post(
   "/api/users",
-  requireAuth,
   requireSchoolAdmin,
   async (req, res) => {
     try {
@@ -1293,9 +1206,21 @@ app.post(
         email,
         password,
         role,
-        schoolId,
-        profilePicture
+        schoolId
       } = req.body;
+
+      if (
+        !fullName ||
+        !username ||
+        !email ||
+        !password
+      ) {
+        return res.status(400).json({
+          ok: false,
+          error:
+            "Full name, username, email and password are required."
+        });
+      }
 
       const allowedRoles = [
         "teacher",
@@ -1307,81 +1232,69 @@ app.post(
       ) {
         return res.status(400).json({
           ok: false,
-          message:
+          error:
             "School admins can create teachers and students."
         });
       }
 
-      const nameClean =
-        clean(fullName);
-
-      const usernameClean =
-        lower(username);
-
-      const emailClean =
-        lower(email);
-
       const targetSchoolId =
-        req.user.role ===
+        req.currentUser.role ===
         "superadmin"
           ? clean(schoolId)
-          : req.user.schoolId;
+          : req.currentUser.schoolId;
 
-      if (
-        !nameClean ||
-        !usernameClean ||
-        !emailClean ||
-        !password ||
-        !targetSchoolId
-      ) {
+      if (!targetSchoolId) {
         return res.status(400).json({
           ok: false,
-          message:
-            "Complete all required fields."
+          error:
+            "A school is required."
         });
       }
 
       const school =
-        findSchoolById(
-          targetSchoolId
-        );
+        getSchoolById(targetSchoolId);
 
       if (!school) {
         return res.status(404).json({
           ok: false,
-          message:
-            "School not found."
+          error: "School not found."
         });
       }
 
-      const allUsers =
-        users();
+      const users = getUsers();
+
+      const normalizedEmail =
+        normalizeEmail(email);
+
+      const normalizedUsername =
+        normalizeUsername(username);
 
       if (
-        allUsers.some(
-          u =>
-            lower(u.email) ===
-            emailClean
+        users.some(
+          (user) =>
+            normalizeEmail(user.email) ===
+            normalizedEmail
         )
       ) {
         return res.status(409).json({
           ok: false,
-          message:
-            "Email already exists."
+          error:
+            "Email is already registered."
         });
       }
 
       if (
-        allUsers.some(
-          u =>
-            lower(u.username) ===
-            usernameClean
+        users.some(
+          (user) =>
+            normalizeUsername(
+              user.username
+            ) === normalizedUsername
         )
       ) {
         return res.status(409).json({
           ok: false,
-          message:
-            "Username already exists."
+          error:
+            "Username is already registered."
         });
       }
 
@@ -1394,21 +1307,19 @@ app.post(
       const user = {
         id: id("user"),
 
-        fullName: nameClean,
+        fullName: clean(fullName),
 
-        username: usernameClean,
+        username: normalizedUsername,
 
-        email: emailClean,
+        email: normalizedEmail,
 
         passwordHash,
 
         role,
 
-        schoolId:
-          targetSchoolId,
+        schoolId: targetSchoolId,
 
-        profilePicture:
-          clean(profilePicture),
+        profilePicture: "",
 
         provider: "local",
 
@@ -1419,21 +1330,15 @@ app.post(
         updatedAt: now()
       };
 
-      allUsers.push(user);
+      users.push(user);
 
-      writeJson(
-        USERS_FILE,
-        allUsers
-      );
+      saveUsers(users);
 
       res.status(201).json({
         ok: true,
-
         message:
-          `${role} created successfully.`,
-
-        user:
-          publicUser(user)
+          "User created successfully.",
+        user: publicUser(user)
       });
     } catch (error) {
       console.error(
@@ -1443,111 +1348,121 @@ app.post(
 
       res.status(500).json({
         ok: false,
-        message:
+        error:
           "Could not create user."
       });
     }
   }
 );
 
-/* ============================================================
+/* =====================================================
    UPDATE USER
-============================================================ */
+===================================================== */
 
 app.put(
   "/api/users/:id",
-  requireAuth,
   requireSchoolAdmin,
   async (req, res) => {
     try {
-      const allUsers =
-        users();
+      const users = getUsers();
 
-      const user =
-        allUsers.find(
-          u =>
-            u.id ===
-            req.params.id
+      const index =
+        users.findIndex(
+          (user) =>
+            user.id === req.params.id
         );
 
-      if (!user) {
+      if (index === -1) {
         return res.status(404).json({
           ok: false,
-          message:
-            "User not found."
+          error: "User not found."
         });
       }
 
+      const user = users[index];
+
       if (
-        req.user.role !==
-        "superadmin" &&
+        req.currentUser.role !==
+          "superadmin" &&
         user.schoolId !==
-          req.user.schoolId
+          req.currentUser.schoolId
       ) {
         return res.status(403).json({
           ok: false,
-          message:
-            "You cannot manage this user."
+          error:
+            "You cannot manage users from another school."
         });
       }
 
       if (
-        req.body.fullName !==
-        undefined
+        user.role === "superadmin" &&
+        req.currentUser.role !==
+          "superadmin"
       ) {
+        return res.status(403).json({
+          ok: false,
+          error:
+            "You cannot manage a superadmin."
+        });
+      }
+
+      if (req.body.fullName !== undefined) {
         user.fullName =
-          clean(
-            req.body.fullName
-          );
+          clean(req.body.fullName);
       }
 
-      if (
-        req.body.email !==
-        undefined
-      ) {
-        user.email =
-          lower(
-            req.body.email
-          );
-      }
-
-      if (
-        req.body.username !==
-        undefined
-      ) {
+      if (req.body.username !== undefined) {
         user.username =
-          lower(
+          normalizeUsername(
             req.body.username
           );
       }
 
-      if (
-        req.body.role !==
-        undefined
-      ) {
+      if (req.body.email !== undefined) {
+        user.email =
+          normalizeEmail(
+            req.body.email
+          );
+      }
+
+      if (req.body.role !== undefined) {
         if (
-          req.user.role ===
-            "superadmin" ||
-          [
-            "teacher",
-            "student"
-          ].includes(
-            req.body.role
-          )
+          req.currentUser.role !==
+          "superadmin"
         ) {
-          user.role =
-            req.body.role;
+          if (
+            ![
+              "teacher",
+              "student"
+            ].includes(req.body.role)
+          ) {
+            return res.status(400).json({
+              ok: false,
+              error:
+                "Invalid school user role."
+            });
+          }
         }
+
+        user.role = req.body.role;
       }
 
       if (
-        req.body.active !==
-        undefined
+        req.body.password &&
+        req.body.password.length >= 6
+      ) {
+        user.passwordHash =
+          await bcrypt.hash(
+            req.body.password,
+            12
+          );
+      }
+
+      if (
+        req.body.active !== undefined
       ) {
         user.active =
-          Boolean(
-            req.body.active
-          );
+          Boolean(req.body.active);
       }
 
       if (
@@ -1560,29 +1475,17 @@ app.put(
           );
       }
 
-      if (
-        req.body.password
-      ) {
-        user.passwordHash =
-          await bcrypt.hash(
-            req.body.password,
-            12
-          );
-      }
-
       user.updatedAt = now();
 
-      writeJson(
-        USERS_FILE,
-        allUsers
-      );
+      users[index] = user;
+
+      saveUsers(users);
 
       res.json({
         ok: true,
         message:
-          "User updated.",
-        user:
-          publicUser(user)
+          "User updated successfully.",
+        user: publicUser(user)
       });
     } catch (error) {
       console.error(
@@ -1592,105 +1495,103 @@ app.put(
 
       res.status(500).json({
         ok: false,
-        message:
+        error:
           "Could not update user."
       });
     }
   }
 );
 
-/* ============================================================
-   DELETE / DEACTIVATE USER
-============================================================ */
+/* =====================================================
+   DELETE USER
+===================================================== */
 
 app.delete(
   "/api/users/:id",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const allUsers =
-      users();
+    const users = getUsers();
 
-    const user =
-      allUsers.find(
-        u =>
-          u.id ===
-          req.params.id
+    const index =
+      users.findIndex(
+        (user) =>
+          user.id === req.params.id
       );
 
-    if (!user) {
+    if (index === -1) {
       return res.status(404).json({
         ok: false,
-        message:
-          "User not found."
+        error: "User not found."
+      });
+    }
+
+    const user = users[index];
+
+    if (
+      user.role === "superadmin"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Superadmin accounts cannot be deleted here."
       });
     }
 
     if (
-      req.user.role !==
-      "superadmin" &&
+      req.currentUser.role !==
+        "superadmin" &&
       user.schoolId !==
-        req.user.schoolId
+        req.currentUser.schoolId
     ) {
       return res.status(403).json({
         ok: false,
-        message:
-          "You cannot manage this user."
+        error:
+          "You cannot delete another school's user."
       });
     }
 
-    user.active = false;
+    users.splice(index, 1);
 
-    user.updatedAt = now();
-
-    writeJson(
-      USERS_FILE,
-      allUsers
-    );
+    saveUsers(users);
 
     res.json({
       ok: true,
       message:
-        "User deactivated."
+        "User deleted successfully."
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    PROFILE
-============================================================ */
+===================================================== */
 
 app.put(
   "/api/profile",
   requireAuth,
   async (req, res) => {
     try {
-      const allUsers =
-        users();
+      const users = getUsers();
 
-      const user =
-        allUsers.find(
-          u =>
-            u.id ===
-            req.user.id
+      const index =
+        users.findIndex(
+          (user) =>
+            user.id ===
+            req.currentUser.id
         );
 
-      if (!user) {
+      if (index === -1) {
         return res.status(404).json({
           ok: false,
-          message:
-            "User not found."
+          error: "User not found."
         });
       }
 
-      if (
-        req.body.fullName !==
-        undefined
-      ) {
+      const user = users[index];
+
+      if (req.body.fullName !== undefined) {
         user.fullName =
-          clean(
-            req.body.fullName
-          );
+          clean(req.body.fullName);
       }
 
       if (
@@ -1704,19 +1605,9 @@ app.put(
       }
 
       if (
-        req.body.password
+        req.body.password &&
+        req.body.password.length >= 6
       ) {
-        if (
-          req.body.password.length <
-          6
-        ) {
-          return res.status(400).json({
-            ok: false,
-            message:
-              "Password must be at least 6 characters."
-          });
-        }
-
         user.passwordHash =
           await bcrypt.hash(
             req.body.password,
@@ -1726,21 +1617,13 @@ app.put(
 
       user.updatedAt = now();
 
-      writeJson(
-        USERS_FILE,
-        allUsers
-      );
+      users[index] = user;
 
-      req.user = user;
+      saveUsers(users);
 
       res.json({
         ok: true,
-
-        message:
-          "Profile updated.",
-
-        user:
-          publicUser(user)
+        user: publicUser(user)
       });
     } catch (error) {
       console.error(
@@ -1750,101 +1633,97 @@ app.put(
 
       res.status(500).json({
         ok: false,
-        message:
-          "Could not update profile."
+        error:
+          "Profile update failed."
       });
     }
   }
 );
 
-/* ============================================================
+/* =====================================================
    SUBJECTS
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/subjects",
   requireAuth,
   (req, res) => {
-    let data =
-      subjects();
+    let subjects = getSubjects();
 
     if (
-      req.user.role !==
+      req.currentUser.role !==
       "superadmin"
     ) {
-      data =
-        data.filter(
-          s =>
-            s.schoolId ===
-            req.user.schoolId
+      subjects =
+        subjects.filter(
+          (subject) =>
+            subject.schoolId ===
+            req.currentUser.schoolId
         );
     }
 
     res.json({
       ok: true,
-      subjects: data
+      subjects
     });
   }
 );
 
-/* ============================================================
-   CREATE SUBJECT
-============================================================ */
-
 app.post(
   "/api/subjects",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const name =
-      clean(req.body.name);
+    const {
+      name,
+      code,
+      description
+    } = req.body;
 
-    const code =
-      clean(req.body.code);
-
-    const description =
-      clean(req.body.description);
-
-    const schoolId =
-      req.user.role ===
-      "superadmin"
-        ? clean(req.body.schoolId)
-        : req.user.schoolId;
-
-    if (!name || !schoolId) {
+    if (!name) {
       return res.status(400).json({
         ok: false,
-        message:
-          "Subject name and school are required."
+        error:
+          "Subject name is required."
+      });
+    }
+
+    const schoolId =
+      req.currentUser.role ===
+      "superadmin"
+        ? clean(req.body.schoolId)
+        : req.currentUser.schoolId;
+
+    if (!schoolId) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "School ID is required."
       });
     }
 
     const school =
-      findSchoolById(
-        schoolId
-      );
+      getSchoolById(schoolId);
 
     if (!school) {
       return res.status(404).json({
         ok: false,
-        message:
-          "School not found."
+        error: "School not found."
       });
     }
 
-    const allSubjects =
-      subjects();
+    const subjects = getSubjects();
 
     const subject = {
       id: id("subject"),
 
       schoolId,
 
-      name,
+      name: clean(name),
 
-      code,
+      code: clean(code),
 
-      description,
+      description:
+        clean(description),
 
       active: true,
 
@@ -1853,277 +1732,241 @@ app.post(
       updatedAt: now()
     };
 
-    allSubjects.push(subject);
+    subjects.push(subject);
 
-    writeJson(
-      SUBJECTS_FILE,
-      allSubjects
-    );
+    saveSubjects(subjects);
 
     res.status(201).json({
       ok: true,
-      message:
-        "Subject created.",
       subject
     });
   }
 );
 
-/* ============================================================
-   DELETE SUBJECT
-============================================================ */
-
 app.delete(
   "/api/subjects/:id",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const allSubjects =
-      subjects();
+    const subjects = getSubjects();
 
-    const subject =
-      allSubjects.find(
-        s =>
-          s.id ===
+    const index =
+      subjects.findIndex(
+        (subject) =>
+          subject.id ===
           req.params.id
       );
 
-    if (!subject) {
+    if (index === -1) {
       return res.status(404).json({
         ok: false,
-        message:
-          "Subject not found."
+        error: "Subject not found."
       });
     }
 
+    const subject = subjects[index];
+
     if (
-      req.user.role !==
-      "superadmin" &&
+      req.currentUser.role !==
+        "superadmin" &&
       subject.schoolId !==
-        req.user.schoolId
+        req.currentUser.schoolId
     ) {
       return res.status(403).json({
         ok: false,
-        message:
-          "Access denied."
+        error:
+          "You cannot delete another school's subject."
       });
     }
 
-    subject.active = false;
+    subjects.splice(index, 1);
 
-    subject.updatedAt = now();
-
-    writeJson(
-      SUBJECTS_FILE,
-      allSubjects
-    );
+    saveSubjects(subjects);
 
     res.json({
       ok: true,
       message:
-        "Subject disabled."
+        "Subject deleted successfully."
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    EXAMS
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/exams",
   requireAuth,
   (req, res) => {
-    let data =
-      exams();
+    let exams = getExams();
 
     if (
-      req.user.role !==
+      req.currentUser.role !==
       "superadmin"
     ) {
-      data =
-        data.filter(
-          exam =>
+      exams =
+        exams.filter(
+          (exam) =>
             exam.schoolId ===
-            req.user.schoolId
+            req.currentUser.schoolId
         );
     }
 
-    /*
-     * Students should not receive
-     * answer keys.
-     */
-
     if (
-      req.user.role ===
+      req.currentUser.role ===
       "student"
     ) {
-      data =
-        data.map(exam => ({
-          ...exam,
-          questions:
-            undefined
-        }));
+      exams = exams.filter(
+        (exam) =>
+          exam.active !== false
+      );
     }
 
     res.json({
       ok: true,
-      exams: data
+      exams
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    CREATE EXAM
-============================================================ */
+===================================================== */
 
 app.post(
   "/api/exams",
-  requireAuth,
-  requireSchoolAdmin,
+  requireTeacher,
   (req, res) => {
-    const title =
-      clean(req.body.title);
+    const {
+      title,
+      description,
+      subjectId,
+      duration,
+      totalMarks
+    } = req.body;
 
-    const subjectId =
-      clean(req.body.subjectId);
-
-    const duration =
-      Number(
-        req.body.duration || 30
-      );
-
-    const instructions =
-      clean(
-        req.body.instructions
-      );
-
-    const schoolId =
-      req.user.role ===
-      "superadmin"
-        ? clean(req.body.schoolId)
-        : req.user.schoolId;
-
-    if (
-      !title ||
-      !subjectId ||
-      !schoolId
-    ) {
+    if (!title) {
       return res.status(400).json({
         ok: false,
-        message:
-          "Exam title, subject and school are required."
+        error:
+          "Exam title is required."
       });
     }
 
-    const allExams =
-      exams();
+    const schoolId =
+      req.currentUser.role ===
+      "superadmin"
+        ? clean(req.body.schoolId)
+        : req.currentUser.schoolId;
+
+    if (!schoolId) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "School ID is required."
+      });
+    }
+
+    const exams = getExams();
 
     const exam = {
       id: id("exam"),
 
       schoolId,
 
-      subjectId,
+      title: clean(title),
 
-      title,
+      description:
+        clean(description),
 
-      instructions,
+      subjectId:
+        clean(subjectId),
 
       duration:
-        Number.isFinite(duration) &&
-        duration > 0
-          ? duration
-          : 30,
+        safeNumber(duration, 30),
 
-      status:
-        req.body.status ===
-        "published"
-          ? "published"
-          : "draft",
+      totalMarks:
+        safeNumber(totalMarks, 0),
 
-      questions: [],
+      active: true,
 
       createdBy:
-        req.user.id,
+        req.currentUser.id,
 
       createdAt: now(),
 
       updatedAt: now()
     };
 
-    allExams.push(exam);
+    exams.push(exam);
 
-    writeJson(
-      EXAMS_FILE,
-      allExams
-    );
+    saveExams(exams);
 
     res.status(201).json({
       ok: true,
-      message:
-        "Exam created.",
       exam
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    UPDATE EXAM
-============================================================ */
+===================================================== */
 
 app.put(
   "/api/exams/:id",
-  requireAuth,
-  requireSchoolAdmin,
+  requireTeacher,
   (req, res) => {
-    const allExams =
-      exams();
+    const exams = getExams();
 
-    const exam =
-      allExams.find(
-        e =>
-          e.id ===
+    const index =
+      exams.findIndex(
+        (exam) =>
+          exam.id ===
           req.params.id
       );
 
-    if (!exam) {
+    if (index === -1) {
       return res.status(404).json({
         ok: false,
-        message:
-          "Exam not found."
+        error: "Exam not found."
       });
     }
 
+    const exam = exams[index];
+
     if (
-      req.user.role !==
-      "superadmin" &&
+      req.currentUser.role !==
+        "superadmin" &&
       exam.schoolId !==
-        req.user.schoolId
+        req.currentUser.schoolId
     ) {
       return res.status(403).json({
         ok: false,
-        message:
-          "Access denied."
+        error:
+          "You cannot manage another school's exam."
       });
     }
 
-    if (
-      req.body.title !==
-      undefined
-    ) {
+    if (req.body.title !== undefined) {
       exam.title =
         clean(req.body.title);
     }
 
     if (
-      req.body.instructions !==
+      req.body.description !==
       undefined
     ) {
-      exam.instructions =
-        clean(
-          req.body.instructions
-        );
+      exam.description =
+        clean(req.body.description);
+    }
+
+    if (
+      req.body.subjectId !==
+      undefined
+    ) {
+      exam.subjectId =
+        clean(req.body.subjectId);
     }
 
     if (
@@ -2131,531 +1974,434 @@ app.put(
       undefined
     ) {
       exam.duration =
-        Number(
-          req.body.duration
+        safeNumber(
+          req.body.duration,
+          exam.duration
         );
     }
 
     if (
-      req.body.status !==
+      req.body.totalMarks !==
       undefined
     ) {
-      exam.status =
-        req.body.status;
+      exam.totalMarks =
+        safeNumber(
+          req.body.totalMarks,
+          exam.totalMarks
+        );
+    }
+
+    if (
+      req.body.active !== undefined
+    ) {
+      exam.active =
+        Boolean(req.body.active);
     }
 
     exam.updatedAt = now();
 
-    writeJson(
-      EXAMS_FILE,
-      allExams
-    );
+    exams[index] = exam;
+
+    saveExams(exams);
 
     res.json({
       ok: true,
-      message:
-        "Exam updated.",
       exam
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    QUESTIONS
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/questions",
-  requireAuth,
-  requireSchoolAdmin,
+  requireTeacher,
   (req, res) => {
-    let data =
-      questions();
+    let questions =
+      getQuestions();
 
     if (
-      req.user.role !==
+      req.currentUser.role !==
       "superadmin"
     ) {
-      data =
-        data.filter(
-          q =>
-            q.schoolId ===
-            req.user.schoolId
+      questions =
+        questions.filter(
+          (question) =>
+            question.schoolId ===
+            req.currentUser.schoolId
+        );
+    }
+
+    if (req.query.examId) {
+      questions =
+        questions.filter(
+          (question) =>
+            question.examId ===
+            req.query.examId
         );
     }
 
     res.json({
       ok: true,
-      questions: data
+      questions
     });
   }
 );
 
-/* ============================================================
-   CREATE QUESTION
-============================================================ */
+/* =====================================================
+   ADD QUESTION
+===================================================== */
 
 app.post(
   "/api/questions",
-  requireAuth,
-  requireSchoolAdmin,
+  requireTeacher,
   (req, res) => {
-    const questionText =
-      clean(
-        req.body.question
-      );
-
-    const options =
-      Array.isArray(
-        req.body.options
-      )
-        ? req.body.options
-        : [];
-
-    const answer =
-      Number(
-        req.body.answer
-      );
-
-    const subjectId =
-      clean(req.body.subjectId);
-
-    const examId =
-      clean(req.body.examId);
-
-    const schoolId =
-      req.user.role ===
-      "superadmin"
-        ? clean(req.body.schoolId)
-        : req.user.schoolId;
+    const {
+      examId,
+      question,
+      options,
+      answer,
+      points,
+      difficulty,
+      tags
+    } = req.body;
 
     if (
-      !questionText ||
-      !schoolId
+      !examId ||
+      !question
     ) {
       return res.status(400).json({
         ok: false,
-        message:
-          "Question and school are required."
+        error:
+          "Exam ID and question are required."
+      });
+    }
+
+    const exams = getExams();
+
+    const exam =
+      exams.find(
+        (item) =>
+          item.id === examId
+      );
+
+    if (!exam) {
+      return res.status(404).json({
+        ok: false,
+        error: "Exam not found."
       });
     }
 
     if (
-      options.length <
-      2
+      req.currentUser.role !==
+        "superadmin" &&
+      exam.schoolId !==
+        req.currentUser.schoolId
     ) {
-      return res.status(400).json({
+      return res.status(403).json({
         ok: false,
-        message:
-          "At least two options are required."
+        error:
+          "You cannot add questions to another school's exam."
       });
     }
 
-    const allQuestions =
-      questions();
+    const questions =
+      getQuestions();
 
-    const question = {
+    const questionRecord = {
       id: id("question"),
 
-      schoolId,
-
-      subjectId,
+      schoolId:
+        exam.schoolId,
 
       examId,
 
       question:
-        questionText,
+        clean(question),
 
-      options,
+      options:
+        Array.isArray(options)
+          ? options
+          : [],
 
       answer:
-        Number.isInteger(answer)
-          ? answer
-          : 0,
+        safeNumber(answer, 0),
 
       points:
-        Number(
-          req.body.points ||
-          1
-        ),
+        safeNumber(points, 1),
 
       difficulty:
-        clean(
-          req.body.difficulty
-        ) || "medium",
+        clean(difficulty) ||
+        "easy",
 
       tags:
-        clean(
-          req.body.tags
-        ),
+        clean(tags),
 
       createdBy:
-        req.user.id,
+        req.currentUser.id,
 
       createdAt: now(),
 
       updatedAt: now()
     };
 
-    allQuestions.push(
-      question
+    questions.push(
+      questionRecord
     );
 
-    writeJson(
-      QUESTIONS_FILE,
-      allQuestions
-    );
-
-    /*
-     * If an examId is supplied,
-     * attach the question to the exam.
-     */
-
-    if (examId) {
-      const allExams =
-        exams();
-
-      const exam =
-        allExams.find(
-          e =>
-            e.id ===
-            examId
-        );
-
-      if (
-        exam &&
-        sameSchool(
-          req,
-          exam.schoolId
-        )
-      ) {
-        if (
-          !Array.isArray(
-            exam.questions
-          )
-        ) {
-          exam.questions = [];
-        }
-
-        if (
-          !exam.questions.includes(
-            question.id
-          )
-        ) {
-          exam.questions.push(
-            question.id
-          );
-        }
-
-        exam.updatedAt =
-          now();
-
-        writeJson(
-          EXAMS_FILE,
-          allExams
-        );
-      }
-    }
+    saveQuestions(questions);
 
     res.status(201).json({
       ok: true,
-
-      message:
-        "Question created.",
-
-      question
+      question:
+        questionRecord
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    START EXAM
-============================================================ */
+===================================================== */
 
 app.post(
   "/api/exams/:id/start",
   requireAuth,
-  requireRole("student"),
   (req, res) => {
-    const allExams =
-      exams();
+    if (
+      req.currentUser.role !==
+      "student"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Only students can start an exam."
+      });
+    }
+
+    const exams = getExams();
 
     const exam =
-      allExams.find(
-        e =>
-          e.id ===
+      exams.find(
+        (item) =>
+          item.id ===
           req.params.id
       );
 
     if (!exam) {
       return res.status(404).json({
         ok: false,
-        message:
-          "Exam not found."
+        error: "Exam not found."
       });
     }
 
     if (
       exam.schoolId !==
-      req.user.schoolId
+      req.currentUser.schoolId
     ) {
       return res.status(403).json({
         ok: false,
-        message:
-          "Access denied."
+        error:
+          "This exam does not belong to your school."
       });
     }
 
-    if (
-      exam.status !==
-      "published"
-    ) {
+    if (exam.active === false) {
       return res.status(400).json({
         ok: false,
-        message:
-          "This exam is not available."
+        error:
+          "This exam is not active."
       });
     }
 
-    const allResults =
-      results();
+    const results = getResults();
 
-    const previous =
-      allResults.find(
-        r =>
-          r.examId ===
+    const alreadySubmitted =
+      results.some(
+        (result) =>
+          result.examId ===
             exam.id &&
-          r.studentId ===
-            req.user.id
+          result.studentId ===
+            req.currentUser.id
       );
 
-    if (previous) {
+    if (alreadySubmitted) {
       return res.status(409).json({
         ok: false,
-        message:
+        error:
           "You have already submitted this exam."
       });
     }
 
-    const start =
+    const questions =
+      getQuestions()
+        .filter(
+          (question) =>
+            question.examId ===
+            exam.id &&
+            question.schoolId ===
+            req.currentUser.schoolId
+        )
+        .map(
+          ({
+            answer,
+            ...question
+          }) => question
+        );
+
+    const startedAt =
       new Date();
 
-    const end =
+    const endsAt =
       new Date(
-        start.getTime() +
-          Number(
-            exam.duration ||
+        startedAt.getTime() +
+          safeNumber(
+            exam.duration,
             30
           ) *
             60 *
             1000
       );
 
-    const examQuestions =
-      questions().filter(
-        q =>
-          q.examId ===
-            exam.id &&
-          q.schoolId ===
-            req.user.schoolId
-      );
-
-    /*
-     * Never send the correct
-     * answers to the student.
-     */
-
-    const safeQuestions =
-      examQuestions.map(
-        q => ({
-          id: q.id,
-
-          question:
-            q.question,
-
-          options:
-            q.options,
-
-          points:
-            q.points || 1,
-
-          difficulty:
-            q.difficulty,
-
-          tags: q.tags
-        })
-      );
+    const attemptId =
+      id("attempt");
 
     res.json({
       ok: true,
 
-      exam: {
-        id: exam.id,
+      attempt: {
+        id: attemptId,
 
-        title: exam.title,
-
-        instructions:
-          exam.instructions,
-
-        duration:
-          exam.duration,
+        examId: exam.id,
 
         startedAt:
-          start.toISOString(),
+          startedAt.toISOString(),
 
         endsAt:
-          end.toISOString(),
+          endsAt.toISOString(),
 
-        questions:
-          safeQuestions
-      }
+        duration:
+          exam.duration
+      },
+
+      exam,
+
+      questions
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    SUBMIT EXAM
-============================================================ */
+===================================================== */
 
 app.post(
   "/api/exams/:id/submit",
   requireAuth,
-  requireRole("student"),
   (req, res) => {
-    const allExams =
-      exams();
+    if (
+      req.currentUser.role !==
+      "student"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Only students can submit exams."
+      });
+    }
+
+    const exams = getExams();
 
     const exam =
-      allExams.find(
-        e =>
-          e.id ===
+      exams.find(
+        (item) =>
+          item.id ===
           req.params.id
       );
 
     if (!exam) {
       return res.status(404).json({
         ok: false,
-        message:
-          "Exam not found."
+        error: "Exam not found."
       });
     }
 
     if (
       exam.schoolId !==
-      req.user.schoolId
+      req.currentUser.schoolId
     ) {
       return res.status(403).json({
         ok: false,
-        message:
-          "Access denied."
+        error:
+          "Invalid school exam."
       });
     }
 
-    const allResults =
-      results();
+    const results = getResults();
 
-    const already =
-      allResults.find(
-        r =>
-          r.examId ===
+    const existing =
+      results.find(
+        (result) =>
+          result.examId ===
             exam.id &&
-          r.studentId ===
-            req.user.id
+          result.studentId ===
+            req.currentUser.id
       );
 
-    if (already) {
+    if (existing) {
       return res.status(409).json({
         ok: false,
-        message:
+        error:
           "This exam has already been submitted."
       });
     }
 
-    const answers =
-      req.body.answers &&
-      typeof req.body.answers ===
-        "object"
-        ? req.body.answers
-        : {};
+    const submittedAnswers =
+      req.body.answers || {};
 
-    const examQuestions =
-      questions().filter(
-        q =>
-          q.examId ===
+    const questions =
+      getQuestions().filter(
+        (question) =>
+          question.examId ===
             exam.id &&
-          q.schoolId ===
-            req.user.schoolId
+          question.schoolId ===
+            req.currentUser.schoolId
       );
 
     let score = 0;
+    let totalMarks = 0;
 
-    let total = 0;
+    questions.forEach(
+      (question) => {
+        const points =
+          safeNumber(
+            question.points,
+            1
+          );
 
-    let answered = 0;
+        totalMarks += points;
 
-    const questionResults = [];
+        const selected =
+          submittedAnswers[
+            question.id
+          ];
 
-    for (
-      const question of
-      examQuestions
-    ) {
-      const points =
-        Number(
-          question.points ||
-          1
-        );
-
-      total += points;
-
-      const supplied =
-        answers[
-          question.id
-        ];
-
-      if (
-        supplied !==
-        undefined &&
-        supplied !==
-        null &&
-        supplied !== ""
-      ) {
-        answered++;
+        if (
+          Number(selected) ===
+          Number(question.answer)
+        ) {
+          score += points;
+        }
       }
-
-      const selected =
-        Number(supplied);
-
-      const correct =
-        selected ===
-        Number(
-          question.answer
-        );
-
-      if (correct) {
-        score += points;
-      }
-
-      questionResults.push({
-        questionId:
-          question.id,
-
-        selected:
-          Number.isFinite(
-            selected
-          )
-            ? selected
-            : null,
-
-        correct
-      });
-    }
+    );
 
     const percentage =
-      total > 0
+      totalMarks > 0
         ? Number(
             (
               (score /
-                total) *
+                totalMarks) *
               100
             ).toFixed(2)
           )
@@ -2664,39 +2410,30 @@ app.post(
     const result = {
       id: id("result"),
 
-      examId:
-        exam.id,
-
       schoolId:
-        exam.schoolId,
+        req.currentUser.schoolId,
+
+      examId: exam.id,
 
       studentId:
-        req.user.id,
+        req.currentUser.id,
 
       score,
 
-      total,
+      totalMarks,
 
       percentage,
 
-      answered,
+      submittedAnswers,
 
-      submittedAt:
-        now(),
-
-      questionResults
+      submittedAt: now()
     };
 
-    allResults.push(
-      result
-    );
+    results.push(result);
 
-    writeJson(
-      RESULTS_FILE,
-      allResults
-    );
+    saveResults(results);
 
-    res.json({
+    res.status(201).json({
       ok: true,
 
       message:
@@ -2707,11 +2444,9 @@ app.post(
 
         score,
 
-        total,
+        totalMarks,
 
         percentage,
-
-        answered,
 
         submittedAt:
           result.submittedAt
@@ -2720,549 +2455,544 @@ app.post(
   }
 );
 
-/* ============================================================
+/* =====================================================
    RESULTS
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/results",
   requireAuth,
   (req, res) => {
-    let data =
-      results();
+    let results =
+      getResults();
 
     if (
-      req.user.role ===
+      req.currentUser.role ===
       "student"
     ) {
-      data =
-        data.filter(
-          r =>
-            r.studentId ===
-            req.user.id
+      results =
+        results.filter(
+          (result) =>
+            result.studentId ===
+            req.currentUser.id &&
+            result.schoolId ===
+            req.currentUser.schoolId
         );
     } else if (
-      req.user.role !==
+      req.currentUser.role !==
       "superadmin"
     ) {
-      data =
-        data.filter(
-          r =>
-            r.schoolId ===
-            req.user.schoolId
+      results =
+        results.filter(
+          (result) =>
+            result.schoolId ===
+            req.currentUser.schoolId
         );
     }
 
     res.json({
       ok: true,
-      results: data
+      results
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    ANNOUNCEMENTS
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/announcements",
   requireAuth,
   (req, res) => {
-    let data =
-      announcements();
+    let announcements =
+      getAnnouncements();
 
     if (
-      req.user.role !==
+      req.currentUser.role !==
       "superadmin"
     ) {
-      data =
-        data.filter(
-          a =>
-            a.schoolId ===
-            req.user.schoolId
+      announcements =
+        announcements.filter(
+          (item) =>
+            item.schoolId ===
+            req.currentUser.schoolId
         );
     }
 
-    data =
-      data.sort(
-        (a, b) =>
-          new Date(b.createdAt) -
-          new Date(a.createdAt)
-      );
+    announcements.sort(
+      (a, b) =>
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+    );
 
     res.json({
       ok: true,
-      announcements: data
+      announcements
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    CREATE ANNOUNCEMENT
-============================================================ */
+===================================================== */
 
 app.post(
   "/api/announcements",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const title =
-      clean(req.body.title);
-
-    const message =
-      clean(req.body.message);
-
-    const schoolId =
-      req.user.role ===
-      "superadmin"
-        ? clean(req.body.schoolId)
-        : req.user.schoolId;
+    const {
+      title,
+      message
+    } = req.body;
 
     if (
       !title ||
-      !message ||
-      !schoolId
+      !message
     ) {
       return res.status(400).json({
         ok: false,
-        message:
-          "Title, message and school are required."
+        error:
+          "Title and message are required."
       });
     }
 
-    const allAnnouncements =
-      announcements();
+    const schoolId =
+      req.currentUser.role ===
+      "superadmin"
+        ? clean(req.body.schoolId)
+        : req.currentUser.schoolId;
+
+    if (!schoolId) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "School ID is required."
+      });
+    }
+
+    const school =
+      getSchoolById(schoolId);
+
+    if (!school) {
+      return res.status(404).json({
+        ok: false,
+        error: "School not found."
+      });
+    }
+
+    const announcements =
+      getAnnouncements();
 
     const announcement = {
       id: id("announcement"),
 
       schoolId,
 
-      title,
+      title: clean(title),
 
-      message,
+      message: clean(message),
 
-      authorId:
-        req.user.id,
+      createdBy:
+        req.currentUser.id,
 
       createdAt: now(),
 
       updatedAt: now()
     };
 
-    allAnnouncements.push(
+    announcements.push(
       announcement
     );
 
-    writeJson(
-      ANNOUNCEMENTS_FILE,
-      allAnnouncements
+    saveAnnouncements(
+      announcements
     );
 
     res.status(201).json({
       ok: true,
-
-      message:
-        "Announcement published.",
-
       announcement
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    ADMIN SUMMARY
-============================================================ */
+===================================================== */
 
 app.get(
   "/api/admin/summary",
-  requireAuth,
   requireSchoolAdmin,
   (req, res) => {
-    const schoolId =
-      req.user.role ===
+    const users = getUsers();
+    const schools = getSchools();
+    const subjects = getSubjects();
+    const exams = getExams();
+    const questions = getQuestions();
+    const results = getResults();
+    const announcements =
+      getAnnouncements();
+
+    if (
+      req.currentUser.role ===
       "superadmin"
-        ? null
-        : req.user.schoolId;
+    ) {
+      return res.json({
+        ok: true,
 
-    const allUsers =
-      users();
+        role: "superadmin",
 
-    const allSchools =
-      schools();
+        summary: {
+          schools:
+            schools.length,
 
-    const allSubjects =
-      subjects();
+          users:
+            users.length,
 
-    const allExams =
-      exams();
+          schoolAdmins:
+            users.filter(
+              (user) =>
+                user.role ===
+                "school_admin"
+            ).length,
 
-    const allQuestions =
-      questions();
+          teachers:
+            users.filter(
+              (user) =>
+                user.role ===
+                "teacher"
+            ).length,
 
-    const allResults =
-      results();
+          students:
+            users.filter(
+              (user) =>
+                user.role ===
+                "student"
+            ).length,
 
-    const allAnnouncements =
-      announcements();
+          subjects:
+            subjects.length,
 
-    let schoolUsers =
-      allUsers;
+          exams:
+            exams.length,
 
-    let schoolSubjects =
-      allSubjects;
+          questions:
+            questions.length,
 
-    let schoolExams =
-      allExams;
+          results:
+            results.length,
 
-    let schoolQuestions =
-      allQuestions;
-
-    let schoolResults =
-      allResults;
-
-    let schoolAnnouncements =
-      allAnnouncements;
-
-    if (schoolId) {
-      schoolUsers =
-        allUsers.filter(
-          u =>
-            u.schoolId ===
-            schoolId
-        );
-
-      schoolSubjects =
-        allSubjects.filter(
-          s =>
-            s.schoolId ===
-            schoolId
-        );
-
-      schoolExams =
-        allExams.filter(
-          e =>
-            e.schoolId ===
-            schoolId
-        );
-
-      schoolQuestions =
-        allQuestions.filter(
-          q =>
-            q.schoolId ===
-            schoolId
-        );
-
-      schoolResults =
-        allResults.filter(
-          r =>
-            r.schoolId ===
-            schoolId
-        );
-
-      schoolAnnouncements =
-        allAnnouncements.filter(
-          a =>
-            a.schoolId ===
-            schoolId
-        );
+          announcements:
+            announcements.length
+        }
+      });
     }
+
+    const schoolId =
+      req.currentUser.schoolId;
 
     res.json({
       ok: true,
 
-      stats: {
-        schools:
-          schoolId
-            ? 1
-            : allSchools.length,
+      role: "school_admin",
 
+      summary: {
         users:
-          schoolUsers.length,
+          users.filter(
+            (user) =>
+              user.schoolId ===
+              schoolId
+          ).length,
 
         teachers:
-          schoolUsers.filter(
-            u =>
-              u.role ===
-              "teacher"
+          users.filter(
+            (user) =>
+              user.schoolId ===
+                schoolId &&
+              user.role ===
+                "teacher"
           ).length,
 
         students:
-          schoolUsers.filter(
-            u =>
-              u.role ===
-              "student"
-          ).length,
-
-        admins:
-          schoolUsers.filter(
-            u =>
-              u.role ===
-              "school_admin"
+          users.filter(
+            (user) =>
+              user.schoolId ===
+                schoolId &&
+              user.role ===
+                "student"
           ).length,
 
         subjects:
-          schoolSubjects.length,
+          subjects.filter(
+            (item) =>
+              item.schoolId ===
+              schoolId
+          ).length,
 
         exams:
-          schoolExams.length,
+          exams.filter(
+            (item) =>
+              item.schoolId ===
+              schoolId
+          ).length,
 
         questions:
-          schoolQuestions.length,
+          questions.filter(
+            (item) =>
+              item.schoolId ===
+              schoolId
+          ).length,
 
         results:
-          schoolResults.length,
+          results.filter(
+            (item) =>
+              item.schoolId ===
+              schoolId
+          ).length,
 
         announcements:
-          schoolAnnouncements.length
+          announcements.filter(
+            (item) =>
+              item.schoolId ===
+              schoolId
+          ).length
       }
     });
   }
 );
 
-/* ============================================================
-   TEACHER DASHBOARD
-============================================================ */
+/* =====================================================
+   TEACHER SUMMARY
+===================================================== */
 
 app.get(
   "/api/teacher/summary",
-  requireAuth,
-  requireRole("teacher"),
+  requireTeacher,
   (req, res) => {
     const schoolId =
-      req.user.schoolId;
+      req.currentUser.schoolId;
 
-    const schoolSubjects =
-      subjects().filter(
-        s =>
-          s.schoolId ===
+    const subjects =
+      getSubjects().filter(
+        (item) =>
+          item.schoolId ===
           schoolId
       );
 
-    const schoolExams =
-      exams().filter(
-        e =>
-          e.schoolId ===
+    const exams =
+      getExams().filter(
+        (item) =>
+          item.schoolId ===
           schoolId
       );
 
-    const schoolQuestions =
-      questions().filter(
-        q =>
-          q.schoolId ===
+    const questions =
+      getQuestions().filter(
+        (item) =>
+          item.schoolId ===
           schoolId
       );
 
-    const schoolAnnouncements =
-      announcements().filter(
-        a =>
-          a.schoolId ===
+    const results =
+      getResults().filter(
+        (item) =>
+          item.schoolId ===
           schoolId
       );
 
     res.json({
       ok: true,
 
-      stats: {
+      summary: {
         subjects:
-          schoolSubjects.length,
+          subjects.length,
 
         exams:
-          schoolExams.length,
+          exams.length,
 
         questions:
-          schoolQuestions.length,
+          questions.length,
+
+        results:
+          results.length
+      }
+    });
+  }
+);
+
+/* =====================================================
+   STUDENT SUMMARY
+===================================================== */
+
+app.get(
+  "/api/student/summary",
+  requireAuth,
+  (req, res) => {
+    if (
+      req.currentUser.role !==
+      "student"
+    ) {
+      return res.status(403).json({
+        ok: false,
+        error:
+          "Student access required."
+      });
+    }
+
+    const schoolId =
+      req.currentUser.schoolId;
+
+    const exams =
+      getExams().filter(
+        (exam) =>
+          exam.schoolId ===
+            schoolId &&
+          exam.active !== false
+      );
+
+    const results =
+      getResults().filter(
+        (result) =>
+          result.studentId ===
+          req.currentUser.id
+      );
+
+    const announcements =
+      getAnnouncements().filter(
+        (item) =>
+          item.schoolId ===
+          schoolId
+      );
+
+    res.json({
+      ok: true,
+
+      summary: {
+        availableExams:
+          exams.length,
+
+        completedExams:
+          results.length,
 
         announcements:
-          schoolAnnouncements.length
+          announcements.length
       },
 
-      recentExams:
-        schoolExams
-          .slice(-5)
-          .reverse(),
+      recentResults:
+        results.slice(-10).reverse(),
 
-      recentAnnouncements:
-        schoolAnnouncements
-          .slice(-5)
+      exams:
+
+        exams.slice(0, 10),
+
+      announcements:
+        announcements
+          .slice(-10)
           .reverse()
     });
   }
 );
 
-/* ============================================================
-   STUDENT DASHBOARD
-============================================================ */
-
-app.get(
-  "/api/student/summary",
-  requireAuth,
-  requireRole("student"),
-  (req, res) => {
-    const schoolId =
-      req.user.schoolId;
-
-    const schoolExams =
-      exams().filter(
-        e =>
-          e.schoolId ===
-            schoolId &&
-          e.status ===
-            "published"
-      );
-
-    const studentResults =
-      results().filter(
-        r =>
-          r.studentId ===
-          req.user.id
-      );
-
-    const completedExamIds =
-      new Set(
-        studentResults.map(
-          r =>
-            r.examId
-        )
-      );
-
-    const availableExams =
-      schoolExams.filter(
-        e =>
-          !completedExamIds.has(
-            e.id
-          )
-      );
-
-    const schoolAnnouncements =
-      announcements()
-        .filter(
-          a =>
-            a.schoolId ===
-            schoolId
-        )
-        .sort(
-          (a, b) =>
-            new Date(
-              b.createdAt
-            ) -
-            new Date(
-              a.createdAt
-            )
-        );
-
-    const average =
-      studentResults.length
-        ? Number(
-            (
-              studentResults.reduce(
-                (sum, r) =>
-                  sum +
-                  Number(
-                    r.percentage ||
-                    0
-                  ),
-                0
-              ) /
-              studentResults.length
-            ).toFixed(2)
-          )
-        : 0;
-
-    res.json({
-      ok: true,
-
-      stats: {
-        availableExams:
-          availableExams.length,
-
-        completedExams:
-          studentResults.length,
-
-        averageScore:
-          average
-      },
-
-      availableExams,
-
-      results:
-        studentResults
-          .slice()
-          .reverse(),
-
-      announcements:
-        schoolAnnouncements
-          .slice(0, 10)
-    });
-  }
-);
-
-/* ============================================================
-   SUPERADMIN - SCHOOLS
-============================================================ */
+/* =====================================================
+   SUPERADMIN - ALL SCHOOLS
+===================================================== */
 
 app.get(
   "/api/admin/schools",
-  requireAuth,
-  requireRole("superadmin"),
+  requireSuperadmin,
   (req, res) => {
+    const schools =
+      getSchools();
+
+    const users =
+      getUsers();
+
+    const enriched =
+      schools.map(
+        (school) => ({
+          ...school,
+
+          userCount:
+            users.filter(
+              (user) =>
+                user.schoolId ===
+                school.id
+            ).length,
+
+          teacherCount:
+            users.filter(
+              (user) =>
+                user.schoolId ===
+                  school.id &&
+                user.role ===
+                  "teacher"
+            ).length,
+
+          studentCount:
+            users.filter(
+              (user) =>
+                user.schoolId ===
+                  school.id &&
+                user.role ===
+                  "student"
+            ).length
+        })
+      );
+
     res.json({
       ok: true,
-      schools:
-        schools()
+      schools: enriched
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
    SUPERADMIN - CREATE SCHOOL
-============================================================ */
+===================================================== */
 
 app.post(
   "/api/admin/schools",
-  requireAuth,
-  requireRole("superadmin"),
+  requireSuperadmin,
   (req, res) => {
-    const name =
-      clean(req.body.name);
+    const {
+      name,
+      motto,
+      primaryColor,
+      secondaryColor,
+      theme
+    } = req.body;
 
     if (!name) {
       return res.status(400).json({
         ok: false,
-        message:
+        error:
           "School name is required."
       });
     }
 
-    const allSchools =
-      schools();
+    const schools =
+      getSchools();
 
     const school = {
       id: id("school"),
 
-      name,
+      name: clean(name),
 
-      motto:
-        clean(req.body.motto) ||
-        "Smart education for a brighter future.",
+      motto: clean(motto),
 
-      logo:
-        clean(req.body.logo),
+      logo: "",
 
       primaryColor:
-        clean(
-          req.body.primaryColor
-        ) || "#2563eb",
+        clean(primaryColor) ||
+        "#2563eb",
 
       secondaryColor:
-        clean(
-          req.body.secondaryColor
-        ) || "#16a34a",
+        clean(secondaryColor) ||
+        "#16a34a",
 
       theme:
-        clean(
-          req.body.theme
-        ) || "light",
+        clean(theme) ||
+        "light",
 
       active: true,
 
@@ -3271,61 +3001,159 @@ app.post(
       updatedAt: now()
     };
 
-    allSchools.push(
-      school
-    );
+    schools.push(school);
 
-    writeJson(
-      SCHOOLS_FILE,
-      allSchools
-    );
+    saveSchools(schools);
 
     res.status(201).json({
       ok: true,
+
       message:
-        "School created.",
+        "School created successfully.",
+
       school
     });
   }
 );
 
-/* ============================================================
-   SUPERADMIN - USERS
-============================================================ */
+/* =====================================================
+   SUPERADMIN - UPDATE SCHOOL
+===================================================== */
 
-app.get(
-  "/api/admin/users",
-  requireAuth,
-  requireRole("superadmin"),
+app.put(
+  "/api/admin/schools/:id",
+  requireSuperadmin,
   (req, res) => {
+    const schools =
+      getSchools();
+
+    const index =
+      schools.findIndex(
+        (school) =>
+          school.id ===
+          req.params.id
+      );
+
+    if (index === -1) {
+      return res.status(404).json({
+        ok: false,
+        error: "School not found."
+      });
+    }
+
+    const school = schools[index];
+
+    if (req.body.name !== undefined) {
+      school.name =
+        clean(req.body.name);
+    }
+
+    if (req.body.motto !== undefined) {
+      school.motto =
+        clean(req.body.motto);
+    }
+
+    if (req.body.logo !== undefined) {
+      school.logo =
+        clean(req.body.logo);
+    }
+
+    if (
+      req.body.primaryColor !==
+      undefined
+    ) {
+      school.primaryColor =
+        clean(
+          req.body.primaryColor
+        );
+    }
+
+    if (
+      req.body.secondaryColor !==
+      undefined
+    ) {
+      school.secondaryColor =
+        clean(
+          req.body.secondaryColor
+        );
+    }
+
+    if (req.body.theme !== undefined) {
+      school.theme =
+        clean(req.body.theme);
+    }
+
+    if (
+      req.body.active !== undefined
+    ) {
+      school.active =
+        Boolean(req.body.active);
+    }
+
+    school.updatedAt = now();
+
+    schools[index] = school;
+
+    saveSchools(schools);
+
     res.json({
       ok: true,
-
-      users:
-        users().map(
-          publicUser
-        )
+      school
     });
   }
 );
 
-/* ============================================================
+/* =====================================================
+   SUPERADMIN - ALL USERS
+===================================================== */
+
+app.get(
+  "/api/admin/users",
+  requireSuperadmin,
+  (req, res) => {
+    const users =
+      getUsers();
+
+    const schools =
+      getSchools();
+
+    const output =
+      users.map(
+        (user) => ({
+          ...publicUser(user),
+
+          school:
+            schools.find(
+              (school) =>
+                school.id ===
+                user.schoolId
+            ) || null
+        })
+      );
+
+    res.json({
+      ok: true,
+      users: output
+    });
+  }
+);
+
+/* =====================================================
    SUPERADMIN - PLATFORM SETTINGS
-============================================================ */
+===================================================== */
 
 app.put(
   "/api/admin/settings",
-  requireAuth,
-  requireRole("superadmin"),
+  requireSuperadmin,
   (req, res) => {
-    const config =
-      settings();
+    const settings =
+      getSettings();
 
     if (
       req.body.platformName !==
       undefined
     ) {
-      config.platformName =
+      settings.platformName =
         clean(
           req.body.platformName
         );
@@ -3335,10 +3163,9 @@ app.put(
       req.body.platformDescription !==
       undefined
     ) {
-      config.platformDescription =
+      settings.platformDescription =
         clean(
-          req.body
-            .platformDescription
+          req.body.platformDescription
         );
     }
 
@@ -3346,7 +3173,7 @@ app.put(
       req.body.defaultTheme !==
       undefined
     ) {
-      config.defaultTheme =
+      settings.defaultTheme =
         clean(
           req.body.defaultTheme
         );
@@ -3356,16 +3183,13 @@ app.put(
       req.body.maintenanceMode !==
       undefined
     ) {
-      config.maintenanceMode =
+      settings.maintenanceMode =
         Boolean(
           req.body.maintenanceMode
         );
     }
 
-    writeJson(
-      SETTINGS_FILE,
-      config
-    );
+    saveSettings(settings);
 
     res.json({
       ok: true,
@@ -3373,15 +3197,113 @@ app.put(
       message:
         "Platform settings updated.",
 
-      settings:
-        config
+      settings
     });
   }
 );
 
-/* ============================================================
-   ROLE PAGE ROUTES
-============================================================ */
+/* =====================================================
+   SUPERADMIN - DELETE SCHOOL
+===================================================== */
+
+app.delete(
+  "/api/admin/schools/:id",
+  requireSuperadmin,
+  (req, res) => {
+    const schoolId =
+      req.params.id;
+
+    const schools =
+      getSchools();
+
+    const schoolIndex =
+      schools.findIndex(
+        (school) =>
+          school.id === schoolId
+      );
+
+    if (schoolIndex === -1) {
+      return res.status(404).json({
+        ok: false,
+        error: "School not found."
+      });
+    }
+
+    schools.splice(
+      schoolIndex,
+      1
+    );
+
+    saveSchools(schools);
+
+    /*
+      Remove all school-owned data.
+      Superadmin data remains untouched.
+    */
+
+    const users =
+      getUsers().filter(
+        (user) =>
+          user.schoolId !==
+          schoolId
+      );
+
+    const subjects =
+      getSubjects().filter(
+        (item) =>
+          item.schoolId !==
+          schoolId
+      );
+
+    const exams =
+      getExams().filter(
+        (item) =>
+          item.schoolId !==
+          schoolId
+      );
+
+    const questions =
+      getQuestions().filter(
+        (item) =>
+          item.schoolId !==
+          schoolId
+      );
+
+    const results =
+      getResults().filter(
+        (item) =>
+          item.schoolId !==
+          schoolId
+      );
+
+    const announcements =
+      getAnnouncements().filter(
+        (item) =>
+          item.schoolId !==
+          schoolId
+      );
+
+    saveUsers(users);
+    saveSubjects(subjects);
+    saveExams(exams);
+    saveQuestions(questions);
+    saveResults(results);
+    saveAnnouncements(
+      announcements
+    );
+
+    res.json({
+      ok: true,
+
+      message:
+        "School and its school-owned data were deleted."
+    });
+  }
+);
+
+/* =====================================================
+   DASHBOARD REDIRECT
+===================================================== */
 
 app.get(
   "/dashboard",
@@ -3389,174 +3311,356 @@ app.get(
   (req, res) => {
     res.redirect(
       roleRedirect(
-        req.user
+        req.currentUser.role
       )
     );
   }
 );
 
-/* ============================================================
-   STATIC FILES
-============================================================ */
+/* =====================================================
+   STATIC FRONTEND
+===================================================== */
 
 app.use(
-  express.static(
-    PUBLIC_DIR,
-    {
-      extensions: [
-        "html"
-      ]
-    }
-  )
+  express.static(PUBLIC_DIR)
 );
 
-/* ============================================================
-   FRONTEND FALLBACK
-============================================================ */
+/* =====================================================
+   ROOT
+===================================================== */
 
-app.get(
-  "*",
+app.get("/", (req, res) => {
+  const index =
+    path.join(
+      PUBLIC_DIR,
+      "index.html"
+    );
+
+  if (fs.existsSync(index)) {
+    return res.sendFile(index);
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>SchoolHub Pro</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+      </head>
+      <body style="font-family:Arial;padding:40px">
+        <h1>SchoolHub Pro</h1>
+        <p>SchoolHub Pro server is running.</p>
+        <p>
+          <a href="/login.html">Login</a>
+        </p>
+      </body>
+    </html>
+  `);
+});
+
+/* =====================================================
+   API 404
+===================================================== */
+
+app.use(
+  "/api",
   (req, res) => {
+    res.status(404).json({
+      ok: false,
+      error:
+        "API endpoint not found."
+    });
+  }
+);
+
+/* =====================================================
+   FRONTEND FALLBACK
+===================================================== */
+
+app.use(
+  (req, res, next) => {
     if (
-      req.path.startsWith(
-        "/api/"
-      )
+      req.method !== "GET" ||
+      req.path.startsWith("/api/") ||
+      req.path.startsWith("/auth/")
     ) {
-      return res.status(404).json({
-        ok: false,
-        message:
-          "API route not found."
-      });
+      return next();
     }
 
-    const requested =
+    const requestedFile =
       path.join(
         PUBLIC_DIR,
         req.path
       );
 
     if (
-      fs.existsSync(
-        requested
-      ) &&
-      fs.statSync(
-        requested
-      ).isFile()
+      fs.existsSync(requestedFile) &&
+      fs.statSync(requestedFile).isFile()
     ) {
       return res.sendFile(
-        requested
+        requestedFile
       );
     }
 
-    const indexFile =
+    const index =
       path.join(
         PUBLIC_DIR,
         "index.html"
       );
 
-    if (
-      fs.existsSync(
-        indexFile
-      )
-    ) {
-      return res.sendFile(
-        indexFile
-      );
+    if (fs.existsSync(index)) {
+      return res.sendFile(index);
     }
 
-    res.status(404).send(
-      "SchoolHub Pro is running, but the requested page was not found."
-    );
+    next();
   }
 );
 
-/* ============================================================
+/* =====================================================
    ERROR HANDLER
-============================================================ */
+===================================================== */
 
 app.use(
-  (
-    err,
-    req,
-    res,
-    next
-  ) => {
+  (error, req, res, next) => {
     console.error(
       "SERVER ERROR:",
-      err
+      error
     );
 
-    if (
-      res.headersSent
-    ) {
-      return next(err);
+    if (res.headersSent) {
+      return next(error);
     }
 
     res.status(500).json({
       ok: false,
-      message:
+      error:
         "Internal server error."
     });
   }
 );
 
-/* ============================================================
-   START SERVER
-============================================================ */
+/* =====================================================
+   ENSURE SUPERADMIN
+===================================================== */
 
-const server =
-  app.listen(
-    PORT,
-    HOST,
-    () => {
-      console.log("");
-      console.log(
-        "============================================"
-      );
-      console.log(
-        "       SCHOOLHUB PRO SERVER"
-      );
-      console.log(
-        "============================================"
-      );
-      console.log(
-        `Port: ${PORT}`
-      );
-      console.log(
-        `Host: ${HOST}`
-      );
-      console.log(
-        `Environment: ${NODE_ENV}`
-      );
-      console.log(
-        `Storage: ${STORAGE_ROOT}`
-      );
-      console.log(
-        `Google Auth: ${
-          googleConfigured
-            ? "CONFIGURED"
-            : "NOT CONFIGURED"
-        }`
-      );
-      console.log(
-        "============================================"
-      );
-      console.log("");
+async function ensureSuperadmin() {
+  const email =
+    normalizeEmail(
+      process.env.SUPERADMIN_EMAIL
+    );
+
+  const username =
+    normalizeUsername(
+      process.env.SUPERADMIN_USERNAME ||
+      "superadmin"
+    );
+
+  const password =
+    process.env.SUPERADMIN_PASSWORD;
+
+  const fullName =
+    clean(
+      process.env.SUPERADMIN_NAME ||
+      "SchoolHub Super Admin"
+    );
+
+  if (!email || !password) {
+    console.log(
+      "Superadmin: NOT CONFIGURED"
+    );
+
+    console.log(
+      "Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD in Railway Variables."
+    );
+
+    return;
+  }
+
+  if (password.length < 6) {
+    console.error(
+      "Superadmin password must be at least 6 characters."
+    );
+
+    return;
+  }
+
+  const users =
+    getUsers();
+
+  let user =
+    users.find(
+      (item) =>
+        normalizeEmail(
+          item.email
+        ) === email
+    ) ||
+    users.find(
+      (item) =>
+        normalizeUsername(
+          item.username
+        ) === username
+    );
+
+  if (user) {
+    user.role =
+      "superadmin";
+
+    user.active = true;
+
+    user.schoolId = null;
+
+    if (!user.username) {
+      user.username =
+        username;
     }
-  );
 
-/* ============================================================
+    if (!user.fullName) {
+      user.fullName =
+        fullName;
+    }
+
+    if (!user.passwordHash) {
+      user.passwordHash =
+        await bcrypt.hash(
+          password,
+          12
+        );
+    }
+
+    user.updatedAt = now();
+
+    saveUsers(users);
+
+    console.log(
+      `Superadmin ready: ${user.email}`
+    );
+
+    return;
+  }
+
+  const passwordHash =
+    await bcrypt.hash(
+      password,
+      12
+    );
+
+  user = {
+    id: id("user"),
+
+    fullName,
+
+    username,
+
+    email,
+
+    passwordHash,
+
+    role: "superadmin",
+
+    schoolId: null,
+
+    profilePicture: "",
+
+    provider: "local",
+
+    active: true,
+
+    createdAt: now(),
+
+    updatedAt: now()
+  };
+
+  users.push(user);
+
+  saveUsers(users);
+
+  console.log(
+    `Superadmin created: ${email}`
+  );
+}
+
+/* =====================================================
+   START SERVER
+===================================================== */
+
+let httpServer;
+
+async function startServer() {
+  try {
+    await ensureSuperadmin();
+
+    httpServer =
+      app.listen(
+        PORT,
+        HOST,
+        () => {
+          console.log("");
+          console.log(
+            "=========================================="
+          );
+          console.log(
+            "       SCHOOLHUB PRO SERVER"
+          );
+          console.log(
+            "=========================================="
+          );
+          console.log(
+            `Port: ${PORT}`
+          );
+          console.log(
+            `Host: ${HOST}`
+          );
+          console.log(
+            `Environment: ${
+              process.env.NODE_ENV ||
+              "development"
+            }`
+          );
+          console.log(
+            `Storage: ${STORAGE_ROOT}`
+          );
+          console.log(
+            `Google Auth: ${
+              googleConfigured
+                ? "CONFIGURED"
+                : "NOT CONFIGURED"
+            }`
+          );
+          console.log(
+            "Roles: superadmin, school_admin, teacher, student"
+          );
+          console.log(
+            "=========================================="
+          );
+          console.log("");
+        }
+      );
+  } catch (error) {
+    console.error(
+      "STARTUP ERROR:",
+      error
+    );
+
+    process.exit(1);
+  }
+}
+
+/* =====================================================
    GRACEFUL SHUTDOWN
-============================================================ */
+===================================================== */
 
 function shutdown(signal) {
   console.log(
     `${signal} received. Shutting down...`
   );
 
-  server.close(() => {
+  if (!httpServer) {
+    process.exit(0);
+  }
+
+  httpServer.close(() => {
     console.log(
-      "HTTP server closed."
+      "SchoolHub Pro server stopped."
     );
 
     process.exit(0);
@@ -3568,24 +3672,22 @@ function shutdown(signal) {
     );
 
     process.exit(1);
-  }, 10000);
+  }, 10000).unref();
 }
 
 process.on(
   "SIGTERM",
-  () =>
-    shutdown("SIGTERM")
+  () => shutdown("SIGTERM")
 );
 
 process.on(
   "SIGINT",
-  () =>
-    shutdown("SIGINT")
+  () => shutdown("SIGINT")
 );
 
 process.on(
   "uncaughtException",
-  error => {
+  (error) => {
     console.error(
       "UNCAUGHT EXCEPTION:",
       error
@@ -3595,10 +3697,16 @@ process.on(
 
 process.on(
   "unhandledRejection",
-  error => {
+  (reason) => {
     console.error(
       "UNHANDLED REJECTION:",
-      error
+      reason
     );
   }
 );
+
+/* =====================================================
+   START
+===================================================== */
+
+startServer();
